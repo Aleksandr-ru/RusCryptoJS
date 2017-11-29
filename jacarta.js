@@ -462,6 +462,7 @@ function JaCarta() {
 	 * @returns {string}
 	 */
 	function parseCertificateInfo(inf){
+		//TODO: parseX509Certificate
 		var cert = atos(inf).replace(/\\/g, '');
 		var cn = cert.match(/CN=[^\r\n]+/g);
 		return cn.pop().slice(3);
