@@ -187,7 +187,11 @@ function JaCarta() {
 		}
 		return defer.promise();
 	};
-	
+
+	/**
+	 * Отменить предъявление PIN-кода. Необходимо вызывать при завершении сеанса работы
+	 * @returns {promise}
+	 */
 	this.unbind = function() {
 		var defer = $.Deferred();
 
@@ -204,7 +208,11 @@ function JaCarta() {
 		}
 		return defer.promise();
 	};
-	
+
+	/**
+	 * Очистка токена (удаление всех контейнеров)
+	 * @returns {promise}
+	 */
 	this.clean = function(){
 		var defer = $.Deferred();
 
@@ -308,7 +316,31 @@ function JaCarta() {
 		return defer.promise();
 	};
 
-	//TODO: certificateInfo
+	/**
+	 * Получение информации о сертификате.
+	 * @param {int} containerId идентификатор контейнера (сертификата)
+	 * @returns {promise}
+	 */
+	this.certificateInfo = function(containerId){
+		var defer = $.Deferred();
+		try {
+			var o = parseX509CertificateEx(tokenId, containerId);
+			// TODO: valid?
+			o.toString = function(){
+				var str = '';
+				for(var i in this) if(this.hasOwnProperty(i) && i != 'toString') {
+					str += i + ': ' + this[i] + '\n';
+				}
+				return str;
+			};
+			defer.resolve(o);
+		}
+		catch(e) {
+			var err = getError();
+			defer.reject(err || e.message);
+		}
+		return defer.promise();
+	};
 
 	/**
 	 * Получение массива доступных сертификатов [[id, subject], ...]
@@ -344,7 +376,38 @@ function JaCarta() {
 		}
 		return defer.promise();
 	};
-			
+	
+	/**
+	 * Получить сертификат из контейнера
+	 * @param {int} containerId 
+	 * @returns {promise} base64(массив байт со значением сертификата в формате DER)
+	 */
+	this.readCertificate = function(containerId){
+		var defer = $.Deferred();
+		try {
+			var state = client.getLoggedInState().shift();
+			if(state === 0) {
+				var a = client.readCertificateEx(tokenId, containerId);
+			}
+			else {
+				var a = client.readCertificate(containerId);
+			}
+			if(a && a.length) {
+				// base64(массив байт со значением сертификата в формате DER)
+				var cert = btoa(String.fromCharCode.apply(null, new Uint8Array(a)));
+				defer.resolve(cert);
+			}
+			else {
+				defer.reject('Нет сертификата в контейнере');
+			}
+		}
+		catch(e) {
+			var err = getError();
+			defer.reject(err || e.message);
+		}
+		return defer.promise();
+	};
+
 	/**
 	 * Подписать данные. Выдает подпись в формате PKCS#7, опционально закодированную в Base64
 	 * @param {string} data данные (и подпись) закодированы в base64

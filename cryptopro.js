@@ -432,6 +432,11 @@ function CryptoPro() {
 		return defer.promise();
 	};
 
+	/**
+	 * Получение информации о сертификате.
+	 * @param {string} certThumbprint
+	 * @returns {promise}
+	 */
 	this.certificateInfo = function(certThumbprint){
 		var defer = $.Deferred();
 		var infoToString = function(){
@@ -607,6 +612,69 @@ function CryptoPro() {
 			}
 			catch(e) {
 				console.log(e);
+				defer.reject(e.message || e);
+			}
+		}
+		return defer.promise();
+	};
+
+	/**
+	 * Чтение сертификата
+	 * @param {string} certThumbprint
+	 * @returns {promise}
+	 */
+	this.readCertificate = function(certThumbprint){
+		var defer = $.Deferred();
+		if(canAsync) {
+			var oStore, oCertificates, oCertificate;
+			cadesplugin.then(function(){
+				return cadesplugin.CreateObjectAsync("CAPICOM.Store");
+			}).then(function(o){
+				oStore = o;
+				return oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE,
+								   cadesplugin.CAPICOM_MY_STORE,
+								   cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
+			}).then(function(){
+				return oStore.Certificates;
+			}).then(function(certificates){
+				return certificates.Find(cadesplugin.CAPICOM_CERTIFICATE_FIND_SHA1_HASH, certThumbprint);
+			}).then(function(certificates){
+				oCertificates = certificates;
+				return oCertificates.Count;
+			}).then(function(count){
+				if(count != 1) throw new Error('Не обнаружено сертификатов c указанным SHA1');
+				return oCertificates.Item(1);
+			}).then(function(certificate){
+				oCertificate = certificate;
+				return oStore.Close();
+			}).then(function(){
+				return oCertificate.Export(cadesplugin.CADESCOM_ENCODE_BASE64);
+			}).then(function(str){
+				return defer.resolve(str);
+			}, function(e){
+				console.log(arguments);
+				if(e.message && e.message.indexOf('0x800B010A')+1) e.message = cadesErrorMesages['0x800B010A'];
+				defer.reject(e.message || e);
+			});
+		}
+		else {
+			try {
+				var oStore = cadesplugin.CreateObject("CAPICOM.Store");
+				oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE, cadesplugin.CAPICOM_MY_STORE, cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
+
+				var oCertificates = oStore.Certificates.Find(cadesplugin.CAPICOM_CERTIFICATE_FIND_SHA1_HASH, certThumbprint);
+				if (oCertificates.Count != 1) {
+					defer.reject("Не обнаружено сертификатов c указанным SHA1");
+				}
+				var oCertificate = oCertificates.Item(1);
+				oStore.Close();
+
+				var data = oCertificate.Export(cadesplugin.CADESCOM_ENCODE_BASE64);
+				defer.resolve(data);
+			}
+			catch (e) {
+				console.log(e);
+				if(e.message && e.message.indexOf('0x800B010A')+1) e.message = cadesErrorMesages['0x800B010A'];
 				defer.reject(e.message || e);
 			}
 		}
