@@ -120,7 +120,9 @@ function CryptoPro() {
 				}).then(function(CurrentPluginVersion){
 					defer.resolve(CurrentPluginVersion);
 				}, function(e) {
-					defer.reject(e.message || e); // 'Плагин не загружен'
+					// 'Плагин не загружен'
+					var err = getError(e);
+					defer.reject(err);
 				});
 			}
 			else {
@@ -130,7 +132,9 @@ function CryptoPro() {
 					defer.resolve(CurrentPluginVersion);
 				}
 				catch(e) {
-					defer.reject(e.message || e); // 'Плагин не загружен'
+					// 'Плагин не загружен'
+					var err = getError(e);
+					defer.reject(err);
 				}
 			}
 		}
@@ -284,7 +288,8 @@ function CryptoPro() {
 				defer.resolve(csr);
 			}, function(e){
 				console.log(arguments);				
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			});
 		}
 		else {
@@ -363,7 +368,8 @@ function CryptoPro() {
 			}
 			catch(e) {
 				console.log(e);				
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			}
 		}
 		return defer.promise();
@@ -396,7 +402,8 @@ function CryptoPro() {
 				defer.reject('Не удалось найти установленный сертификат по отпечатку');
 			}, function(e){
 				console.log(arguments);
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			});
 		}
 		else {
@@ -426,7 +433,8 @@ function CryptoPro() {
 			}
 			catch(e) {
 				console.log(e);
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			}
 		}
 		return defer.promise();
@@ -509,8 +517,8 @@ function CryptoPro() {
 				defer.resolve(oInfo);
 			}, function(e){
 				console.log(arguments);
-				if(e.message && e.message.indexOf('0x800B010A')+1) e.message = cadesErrorMesages['0x800B010A'];
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			});
 		}
 		else {
@@ -544,8 +552,8 @@ function CryptoPro() {
 			}
 			catch (e) {
 				console.log(e);
-				if(e.message && e.message.indexOf('0x800B010A')+1) e.message = cadesErrorMesages['0x800B010A'];
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			}
 		}
 		return defer.promise();
@@ -592,7 +600,8 @@ function CryptoPro() {
 				defer.resolve(ret);
 			}, function(e){
 				console.log(arguments);
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			});
 		}
 		else {
@@ -612,7 +621,8 @@ function CryptoPro() {
 			}
 			catch(e) {
 				console.log(e);
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			}
 		}
 		return defer.promise();
@@ -653,8 +663,8 @@ function CryptoPro() {
 				return defer.resolve(str);
 			}, function(e){
 				console.log(arguments);
-				if(e.message && e.message.indexOf('0x800B010A')+1) e.message = cadesErrorMesages['0x800B010A'];
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			});
 		}
 		else {
@@ -674,8 +684,8 @@ function CryptoPro() {
 			}
 			catch (e) {
 				console.log(e);
-				if(e.message && e.message.indexOf('0x800B010A')+1) e.message = cadesErrorMesages['0x800B010A'];
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			}
 		}
 		return defer.promise();
@@ -736,8 +746,8 @@ function CryptoPro() {
 				defer.resolve(sign);
 			}, function(e){
 				console.log(arguments);
-				if(e.message && e.message.indexOf('0x800B010A')+1) e.message = cadesErrorMesages['0x800B010A'];
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			});
 		}
 		else {
@@ -767,8 +777,8 @@ function CryptoPro() {
 			}
 			catch (e) {
 				console.log(e);
-				if(e.message && e.message.indexOf('0x800B010A')+1) e.message = cadesErrorMesages['0x800B010A'];
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			}
 		}
 		return defer.promise();
@@ -848,8 +858,8 @@ function CryptoPro() {
 				defer.resolve(sign2);
 			}, function(e){
 				console.log(arguments);
-				if(e.message && e.message.indexOf('0x800B010A')+1) e.message = cadesErrorMesages['0x800B010A'];
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			});
 		}
 		else {
@@ -891,13 +901,30 @@ function CryptoPro() {
 			}
 			catch (e) {
 				console.log(e);
-				if(e.message && e.message.indexOf('0x800B010A')+1) e.message = cadesErrorMesages['0x800B010A'];
-				defer.reject(e.message || e);
+				var err = getError(e);
+				defer.reject(err);
 			}
 		}
 		return defer.promise();
 	};
 
+	/**
+	 * Получить текст ошибки
+	 * @param {Error} e
+	 * @returns {string} 
+	 */
+	function getError(e) {
+		if(e.message && e.message.indexOf('0x800B010A')+1) {
+			e.message = cadesErrorMesages['0x800B010A'];
+		}
+		return e.message || e;
+	}
+
+	/**
+	 * Разобрать субъект в объект с toString
+	 * @param {string} subjectName
+	 * @returns {object}
+	 */
 	function parseSubject(subjectName){
 		var o = {
 			toString: function(){
