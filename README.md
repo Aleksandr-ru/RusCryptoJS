@@ -88,11 +88,12 @@ JS для Российской криптографии (ГОСТ)
 Более подробно см. документацию в коде.
 
 ## JaCarta ГОСТ
-Для работы с JaCarta Web Plugin 3.x
+Для работы с JaCarta Web Client 3.x
 
 Использование:
 ```
 <script src="jquery.js"></script><!-- требуется jQuery 1.5+ -->
+<script src="https://localhost:24738/JCWebClient.js"></script><!-- не забывайте добавить в доверенные -->
 <script src="jacarta.js"></script>
 ```
 
