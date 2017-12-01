@@ -29,7 +29,9 @@ JS для Российской криптографии (ГОСТ)
 		console.log('CryptoPro %s', version);
 		return cryptoPro.listCertificates();
 	}).then(function(certs){
-		for(var i in certs) $('#form select').append($('<option/>').val(certs[i][0]).text(certs[i][1]));
+		for(var i in certs) {
+			$('#form select').append($('<option/>').val(certs[i][0]).text(certs[i][1]));
+		}
 	}).fail(function(e){
 		alert(e.message || e);
 	});
@@ -105,7 +107,9 @@ JS для Российской криптографии (ГОСТ)
 		console.log('JaCarta %s', version);
 		return jaCarta.listCertificates();
 	}).then(function(certs){
-		for(var i in certs) $('#form select').append($('<option/>').val(certs[i][0]).text(certs[i][1]));
+		for(var i in certs) {
+			$('#form select').append($('<option/>').val(certs[i][0]).text(certs[i][1]));
+		}
 	}).fail(function(e){
 		alert(e.message || e);
 	});
