@@ -142,7 +142,7 @@ function JaCarta() {
 		}
 		catch(e) {
 			var err = getError();
-			defer.reject(err || e.message || e);
+			defer.reject(e.message || err || e);
 		}
 		return defer.promise();
 	};
@@ -324,7 +324,7 @@ function JaCarta() {
 	this.certificateInfo = function(containerId){
 		var defer = $.Deferred();
 		try {
-			var o = parseX509CertificateEx(tokenId, containerId);
+			var o = client.parseX509CertificateEx(tokenId, containerId);
 			// TODO: valid?
 			o.toString = function(){
 				var str = '';
@@ -363,7 +363,7 @@ function JaCarta() {
 						var certName = certs[i][1];
 						if(!certName) {
 							var inf = client.getCertificateInfo(tokenId, certId);
-							certs[i][1] = parseCertificateInfo(inf);
+							certs[i][1] = parseCertificateCN(inf);
 						}
 					}
 					defer.resolve(certs);
@@ -439,17 +439,19 @@ function JaCarta() {
 
 	/**
 	 * Получить ошибку по коду
-	 * @param {int} code код ошибки
+	 * @param {string} mnemo мнемонический код ошибки CKR_*
 	 * @returns {string|Boolean} false если нет ошибки (CKR_OK)
 	 */
-	function getError(code) {
+	function getError(mnemo) {
 		try {
-			code = code || client.getLastError();
-			var message = client.getErrorMessage(code);
-			if(!code || message == 'CKR_OK') {
+			if(!mnemo) {
+				var code = client.getLastError();
+				mnemo = client.getErrorMessage(code);
+			}
+			if(mnemo == 'CKR_OK') {
 				return false;
 			}
-			return errors[message] || message;
+			return errors[mnemo] || mnemo;
 		}
 		catch(e) {
 			return e.message;
@@ -461,7 +463,7 @@ function JaCarta() {
 	 * @param {array} inf
 	 * @returns {string}
 	 */
-	function parseCertificateInfo(inf){
+	function parseCertificateCN(inf){
 		//TODO: parseX509Certificate
 		var cert = atos(inf).replace(/\\/g, '');
 		var cn = cert.match(/CN=[^\r\n]+/g);
