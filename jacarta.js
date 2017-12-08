@@ -94,7 +94,7 @@ function JaCarta() {
 
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
-	 * @returns {promise}
+	 * @returns {promise} версия, объект-информация о токене
 	 */
 	this.init = function(){
 		var defer = $.Deferred();
@@ -138,7 +138,13 @@ function JaCarta() {
 				throw new Error('Нет подключенных токенов');
 			}
 			var version = client.getPluginVersion();
-			defer.resolve(version);
+			var tokenInfo = client.getTokenInfo(tokenId);
+			defer.resolve(version, {
+				serial: tokenInfo[0], // серийный номер электронного ключа.
+				flags: tokenInfo[1],  // флаги электронного ключа.
+				label: tokenInfo[2],  // метка электронного ключа.
+				type: tokenInfo[3]
+			});
 		}
 		catch(e) {
 			var err = getError();
