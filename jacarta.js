@@ -325,15 +325,46 @@ function JaCarta() {
 		var defer = $.Deferred();
 		try {
 			var o = client.parseX509CertificateEx(tokenId, containerId);
-			// TODO: valid?
-			o.toString = function(){
-				var str = '';
-				for(var i in this) if(this.hasOwnProperty(i) && i != 'toString') {
-					str += i + ': ' + this[i] + '\n';
+			var dn = new DN;
+			for(var i in o.Data.Subject) {
+				var rdn = o.Data.Subject[i].rdn;
+				var val = o.Data.Subject[i].value;
+				dn[rdn] = val;
+			}
+			var dnI = new DN;
+			for(var i in o.Data.Issuer) {
+				var rdn = o.Data.Issuer[i].rdn;
+				var val = o.Data.Issuer[i].value;
+				dnI[rdn] = val;
+			}
+			var dt = new Date();
+			var info = {
+				Name: dn.CN,
+				Issuer: dnI,
+				IssuerName: dnI.CN,
+				Subject: dn,
+				SubjectName: dn.toString(),
+				Version: o.Data.Version,
+				SerialNumber: $.map(o.Data['Serial Number'], byte2hex).join(''),
+				Thumbprint: $.map(o.Signature, byte2hex).join(''),
+				ValidFromDate: o.Data.Validity['Not Before'],
+				ValidToDate: o.Data.Validity['Not After'],
+				HasPrivateKey: true,
+				IsValid: dt >= o.Data.Validity['Not Before'] && dt <= o.Data.Validity['Not After'],
+				toString: function(){
+					return 'Название:              ' + this.Name +
+						 '\nИздатель:              ' + this.IssuerName +
+						 '\nСубъект:               ' + this.SubjectName +
+						 '\nВерсия:                ' + this.Version +
+						 '\nСерийный №:            ' + this.SerialNumber +
+						 '\nОтпечаток SHA1:        ' + this.Thumbprint +
+						 '\nНе дествителен до:     ' + this.ValidFromDate +
+						 '\nНе действителен после: ' + this.ValidToDate +
+						 '\nПриватный ключ:        ' + (this.HasPrivateKey ? 'Есть' : 'Нет') +
+						 '\nВалидный:              ' + (this.IsValid ? 'Да' : 'Нет');
 				}
-				return str;
 			};
-			defer.resolve(o);
+			defer.resolve(info);
 		}
 		catch(e) {
 			var err = getError();
@@ -357,13 +388,17 @@ function JaCarta() {
 					defer.reject(err);
 				}
 				else {
-					var certs = a;
-					for(var i=0; i<certs.length; i++) {
-						var certId = certs[i][0];
-						var certName = certs[i][1];
-						if(!certName) {
-							var inf = client.getCertificateInfo(tokenId, certId);
-							certs[i][1] = parseCertificateCN(inf);
+					var certs = [];
+					for(var i=0; i<a.length; i++) {
+						var contId = a[i][0];
+						var contName = a[i][1];
+						try {
+							var o = client.parseX509CertificateEx(tokenId, contId);
+							var name = formatCertificateName(o, contName);
+							certs.push([contId, name]);
+						}
+						catch(e) {
+							console.log('Certificate (%s) info error: %s',  contId, e.message);
 						}
 					}
 					defer.resolve(certs);
@@ -459,15 +494,26 @@ function JaCarta() {
 	}
 
 	/**
-	 * Вытаскивает последний CN из массива байт информации о сертификате
-	 * @param {array} inf
-	 * @returns {string}
+	 * Получить название сертификата
+	 * @param {type} o объект, включающий в себя значения всех полей сертификата.
+	 * @param {type} containerName
+	 * @returns {string} 
 	 */
-	function parseCertificateCN(inf){
-		//TODO: parseX509Certificate
-		var cert = atos(inf).replace(/\\/g, '');
-		var cn = cert.match(/CN=[^\r\n]+/g);
-		return cn.pop().slice(3);
+	function formatCertificateName(o, containerName)
+	{
+		var dn = new DN;
+		for(var i in o.Data.Subject) {
+			var rdn = o.Data.Subject[i].rdn;
+			var val = o.Data.Subject[i].value;
+			dn[rdn] = val;
+		}
+		dn.toString = function(){
+			var cn = this['CN'] || this['2.5.4.3'];
+			var snils = this['СНИЛС'] || this['SNILS'] || this['1.2.643.100.3'];
+			var inn = this['ИНН'] || this['INN'] || this['1.2.643.3.131.1.1'];
+			return '' + cn + (inn ?  '; ИНН ' + inn : '') + (snils ?  '; СНИЛС ' + snils : '') + (containerName ? ' (' + containerName + ')' : '');
+		};
+		return dn.toString();
 	}
 
 	/**
@@ -486,5 +532,10 @@ function JaCarta() {
 			);
 		}
 		return s;
+	}
+
+	function byte2hex(byte) {
+		//console.log('byte %d -> %s', byte, byte.toString(16));
+		return ('0' + byte.toString(16)).slice(-2);
 	}
 }
