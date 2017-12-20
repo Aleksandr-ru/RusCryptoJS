@@ -239,7 +239,7 @@ function CryptoPro() {
 					promises.push(cadesplugin.CreateObjectAsync('X509Enrollment.CObjectId'));
 				}
 				return Promise.all(promises);
-			}).then(function(objects){				
+			}).then(function(objects){
 				aOIDs = objects;
 				var promises = [];
 				for(var i=0; i<ekuOids.length; i++) {
@@ -260,8 +260,8 @@ function CryptoPro() {
 			}).then(function(){
 				var shortName = sCSPName.slice(0, maxLengthCSPName);
 				var utf8arr = stringToUtf8ByteArray(shortName);
-				utf8arr.unshift(asn1UTF8StringTag, utf8arr.length); 
-				var base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(utf8arr)));				
+				utf8arr.unshift(asn1UTF8StringTag, utf8arr.length);
+				var base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(utf8arr)));
 				//return oSubjectSignTool.Initialize(oSstOID, EncodingType.XCN_CRYPT_STRING_BINARY, utf8string); // не работает на винде
 				return oSubjectSignTool.Initialize(oSstOID, EncodingType.XCN_CRYPT_STRING_BASE64, base64String);
 			}).then(function(){
@@ -287,7 +287,7 @@ function CryptoPro() {
 			}).then(function(csr){
 				defer.resolve(csr);
 			}, function(e){
-				console.log(arguments);				
+				console.log(arguments);
 				var err = getError(e);
 				defer.reject(err);
 			});
@@ -358,7 +358,7 @@ function CryptoPro() {
 
 				var strName = dn.toString();
 				oDn.Encode(strName, X500NameFlags.XCN_CERT_X500_NAME_STR);
-				
+
 				oRequest.Subject = oDn;
 
 				oEnroll.InitializeFromRequest(oRequest);
@@ -367,7 +367,7 @@ function CryptoPro() {
 				defer.resolve(csr);
 			}
 			catch(e) {
-				console.log(e);				
+				console.log(e);
 				var err = getError(e);
 				defer.reject(err);
 			}
@@ -569,7 +569,7 @@ function CryptoPro() {
 			var oStore, oCertificates, ret;
 			cadesplugin.then(function(){
 				return cadesplugin.CreateObjectAsync("CAPICOM.Store");
-			}).then(function(store){				
+			}).then(function(store){
 				oStore = store;
 				return oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE,
 								   cadesplugin.CAPICOM_MY_STORE,
@@ -711,13 +711,13 @@ function CryptoPro() {
 			}).then(function(objects){
 				oStore = objects[0];
 				oSigner = objects[1];
-				oSignedData = objects[2];				
+				oSignedData = objects[2];
 				return oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE,
 								   cadesplugin.CAPICOM_MY_STORE,
 								   cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
 			}).then(function(){
 				return oStore.Certificates;
-			}).then(function(certificates){				
+			}).then(function(certificates){
 				return certificates.Find(cadesplugin.CAPICOM_CERTIFICATE_FIND_SHA1_HASH, certThumbprint);
 			}).then(function(certificates){
 				oCertificates = certificates;
@@ -726,9 +726,9 @@ function CryptoPro() {
 				if(count != 1) throw new Error('Не обнаружено сертификатов c указанным SHA1');
 				return oCertificates.Item(1);
 			}).then(function(certificate){
-				oCertificate = certificate;				
+				oCertificate = certificate;
 				return oStore.Close();
-			}).then(function(){				
+			}).then(function(){
 				var promises = [
 					oSigner.propset_Certificate(oCertificate),
 					oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN)
@@ -800,12 +800,12 @@ function CryptoPro() {
 			cadesplugin.then(function(){
 				return Promise.all([
 					cadesplugin.CreateObjectAsync("CAPICOM.Store"),
-					cadesplugin.CreateObjectAsync("CAdESCOM.CPSigner"),					
+					cadesplugin.CreateObjectAsync("CAdESCOM.CPSigner"),
 					cadesplugin.CreateObjectAsync("CAdESCOM.CadesSignedData")
 				]);
 			}).then(function(objects){
 				oStore = objects[0];
-				oSigner = objects[1];				
+				oSigner = objects[1];
 				oSignedData = objects[2];
 				if(!oStore) throw new Error('Не обнаружено хранилище');
 				return oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE,
@@ -813,7 +813,7 @@ function CryptoPro() {
 								   cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
 			}).then(function(){
 				return oStore.Certificates;
-			}).then(function(certificates){				
+			}).then(function(certificates){
 				return Promise.all([
 					certificates.Find(cadesplugin.CAPICOM_CERTIFICATE_FIND_SHA1_HASH, certThumbprint),
 					certificates.Find(cadesplugin.CAPICOM_CERTIFICATE_FIND_SHA1_HASH, certThumbprint2)
@@ -1008,9 +1008,57 @@ function CryptoPro() {
 	};
 
 	/**
+	 * Проверить подпись.
+	 * @param {string} dataBase64
+	 * @param {string} signBase64 существующая подпись
+	 * @returns {promise}
+	 */
+	this.verifySign = function(dataBase64, signBase64){
+		var defer = $.Deferred();
+		if(canAsync) {
+			var oSignedData;
+			cadesplugin.then(function(){
+				return cadesplugin.CreateObjectAsync("CAdESCOM.CadesSignedData");
+			}).then(function(object){
+				oSignedData = object;
+
+				// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
+				return oSignedData.propset_ContentEncoding(cadesplugin.CADESCOM_BASE64_TO_BINARY);
+			}).then(function(){
+				return oSignedData.propset_Content(dataBase64);
+			}).then(function(){
+				return oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, true);
+			}).then(function(){
+				//console.log('sign2: %s', sign2);
+				defer.resolve(true);
+			}, function(e){
+				console.log(arguments);
+				var err = getError(e);
+				defer.reject(err);
+			});
+		}
+		else {
+			try {
+				var oSignedData = cadesplugin.CreateObject("CAdESCOM.CadesSignedData");
+				// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
+				oSignedData.ContentEncoding = cadesplugin.CADESCOM_BASE64_TO_BINARY;
+				oSignedData.Content = dataBase64;
+				oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, true);
+				defer.resolve(true);
+			}
+			catch (e) {
+				console.log(e);
+				var err = getError(e);
+				defer.reject(err);
+			}
+		}
+		return defer.promise();
+	};
+
+	/**
 	 * Получить текст ошибки
 	 * @param {Error} e
-	 * @returns {string} 
+	 * @returns {string}
 	 */
 	function getError(e) {
 		if(e.message && e.message.indexOf('0x800B010A')+1) {
