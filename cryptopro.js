@@ -953,7 +953,13 @@ function CryptoPro() {
 			}).then(function(){
 				return oSignedData.propset_Content(dataBase64);
 			}).then(function(){
-				return oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, true);
+				return oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, true).catch(function(e){
+					console.log('Existing sign not verified: %o', e);
+					// Для создания второй подписи успешная проверка не требуется.
+					// Вы можете перехватить исключение при проверке, и добавить подпись вторую.
+					// Проверка нужна только для того что бы подпись попала внутрь SignedData.
+
+				});
 			}).then(function(result){
 				//console.log('sign1: %s', sign);
 				var promises = [
@@ -988,13 +994,22 @@ function CryptoPro() {
 				// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
 				oSignedData.ContentEncoding = cadesplugin.CADESCOM_BASE64_TO_BINARY;
 				oSignedData.Content = dataBase64;
-				oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, true);
+
+				try {
+					oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, true);
+				}
+				catch(e) {
+					console.log('Existing sign not verified: %o', e);
+					// Для создания второй подписи успешная проверка не требуется.
+					// Вы можете перехватить исключение при проверке, и добавить подпись вторую.
+					// Проверка нужна только для того что бы подпись попала внутрь SignedData.
+				}
 
 				var oSigner = cadesplugin.CreateObject("CAdESCOM.CPSigner");
 				oSigner.Certificate = oCertificate;
 				//oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
 				oSigner.KeyPin = pin ? pin : '';
-				var sSignedMessage = oSignedData.SignCades(oSigner, cadesplugin.CADESCOM_CADES_BES, true);
+				var sSignedMessage = oSignedData.CoSignCades(oSigner, cadesplugin.CADESCOM_CADES_BES);
 
 				defer.resolve(sSignedMessage);
 			}
