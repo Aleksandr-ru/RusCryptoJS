@@ -85,6 +85,11 @@ function CryptoPro() {
 		AllowUntrustedRoot         : 0x00000004
 	};
 
+	var ProviderTypes = {
+		GOST_R_34_10_2001: 75, // Crypto-Pro GOST R 34.10-2001 KC1 CSP
+		GOST_R_34_10_2012: 80  // Crypto-Pro GOST R 34.10-2012 KC1 CSP
+	};
+
 	var maxLengthCSPName = 127;
 	//If the string contains fewer than 128 bytes, the Length field of the TLV triplet requires only one byte to specify the content length.
 	//If the string is more than 127 bytes, bit 7 of the Length field is set to 1 and bits 6 through 0 specify the number of additional bytes used to identify the content length.
@@ -149,15 +154,19 @@ function CryptoPro() {
 	 * @param {DN} dn
 	 * @param {string} pin
 	 * @param {array} ekuOids массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
+	 * @param {int} providerType по умолчанию 80 (ГОСТ Р 34.10-2012) или 75 (ГОСТ Р 34.10-2001)
 	 * @returns {promise}
 	 * @see DN
 	 */
-	this.generateCSR = function(dn, pin, ekuOids){
+	this.generateCSR = function(dn, pin, ekuOids, providerType){
 		if(!ekuOids || !ekuOids.length) {
 			ekuOids = [
 				'1.3.6.1.5.5.7.3.2', // Аутентификация клиента
 				'1.3.6.1.5.5.7.3.4' // Защищенная электронная почта
 			];
+		}
+		if(!providerType) {
+			providerType = ProviderTypes.GOST_R_34_10_2012;
 		}
 		var defer = $.Deferred();
 		if(canAsync) {
@@ -205,25 +214,29 @@ function CryptoPro() {
 				}
 				return Promise.all(aPromises);
 			}).then(function(aCspInfo){
+				var cspType, cspName;
 				for(var i=0; i<aCspInfo.length; i+=3) {
 					var bLegacyCsp = aCspInfo[i];
 					var nType = aCspInfo[i+1];
-					var sName = sCSPName = aCspInfo[i+2];
+					var sName = aCspInfo[i+2];
 
-					if(bLegacyCsp && nType == 75) {
-						var aPromises = [
-							//oPrivateKey.propset_Length(512),
-							oPrivateKey.propset_KeySpec(X509KeySpec.XCN_AT_SIGNATURE),
-							oPrivateKey.propset_Existing(false),
-							oPrivateKey.propset_ExportPolicy(X509PrivateKeyExportFlags.XCN_NCRYPT_ALLOW_EXPORT_FLAG),
-							oPrivateKey.propset_ProviderType(nType),
-							oPrivateKey.propset_ProviderName(sName)
-						];
-						if(pin) aPromises.push(oPrivateKey.propset_Pin(pin));
-						return Promise.all(aPromises);
+					if(bLegacyCsp && nType == providerType) {
+						cspType = nType;
+						cspName = sCSPName = sName;
+						break;
 					}
 				}
-				throw new Error('No suitable CSP found!');
+				if(!cspName || !cspType) throw new Error('No suitable CSP!');
+
+				var aPromises = [
+					oPrivateKey.propset_KeySpec(X509KeySpec.XCN_AT_SIGNATURE),
+					oPrivateKey.propset_Existing(false),
+					oPrivateKey.propset_ExportPolicy(X509PrivateKeyExportFlags.XCN_NCRYPT_ALLOW_EXPORT_FLAG),
+					oPrivateKey.propset_ProviderType(cspType),
+					oPrivateKey.propset_ProviderName(cspName)
+				];
+				if(pin) aPromises.push(oPrivateKey.propset_Pin(pin));
+				return Promise.all(aPromises);
 			}).then(function(){
 				return oRequest.InitializeFromPrivateKey(X509CertificateEnrollmentContext.ContextUser, oPrivateKey, '');
 			}).then(function(){
@@ -308,14 +321,14 @@ function CryptoPro() {
 				oCspInformations.AddAvailableCsps();
 				for(var i=0; i<oCspInformations.Count; i++) {
 					var oCspInfo = oCspInformations.ItemByIndex(i);
-					if(oCspInfo.LegacyCsp && oCspInfo.Type == 75) {
+					if(oCspInfo.LegacyCsp && oCspInfo.Type == providerType) {
 						cspType = oCspInfo.Type;
 						cspName = oCspInfo.Name;
+						break;
 					}
 				}
 				if(!cspName || !cspType) throw new Error('No suitable CSP!');
 
-				//oPrivateKey.Length = 512;
 				oPrivateKey.KeySpec = X509KeySpec.XCN_AT_SIGNATURE;
 				oPrivateKey.Existing = false;
 				oPrivateKey.ExportPolicy = X509PrivateKeyExportFlags.XCN_NCRYPT_ALLOW_EXPORT_FLAG;
