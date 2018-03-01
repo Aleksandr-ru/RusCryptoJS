@@ -98,7 +98,8 @@ function CryptoPro() {
 	// https://www.cryptopro.ru/forum2/default.aspx?g=posts&m=38467#post38467
 
 	var cadesErrorMesages = {
-		'0x800B010A': 'Не удается построить цепочку сертификатов для доверенного корневого центра'
+		'0x800B010A': 'Не удается построить цепочку сертификатов для доверенного корневого центра',
+		'0x80090020': 'Внутренняя ошибка 0x80090020. Если используется внешний токен, убедитесь, что ввели корректный PIN-код'
 	};
 
 	var canAsync = !!cadesplugin.CreateObjectAsync;
@@ -1089,8 +1090,11 @@ function CryptoPro() {
 	 * @returns {string}
 	 */
 	function getError(e) {
-		if(e.message && e.message.indexOf('0x800B010A')+1) {
-			e.message = cadesErrorMesages['0x800B010A'];
+		if(e.message) for(var i in cadesErrorMesages) if(cadesErrorMesages.hasOwnProperty(i)) {
+			if(e.message.indexOf(i)+1) {
+				e.message = cadesErrorMesages[i];
+				break;
+			}
 		}
 		return e.message || e;
 	}
