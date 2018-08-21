@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <body>
+        <script src="dist/bundle.js"></script>
+        <script>
+            console.log(window.RusCryptoJS);
+            var j = new window.RusCryptoJS.JaCarta;
+            console.log(j); 
+            
+            j.init().then(_ => {
+                alert('init ok');
+            }).catch(e => {
+                alert('failed! ' + e);
+            });
+        </script>
+    </body>
+</html>
