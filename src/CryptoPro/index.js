@@ -4,7 +4,6 @@
  * @link http://aleksandr.ru
  */
 
-import './cadesplugin_api';
 import DN from '../DN';
 import { 
 	X509KeySpec, 
@@ -29,9 +28,14 @@ function CryptoPro() {
 
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
-	 * @returns {promise}
+	 * @returns {Promise<string>} версия
 	 */
 	this.init = function(){
+		window.cadesplugin_skip_extension_install = true; // считаем что уже все установлено
+		window.allow_firefox_cadesplugin_async = true; // FF 52+
+
+		import './cadesplugin_api';
+
 		return new Promise((resolve, reject) => {
 			if(typeof(Uint8Array) != 'function') {
 				throw new Error('Upgrade your browser to something supports Uint8Array!');
@@ -78,7 +82,7 @@ function CryptoPro() {
 	 * @param {string} pin
 	 * @param {array} ekuOids массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
 	 * @param {int} providerType по умолчанию 80 (ГОСТ Р 34.10-2012) или 75 (ГОСТ Р 34.10-2001)
-	 * @returns {promise}
+	 * @returns {Promise<Object>} объект с полями { csr: 'base64 запрос на сертификат' }
 	 * @see DN
 	 */
 	this.generateCSR = function(dn, pin, ekuOids, providerType){
@@ -318,7 +322,7 @@ function CryptoPro() {
 	/**
 	 * Запись сертификата.
 	 * @param {string} certBase64
-	 * @returns {promise}
+	 * @returns {Promise<string>} thumbprint
 	 */
 	this.writeCertificate = function(certBase64){
 		if(canAsync) {
@@ -393,7 +397,7 @@ function CryptoPro() {
 	/**
 	 * Получение информации о сертификате.
 	 * @param {string} certThumbprint
-	 * @returns {promise}
+	 * @returns {Promise<Object>}
 	 */
 	this.certificateInfo = function(certThumbprint){
 		var infoToString = function(){
@@ -510,8 +514,8 @@ function CryptoPro() {
 	};
 
 	/**
-	 * Получение массива доступных сертификатов [[thumbprint, subject], ...]
-	 * @returns {promise}
+	 * Получение массива доступных сертификатов
+	 * @returns {Promise<Array>} [[thumbprint, subject], ...]
 	 */
 	this.listCertificates = function(){
 		if(canAsync) {
@@ -581,7 +585,7 @@ function CryptoPro() {
 	/**
 	 * Чтение сертификата
 	 * @param {string} certThumbprint
-	 * @returns {promise}
+	 * @returns {Promise<string>} base64
 	 */
 	this.readCertificate = function(certThumbprint){
 		if(canAsync) {
@@ -646,7 +650,7 @@ function CryptoPro() {
 	 * @param {string} dataBase64
 	 * @param {string} certThumbprint
 	 * @param {string} pin будет запрошен, если отсутствует
-	 * @returns {promise}
+	 * @returns {Promise<string>} base64
 	 */
 	this.signData = function(dataBase64, certThumbprint, pin){
 		if(canAsync) {
@@ -745,7 +749,7 @@ function CryptoPro() {
 	 * @param {string} pin будет запрошен, если отсутствует
 	 * @param {string} certThumbprint2 SHA1 отпечаток второго сертификата
 	 * @param {string} pin2 будет запрошен, если отсутствует
-	 * @returns {promise}
+	 * @returns {Promise<string>} base64
 	 */
 	this.signData2 = function(dataBase64, certThumbprint, pin, certThumbprint2, pin2){
 		if(canAsync) {
@@ -867,7 +871,7 @@ function CryptoPro() {
 	 * @param {string} signBase64 существующая подпись
 	 * @param {string} certThumbprint SHA1 отпечаток первого сертификата
 	 * @param {string} pin будет запрошен, если отсутствует
-	 * @returns {promise}
+	 * @returns {Promise<string>} base64
 	 */
 	this.addSign = function(dataBase64, signBase64, certThumbprint, pin){
 		if(canAsync) {
@@ -978,7 +982,7 @@ function CryptoPro() {
 	 * Проверить подпись.
 	 * @param {string} dataBase64
 	 * @param {string} signBase64 существующая подпись
-	 * @returns {promise}
+	 * @returns {Promise<boolean>} true или reject
 	 */
 	this.verifySign = function(dataBase64, signBase64){
 		if(canAsync) {

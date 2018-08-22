@@ -12,7 +12,7 @@ function JaCarta() {
 
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
-	 * @returns {promise} версия, объект-информация о токене
+	 * @returns {Promise<Object>} версия, информация о токене
 	 */
 	this.init = function(){
 		return new Promise(resolve => {
@@ -75,7 +75,7 @@ function JaCarta() {
 	/**
 	 * Авторизация на токене с пин-кодом юзера
 	 * @param {string} userPin если нет, то предлгает ввести пин через UI плагина
-	 * @returns {promise}
+	 * @returns {Promise}
 	 */
 	this.bind = function(userPin) {
 		return new Promise(resolve => {
@@ -114,7 +114,7 @@ function JaCarta() {
 
 	/**
 	 * Отменить предъявление PIN-кода. Необходимо вызывать при завершении сеанса работы
-	 * @returns {promise}
+	 * @returns {Promise}
 	 */
 	this.unbind = function() {
 		return new Promise(resolve => {
@@ -134,7 +134,7 @@ function JaCarta() {
 
 	/**
 	 * Очистка токена (удаление всех контейнеров)
-	 * @returns {promise}
+	 * @returns {Promise<number>} количество удаленных контейнеров
 	 */
 	this.clean = function(){
 		return new Promise(resolve => {
@@ -159,7 +159,7 @@ function JaCarta() {
 	 * @param {string} description описание контейнера
 	 * @param {array} ekuOids массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
 	 * @param {string} ecParams параметры эллиптической кривой ключевой пары. Может принимать значения A, B, C, XA, XB.
-	 * @returns {promise}
+	 * @returns {Promise<Object>} объект с полями { csr: 'base64 запрос на сертификат', containerId }
 	 * @see DN
 	 */
 	this.generateCSR = function(dn, description, ekuOids, ecParams){
@@ -219,7 +219,7 @@ function JaCarta() {
 	 * Записать сертификат в контейнер
 	 * @param {string} certificate base64(массив байт со значением сертификата в формате DER)
 	 * @param {int} идентификатор контейнера куда записывать
-	 * @returns {promise}
+	 * @returns {Promise}
 	 */
 	this.writeCertificate = function(certificate, containerId){
 		return new Promise(resolve => {
@@ -243,7 +243,7 @@ function JaCarta() {
 	/**
 	 * Получение информации о сертификате.
 	 * @param {int} containerId идентификатор контейнера (сертификата)
-	 * @returns {promise}
+	 * @returns {Promise<Object>}
 	 */
 	this.certificateInfo = function(containerId){
 		return new Promise(resolve => {
@@ -298,8 +298,8 @@ function JaCarta() {
 	};
 
 	/**
-	 * Получение массива доступных сертификатов [[id, subject], ...]
-	 * @returns {promise}
+	 * Получение массива доступных сертификатов
+	 * @returns {Promise<Array>} [[id, subject], ...]
 	 */
 	this.listCertificates = function(){
 		return new Promise(resolve => {
@@ -338,7 +338,7 @@ function JaCarta() {
 	/**
 	 * Получить сертификат из контейнера
 	 * @param {int} containerId 
-	 * @returns {promise} base64(массив байт со значением сертификата в формате DER)
+	 * @returns {Promise<string>} base64(массив байт со значением сертификата в формате DER)
 	 */
 	this.readCertificate = function(containerId){
 		return new Promise(resolve => {
@@ -370,7 +370,7 @@ function JaCarta() {
 	 * Подписать данные. Выдает подпись в формате PKCS#7, опционально закодированную в Base64
 	 * @param {string} data данные (и подпись) закодированы в base64
 	 * @param {int} containerId идентификатор контейнера (сертификата)
-	 * @returns {promise} строка-подпись в формате PKCS#7, закодированная в Base64.
+	 * @returns {Promise<string>} строка-подпись в формате PKCS#7, закодированная в Base64.
 	 */
 	this.signData = function(dataBase64, containerId){
 		var attachedSignature = false;
