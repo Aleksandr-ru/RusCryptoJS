@@ -22,6 +22,13 @@ function JaCarta2() {
 			else if(!window.btoa || !window.atob) {
 				throw new Error('Upgrade your browser to something supports native base64 encoding!');
 			}
+			if (typeof(JCWebClient2) !== 'undefined') {
+				resolve();
+			}
+			else {
+				getScript('https://localhost:24738/JCWebClient.js', resolve, reject);
+			}
+		}).then(() => {
 			if(typeof JCWebClient2 != 'undefined') {
 				client = JCWebClient2;
 				client.initialize();
@@ -416,6 +423,52 @@ function JaCarta2() {
 	function byte2hex(byte) {
 		//console.log('byte %d -> %s', byte, byte.toString(16));
 		return ('0' + byte.toString(16)).slice(-2);
+	}
+
+	/** 
+	 * Функция загрузки скрипта.
+	 * @param src - адрес расположения скрипта;
+	 * @param done - callback-функция, срабатывающая при успешной загрузки скрипта;
+	 * @param fail - callback-функция, срабатывающая при неудачной загрузки скрипта.
+	*/
+	function getScript(src, done, fail) {
+		var parent = document.getElementsByTagName('body')[0];
+
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.src = src;
+
+		if (script.readyState) {  // IE
+			script.onreadystatechange = function () {
+				if (script.readyState === "loaded" || script.readyState === "complete") {
+					script.onreadystatechange = null;
+					// На некоторых браузерах мы попадаем сюда и в тех случаях когда скрипт не загружен,
+					// поэтому дополнительно проверяем валидность JCWebClient2
+					if (typeof (JCWebClient2) === 'undefined') {
+						onFail("JCWebClient is invalid");
+					}
+					else {
+						done();
+					}
+				}
+				else if (script.readyState !== "loading") {
+					onFail("JCWebClient hasn't been loaded");
+				}
+			}
+		}
+		else {  // Others
+			script.onload = done;
+			script.onerror = function() {
+				onFail("JCWebClient hasn't been loaded");
+			};
+		}
+
+		parent.appendChild(script);
+
+		function onFail(errorMsg) {
+			parent.removeChild(script);
+			fail(errorMsg);
+		}
 	}
 }
 
