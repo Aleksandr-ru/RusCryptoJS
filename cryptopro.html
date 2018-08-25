@@ -1,13 +1,28 @@
 <!DOCTYPE html>
 <html lang="ru">
     <body>
+        <h1>RusCryptoJS / CryptoPro</h1>
+        <select id="certs"></select>
+        <input type="text" placeholder="ca url">
+        <button>get cert</button>
+
         <script src="dist/bundle.js"></script>
         <script>
             var csp = new window.RusCryptoJS.CryptoPro;
             console.log(csp); 
             
-            csp.init().then(_ => {
-                alert('init ok');
+            csp.init().then(v => {
+                console.log('version', v);
+                return csp.listCertificates();
+            }).then(a => {
+                console.log('certs', a);
+                let select = document.getElementById('certs');
+                a.forEach(element => {
+                    let option = document.createElement('option');
+                    option.value = element[0];
+                    option.text = element[1];
+                    select.appendChild(option);
+                });
             }).catch(e => {
                 alert('failed! ' + e);
             });
