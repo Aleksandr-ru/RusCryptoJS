@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <body>
+        <script src="dist/bundle.js"></script>
+        <script>
+            var csp = new window.RusCryptoJS.CryptoPro;
+            console.log(csp); 
+            
+            csp.init().then(_ => {
+                alert('init ok');
+            }).catch(e => {
+                alert('failed! ' + e);
+            });
+        </script>
+    </body>
+</html>

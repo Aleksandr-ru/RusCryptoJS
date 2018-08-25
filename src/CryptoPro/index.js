@@ -24,7 +24,7 @@ function CryptoPro() {
 	// https://www.cryptopro.ru/forum2/default.aspx?g=posts&m=38467#post38467
 	var asn1UTF8StringTag = 0x0c; // 12, UTF8String
 
-	var canAsync = !!cadesplugin.CreateObjectAsync;
+	var canAsync;
 
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
@@ -35,6 +35,7 @@ function CryptoPro() {
 		window.allow_firefox_cadesplugin_async = true; // FF 52+
 
 		require('./cadesplugin_api');
+		canAsync = !!cadesplugin.CreateObjectAsync;
 
 		return new Promise((resolve, reject) => {
 			if(typeof(Uint8Array) != 'function') {
