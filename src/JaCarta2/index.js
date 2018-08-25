@@ -29,21 +29,23 @@ function JaCarta2() {
 				getScript('https://localhost:24738/JCWebClient.js', resolve, reject);
 			}
 		}).then(() => {
-			if(typeof JCWebClient2 != 'undefined') {
-				client = JCWebClient2;
-				client.initialize();
-				client.defaults({
-					async: true
-				});
-				client.getJCWebClientVersion({
-					onSuccess: resolve,
-					onError: reject
-				});
-			}
-			else {
-				//Не установлен клиент JCWebClient2
-				throw new Error('Не установлен клиент JCWebClient2');
-			}
+			return new Promise((resolve, reject) => {
+				if(typeof JCWebClient2 != 'undefined') {
+					client = JCWebClient2;
+					client.initialize();
+					client.defaults({
+						async: true
+					});
+					client.getJCWebClientVersion({
+						onSuccess: resolve,
+						onError: reject
+					});
+				}
+				else {
+					//Не установлен клиент JCWebClient2
+					throw new Error('Не установлен клиент JCWebClient2');
+				}
+			});
 		}).then(version => {
 			console.log('JCWebClient2 v.%s', version);
 			final['version'] = version;

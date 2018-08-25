@@ -34,7 +34,7 @@ function CryptoPro() {
 		window.cadesplugin_skip_extension_install = true; // считаем что уже все установлено
 		window.allow_firefox_cadesplugin_async = true; // FF 52+
 
-		import './cadesplugin_api';
+		require('./cadesplugin_api');
 
 		return new Promise((resolve, reject) => {
 			if(typeof(Uint8Array) != 'function') {
