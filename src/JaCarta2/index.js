@@ -4,10 +4,12 @@
  * @link http://aleksandr.ru
  */
 import DN from '../DN';
+import errors from './errors';
 
 function JaCarta2() {
 
 	var client, tokenId;
+	// const debug = process.env.NODE_ENV === 'development';	
 
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
@@ -38,7 +40,7 @@ function JaCarta2() {
 					});
 					client.getJCWebClientVersion({
 						onSuccess: resolve,
-						onError: reject
+						onError: errorHandler(reject)
 					});
 				}
 				else {
@@ -52,7 +54,7 @@ function JaCarta2() {
 			return new Promise((resolve, reject) => {
 				client.getAllSlots({
 					onSuccess: resolve,
-					onError: reject
+					onError: errorHandler(reject)
 				});
 			});
 		}).then(slots => {
@@ -79,7 +81,7 @@ function JaCarta2() {
 				client.getTokenInfo({
 					args: { tokenID: tokenID },
 					onSuccess: resolve,
-					onError: reject
+					onError: errorHandler(reject)
 				});
 			});
 		}).then(info => {
@@ -96,7 +98,7 @@ function JaCarta2() {
 		return new Promise((resolve, reject) => {
 			client.getLoggedInState({
 				onSuccess: resolve,
-				onError: reject
+				onError: errorHandler(reject)
 			});
 		}).then(result => {
 			if(result.state === JCWebClient2.Vars.AuthState.binded && result.tokenID === tokenId) {
@@ -114,7 +116,7 @@ function JaCarta2() {
 					client.bindToken({
 						args: args,
 						onSuccess: resolve,
-						onError: reject
+						onError: errorHandler(reject)
 					});
 				});
 			}
@@ -129,14 +131,14 @@ function JaCarta2() {
 		return new Promise((resolve, reject) => {
 			client.getLoggedInState({
 				onSuccess: resolve,
-				onError: reject
+				onError: errorHandler(reject)
 			});
 		}).then(result => {
 			if(result.state !== JCWebClient2.Vars.AuthState.notBinded) {
 				return new Promise((resolve, reject) => {
 					client.unbindToken({
 						onSuccess: resolve,
-						onError: reject
+						onError: errorHandler(reject)
 					});
 				});	
 			}
@@ -157,7 +159,7 @@ function JaCarta2() {
 					tokenID: this.tokenId
 				},
 				onSuccess: resolve,
-				onError: reject
+				onError: errorHandler(reject)
 			});
 		}).then(containers => {
 			var promises = [];
@@ -169,7 +171,7 @@ function JaCarta2() {
 							contID: contId
 						},
 						onSuccess: resolve,
-						onError: reject
+						onError: errorHandler(reject)
 					});
 				}));
 			}
@@ -205,22 +207,22 @@ function JaCarta2() {
 			client.createKeyPair({
 				args: {
 					paramSet: paramSet,
-      				description: description
+					description: description
 				},
 				onSuccess: resolve,
-				onError: reject
+				onError: errorHandler(reject)
 			});
 		}).then(keyPairId => {
 			id = keyPairId;
 			return new Promise((resolve, reject) => {
 				client.genCSR({
 					args: {
-						id: containerId,
+						id: id,
       					dn: dn,
       					exts: exts
 					},
 					onSuccess: resolve,
-					onError: reject
+					onError: errorHandler(reject)
 				});
 			});
 		}).then(a => {
@@ -247,7 +249,7 @@ function JaCarta2() {
 					cert: certificate
 				},
 				onSuccess: resolve,
-				onError: reject
+				onError: errorHandler(reject)
 			});
 		});
 	};
@@ -265,7 +267,7 @@ function JaCarta2() {
 					id: containerId
 				},
 				onSuccess: resolve,
-				onError: reject
+				onError: errorHandler(reject)
 			});
 		}).then(o => {
 			var dn = new DN;
@@ -322,7 +324,7 @@ function JaCarta2() {
 					tokenID: this.tokenId
 				},
 				onSuccess: resolve,
-				onError: reject
+				onError: errorHandler(reject)
 			});
 		}).then(a => {
 			var promises = [];
@@ -337,7 +339,7 @@ function JaCarta2() {
 								id: contId
 							},
 							onSuccess: resolve,
-							onError: reject
+							onError: errorHandler(reject)
 						});
 					}).then(o => {
 						return {
@@ -364,7 +366,7 @@ function JaCarta2() {
 					tokenID: this.tokenId
 				},
 				onSuccess: resolve,
-				onError: reject
+				onError: errorHandler(reject)
 			});
 		}).then(a => {
 			if(a && a.length) {
@@ -392,12 +394,23 @@ function JaCarta2() {
 					data: dataBase64
 				},
 				onSuccess: resolve,
-				onError: reject
+				onError: errorHandler(reject)
 			});
 		}).then(sign => {
 			return sign;
 		});
 	};
+
+	function errorHandler(reject)
+	{
+		return function(e) {
+			if(client && e.name === 'JCWebClientError' && errors[e.message]) {
+				// подменяем сообщение на более понятное
+				e.message = errors[e.message];
+			}
+			reject(e);
+		}
+	}
 
 	/**
 	 * Получить название сертификата
