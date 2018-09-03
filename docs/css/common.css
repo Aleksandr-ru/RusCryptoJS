@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:300,400,600&subset=cyrillic,cyrillic-ext');
+
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+.column {
+    margin-top: 25%;
+}
+.container > h1 {
+    margin-top: 5%;
+}
+h1 a {
+    font-size: 2rem;
+    color: #999;
+    letter-spacing: normal;
+    text-decoration: none;
+}
+textarea {
+    height: 400px;
+}
