@@ -18,12 +18,6 @@ function JaCarta2() {
 	this.init = function() {
 		var final = {};
 		return new Promise((resolve, reject) => {
-			if(typeof(Uint8Array) != 'function') {
-				throw new Error('Upgrade your browser to something supports Uint8Array!');
-			}
-			else if(!window.btoa || !window.atob) {
-				throw new Error('Upgrade your browser to something supports native base64 encoding!');
-			}
 			if (typeof(JCWebClient2) !== 'undefined') {
 				resolve();
 			}
@@ -59,7 +53,7 @@ function JaCarta2() {
 			});
 		}).then(slots => {
 			return new Promise((resolve, reject) => {
-				console.log('Got %d slots', slots.length);
+				// console.log('Got %d slots', slots.length, slots);
 				var aTokens = slots.filter(a => {
 					return a.tokenExists;
 				});
@@ -79,7 +73,7 @@ function JaCarta2() {
 			this.tokenId = tokenID;
 			return new Promise((resolve, reject) => {
 				client.getTokenInfo({
-					args: { tokenID: tokenID },
+					args: { tokenID: this.tokenId },
 					onSuccess: resolve,
 					onError: errorHandler(reject)
 				});
@@ -165,10 +159,9 @@ function JaCarta2() {
 			var promises = [];
 			for(var i in containers) {
 				promises.push(new Promise((resolve, reject) => {
-					var contId = containers[i].id;
-					client.deleteContainer({
+					client.deletePKIObject({
 						args: {
-							contID: contId
+							id: containers[i].id
 						},
 						onSuccess: resolve,
 						onError: errorHandler(reject)
@@ -188,26 +181,31 @@ function JaCarta2() {
 	 * @returns {Promise<Object>} объект с полями { csr: 'base64 запрос на сертификат', keyPairId }
 	 * @see DN
 	 */
-	this.generateCSR = function(dn, description, ekuOids, paramSet){
+	this.generateCSR = function(dn, description, ekuOids, algorithm){
 		if(!ekuOids || !ekuOids.length) {
 			ekuOids = [
 				'1.3.6.1.5.5.7.3.2', // Аутентификация клиента
 				'1.3.6.1.5.5.7.3.4' // Защищенная электронная почта
 			];
 		}
-		if(!paramSet) paramSet = 'XA';
+		if(!algorithm) {
+			// algorithm = JCWebClient2.Vars.KeyAlgorithm.GOST_2001; //default 
+			algorithm = JCWebClient2.Vars.KeyAlgorithm.GOST_2012_256;
+		} 
 		var exts = {
 			'certificatePolicies': '1.2.643.100.113.1',
 			'keyUsage': 'digitalSignature,keyEncipherment,nonRepudiation,dataEncipherment',
 			'extendedKeyUsage': ekuOids.toString(),
 			'1.2.643.100.111': 'ASN1:FORMAT:UTF8,UTF8:"Криптотокен" (АЛАДДИН Р.Д.)'
 		};
+		var paramSet = 'XA';
 		var id;
 		return new Promise((resolve, reject) => {
 			client.createKeyPair({
 				args: {
 					paramSet: paramSet,
-					description: description
+					description: description,
+					algorithm: algorithm
 				},
 				onSuccess: resolve,
 				onError: errorHandler(reject)
@@ -319,7 +317,7 @@ function JaCarta2() {
 	 */
 	this.listCertificates = function() {
 		return new Promise((resolve, reject) => {
-			client.getStandaloneCertificateList({
+			client.getContainerList({
 				args: {
 					tokenID: this.tokenId
 				},
@@ -329,13 +327,14 @@ function JaCarta2() {
 		}).then(a => {
 			var promises = [];
 			for(var i=0; i<a.length; i++) {
-				var contId = a[i][0];
-				var contName = a[i][1];
+				const tokenId = this.tokenId;
+				var contId = a[i].id;
+				var contName = a[i].description;
 				(function(contId, contName) {
 					promises.push(new Promise((resolve, reject) => {
 						client.parseX509Certificate({
 							args: {
-								tokenID: this.tokenId,
+								tokenID: tokenId,
 								id: contId
 							},
 							onSuccess: resolve,

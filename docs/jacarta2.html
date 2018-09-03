@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="utf-8">
+        <meta name="author" content="aleksandr.ru">
+        <title>RusCryptoJS / JaCarta2</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/skeleton.css">
+        <link rel="stylesheet" href="css/common.css">
+    </head>
+    <body>
+        <div class="container">
+            <h1>
+                RusCryptoJS
+                <a href="http://aleksandr.ru">aleksandr.ru</a>
+            </h1>
+            
+            <div class="row">
+                <div class="four columns">
+                    <a class="button" href="cryptopro.html">Крипто-ПРО</a>
+                </div>
+                <div class="four columns">
+                    <a class="button" href="jacarta.html">JaCarta ГОСТ</a>
+                </div>
+                <div class="four columns">
+                    <a class="button button-primary" href="jacarta2.html">JaCarta-2 ГОСТ</a>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="container">
+            <h2>Function reference</h2>
+            <p>TODO! см. комментарии в коде</p>
+            
+            <h2>Выпуск сертификата</h2>
+            <form id="formCert">
+                <div class="row">
+                    <div class="two columns">
+                        <label>URL УЦ</label>
+                    </div>
+                    <div class="ten columns">
+                        <input class="u-full-width" type="text" id="caUrl" placeholder="http://localhost:8800" required>
+                        <p>
+                            На вход 
+                            <code>$_POST['csr']</code>
+                            base64
+                        </p>
+                        <p>
+                            На выход
+                            <code>JSON['cert']</code>
+                            base64
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="two columns">
+                        <label>Description</label>
+                    </div>
+                    <div class="ten columns">
+                        <input class="u-full-width" type="text" id="descr" placeholder="Описание контейнера" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="two columns">
+                        <label>DN</label>
+                    </div>
+                    <div class="ten columns">
+                        <textarea class="u-full-width" id="dn" required></textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="two columns">&nbsp;</div>
+                    <div class="ten columns">
+                        <button class="button-primary" type="submit">
+                            Выпустить сертификат
+                        </button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="two columns">
+                        <label>CSR</label>
+                    </div>
+                    <div class="ten columns">
+                        <textarea class="u-full-width" id="csr" readonly placeholder="Здесь будет отображен сгенерированный запрос на сертификат"></textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="two columns">
+                        <label>Certificate</label>
+                    </div>
+                    <div class="ten columns">
+                        <textarea class="u-full-width" id="cert" readonly placeholder="Здесь будет отображен сертификат, полученный от УЦ"></textarea>
+                    </div>
+                </div>
+            </form>
+            
+            <h2>Электронная подпись</h2>
+            <form id="formSign">
+                <div class="row">
+                    <div class="two columns">
+                        <label>Сертификат</label>
+                    </div>
+                    <div class="ten columns">
+                        <select class="u-full-width" id="certId" required>
+                            <option value="" selected disabled>Обновите список сертификатов</option>
+                        </select>
+                        <button class="button" id="refresh">
+                            Обновить список сертификатов
+                        </button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="two columns">
+                        <label>Cert Info</label>
+                    </div>
+                    <div class="ten columns">
+                        <textarea class="u-full-width" id="certInfo" readonly placeholder="Здесь будет отображена информация о выбранном сертификате"></textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="two columns">
+                        <label>Данные</label>
+                    </div>
+                    <div class="ten columns">
+                        <input class="u-full-width" type="text" id="data" placeholder="Строка для подписи" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="two columns">&nbsp;</div>
+                    <div class="ten columns">
+                        <button class="button-primary" type="submit">
+                            Подписать
+                        </button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="two columns">
+                        <label>Подпись</label>
+                    </div>
+                    <div class="ten columns">
+                        <textarea class="u-full-width" id="sign" readonly placeholder="Здесь будет отображена подпись"></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <script src="../dist/ruscrypto.min.js"></script>
+        <script src="js/common.js"></script>
+        <script src="js/jacarta2.js"></script>
+    </body>
+</html>

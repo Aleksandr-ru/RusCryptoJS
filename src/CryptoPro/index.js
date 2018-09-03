@@ -38,12 +38,6 @@ function CryptoPro() {
 		canAsync = !!cadesplugin.CreateObjectAsync;
 
 		return new Promise((resolve, reject) => {
-			if(typeof(Uint8Array) != 'function') {
-				throw new Error('Upgrade your browser to something supports Uint8Array!');
-			}
-			if(!window.btoa) {
-				throw new Error('Upgrade your browser to something supports native base64 encoding!');
-			}
 			if(!window.cadesplugin) {
 				throw new Error('КриптоПро ЭЦП Browser plug-in не обнаружен');
 			}
@@ -54,6 +48,8 @@ function CryptoPro() {
 					return cadesplugin.CreateObjectAsync("CAdESCOM.About");
 				}).then(function(oAbout){
 					return oAbout.Version;
+				}).then(function(version) {
+					return {version };
 				}).catch(function(e) {
 					// 'Плагин не загружен'
 					var err = getError(e);
@@ -65,7 +61,9 @@ function CryptoPro() {
 					try {
 						var oAbout = cadesplugin.CreateObject("CAdESCOM.About");
 						var CurrentPluginVersion = oAbout.Version;
-						resolve(CurrentPluginVersion);
+						resolve({
+							version: CurrentPluginVersion
+						});
 					}
 					catch(e) {
 						// 'Плагин не загружен'
@@ -546,7 +544,10 @@ function CryptoPro() {
 				var certs = [];
 				for(var i=0; i<subjects.length; i+=2) {
 					var s = parseSubject(subjects[i]);
-					certs.push([subjects[i+1], s.toString()]);
+					certs.push({
+						id: subjects[i+1], 
+						name: s.toString()
+					});
 				}
 				ret = certs;
 				return oStore.Close();
@@ -569,7 +570,10 @@ function CryptoPro() {
 					for(var i=1; i<=oCertificates.Count; i++) {
 						var oCertificate = oCertificates.Item(i);
 						var s = parseSubject(oCertificate.SubjectName);
-						certs.push([oCertificate.Thumbprint, s.toString()]);
+						certs.push({
+							id: oCertificate.Thumbprint, 
+							name: s.toString()
+						});
 					}
 					oStore.Close();
 					resolve(certs);

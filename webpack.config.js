@@ -13,7 +13,7 @@ module.exports = {
     },
     output: {
         path: __dirname,
-        filename: './dist/bundle.js',
+        filename: './dist/ruscrypto.min.js',
         library: libraryName,
         libraryTarget: 'umd',
         umdNamedDefine: true

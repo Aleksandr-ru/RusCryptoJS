@@ -15,60 +15,63 @@ function JaCarta() {
 	 * @returns {Promise<Object>} версия, информация о токене
 	 */
 	this.init = function(){
-		return new Promise(resolve => {
-			if(typeof(Uint8Array) != 'function') {
-				throw new Error('Upgrade your browser to something supports Uint8Array!');
+		return new Promise((resolve, reject) => {
+			if (typeof(JCWebClient) !== 'undefined') {
+				resolve();
 			}
-			else if(!window.btoa || !window.atob) {
-				throw new Error('Upgrade your browser to something supports native base64 encoding!');
+			else {
+				getScript('https://localhost:24738/JCWebClient.js', resolve, reject);
 			}
-			else try {
-				if(typeof JCWebClient != 'undefined') {
-					// Установлен клиент одной из версий JC-WebClient (2.x или новой) либо оба клиента
-					if(typeof JCWebClient.id == 'undefined') {
-						// Установлен клиент новой версии, работающей через локальный веб-сервер
-						client = JCWebClient();
-						client.initialize();
+		}).then(() => {
+			return new Promise(resolve => {
+				try {
+					if(typeof JCWebClient != 'undefined') {
+						// Установлен клиент одной из версий JC-WebClient (2.x или новой) либо оба клиента
+						if(typeof JCWebClient.id == 'undefined') {
+							// Установлен клиент новой версии, работающей через локальный веб-сервер
+							client = JCWebClient();
+							client.initialize();
+						}
+						else {
+							// Установлен клиент версии 2.x, работающей через NPAPI и ActiveX
+							throw new Error('JaCarta WebClient 2.x не поддерживается');
+						}
 					}
 					else {
-						// Установлен клиент версии 2.x, работающей через NPAPI и ActiveX
-						throw new Error('JaCarta WebClient 2.x не поддерживается');
+						//Не установлен клиент ни старой, ни новой версии JC-WebClient
+						throw new Error('Не установлен клиент ни старой, ни новой версии JC-WebClient');
 					}
-				}
-				else {
-					//Не установлен клиент ни старой, ни новой версии JC-WebClient
-					throw new Error('Не установлен клиент ни старой, ни новой версии JC-WebClient');
-				}
 
-				if(!client.checkWebBrowserVersion()) {
-					throw new Error('Браузер не поддерживается');
-				}
+					if(!client.checkWebBrowserVersion()) {
+						throw new Error('Браузер не поддерживается');
+					}
 
-				var aTokens = client.getAllTokens();
-				if(aTokens && aTokens.length == 1) {
-					// OK 1 токен
-					tokenId = aTokens.shift();				
+					var aTokens = client.getAllTokens();
+					if(aTokens && aTokens.length == 1) {
+						// OK 1 токен
+						tokenId = aTokens.shift();				
+					}
+					else if(aTokens && aTokens.length > 1) {
+						throw new Error('Подключено ' + aTokens.length + ' токена(ов)');
+					}
+					else {
+						throw new Error('Нет подключенных токенов');
+					}
+					var version = client.getPluginVersion();
+					var tokenInfo = client.getTokenInfo(tokenId);
+					resolve({
+						version,
+						serial: tokenInfo[0], // серийный номер электронного ключа.
+						flags: tokenInfo[1],  // флаги электронного ключа.
+						label: tokenInfo[2],  // метка электронного ключа.
+						type: tokenInfo[3]
+					});
 				}
-				else if(aTokens && aTokens.length > 1) {
-					throw new Error('Подключено ' + aTokens.length + ' токена(ов)');
+				catch(e) {
+					var err = getError();
+					throw new Error(e.message || err);
 				}
-				else {
-					throw new Error('Нет подключенных токенов');
-				}
-				var version = client.getPluginVersion();
-				var tokenInfo = client.getTokenInfo(tokenId);
-				resolve({
-					version,
-					serial: tokenInfo[0], // серийный номер электронного ключа.
-					flags: tokenInfo[1],  // флаги электронного ключа.
-					label: tokenInfo[2],  // метка электронного ключа.
-					type: tokenInfo[3]
-				});
-			}
-			catch(e) {
-				var err = getError();
-				throw new Error(e.message || err);
-			}
+			});
 		});
 	};
 
@@ -442,6 +445,52 @@ function JaCarta() {
 	function byte2hex(byte) {
 		//console.log('byte %d -> %s', byte, byte.toString(16));
 		return ('0' + byte.toString(16)).slice(-2);
+	}
+
+	/** 
+	 * Функция загрузки скрипта.
+	 * @param src - адрес расположения скрипта;
+	 * @param done - callback-функция, срабатывающая при успешной загрузки скрипта;
+	 * @param fail - callback-функция, срабатывающая при неудачной загрузки скрипта.
+	*/
+	function getScript(src, done, fail) {
+		var parent = document.getElementsByTagName('body')[0];
+
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.src = src;
+
+		if (script.readyState) {  // IE
+			script.onreadystatechange = function () {
+				if (script.readyState === "loaded" || script.readyState === "complete") {
+					script.onreadystatechange = null;
+					// На некоторых браузерах мы попадаем сюда и в тех случаях когда скрипт не загружен,
+					// поэтому дополнительно проверяем валидность JCWebClient
+					if (typeof (JCWebClient) === 'undefined') {
+						onFail("JCWebClient is invalid");
+					}
+					else {
+						done();
+					}
+				}
+				else if (script.readyState !== "loading") {
+					onFail("JCWebClient hasn't been loaded");
+				}
+			}
+		}
+		else {  // Others
+			script.onload = done;
+			script.onerror = function() {
+				onFail("JCWebClient hasn't been loaded");
+			};
+		}
+
+		parent.appendChild(script);
+
+		function onFail(errorMsg) {
+			parent.removeChild(script);
+			fail(errorMsg);
+		}
 	}
 }
 

@@ -1,12 +1,12 @@
 {
   "name": "ruscryptojs",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Simplified library for Russian GOST crypto providres.",
-  "main": "dist/bundle.js",
+  "main": "dist/ruscrypto.min.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode=production",
-    "dev": "webpack-dev-server --mode=development"
+    "dev": "webpack-dev-server --hot --mode=development"
   },
   "repository": {
     "type": "git",
