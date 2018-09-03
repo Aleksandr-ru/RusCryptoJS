@@ -1,7 +1,8 @@
 'use strict';
 
 var webpack = require('webpack');
-// var path = require('path');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
+var path = require('path');
 var libraryName = 'RusCryptoJS';
 
 module.exports = {
@@ -29,7 +30,11 @@ module.exports = {
         }],
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin()
+        new webpack.HotModuleReplacementPlugin(),
+        new CopyWebpackPlugin([{
+            'from': './dist/ruscrypto.min.js',
+            'to': path.resolve('./docs/js')
+        }])
     ],
     devtool: "source-map",
     devServer: {
