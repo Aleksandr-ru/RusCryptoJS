@@ -177,7 +177,7 @@ function JaCarta2() {
 	 * @param {DN} dn
 	 * @param {string} description описание контейнера
 	 * @param {array} ekuOids массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
-	 * @param {string} ecParams параметры эллиптической кривой ключевой пары. Может принимать значения A, B, C, XA, XB.
+	 * @param {string} algorithm Алгоритм "GOST-2012-256" (по-умолчанию) или "GOST-2001".
 	 * @returns {Promise<Object>} объект с полями { csr: 'base64 запрос на сертификат', keyPairId }
 	 * @see DN
 	 */
@@ -189,8 +189,8 @@ function JaCarta2() {
 			];
 		}
 		if(!algorithm) {
-			// algorithm = JCWebClient2.Vars.KeyAlgorithm.GOST_2001; //default 
-			algorithm = JCWebClient2.Vars.KeyAlgorithm.GOST_2012_256;
+			// algorithm = JCWebClient2.Vars.KeyAlgorithm.GOST_2001; //default "GOST-2001"
+			algorithm = JCWebClient2.Vars.KeyAlgorithm.GOST_2012_256; // "GOST-2012-256"
 		} 
 		var exts = {
 			'certificatePolicies': '1.2.643.100.113.1',
