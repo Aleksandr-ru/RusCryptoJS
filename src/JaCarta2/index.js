@@ -236,7 +236,7 @@ function JaCarta2() {
 	/**
 	 * Записать сертификат в контейнер
 	 * @param {string} certificate base64(массив байт со значением сертификата в формате DER)
-	 * @param {int} идентификатор контейнера куда записывать
+	 * @param {int} keyPairId идентификатор контейнера куда записывать
 	 * @returns {Promise<number>} идентификатор образованного контейнера.
 	 */
 	this.writeCertificate = function(certificate, keyPairId) {
