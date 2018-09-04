@@ -302,7 +302,7 @@ function JaCarta() {
 
 	/**
 	 * Получение массива доступных сертификатов
-	 * @returns {Promise<Array>} [[id, subject], ...]
+	 * @returns {Promise<Array>} [{id, subject}, ...]
 	 */
 	this.listCertificates = function(){
 		return new Promise(resolve => {

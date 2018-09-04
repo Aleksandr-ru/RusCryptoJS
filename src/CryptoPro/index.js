@@ -29,7 +29,7 @@ function CryptoPro() {
 
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
-	 * @returns {Promise<string>} версия
+	 * @returns {Promise<Object>} версия
 	 */
 	this.init = function(){
 		window.cadesplugin_skip_extension_install = true; // считаем что уже все установлено

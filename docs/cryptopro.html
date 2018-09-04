@@ -48,17 +48,22 @@
 
             <h5 id="init">
                 <span class="function">init</span> () : 
-                <span class="type">Promise&lt;String&gt;</span>
+                <span class="type">Promise&lt;Object&gt;</span>
             </h5>
             <p>Инициализация и проверка наличия требуемых возможностей. Должна быть вызвана первой до всех прочих вызовов.</p>
-            <p><b class="returns">Возвращает</b> версию плагина.</p>
+            <p>
+                <b class="returns">Возвращает</b> объект с полями:
+                <pre><code>{
+    version: 'версия плагина'
+}</code></pre>
+            </p>
 
             <h5 id="generateCSR">
                 <span class="function">generateCSR</span>
                 ( 
-                    dn : <span class="type">DN</span>, 
+                    dn : <span class="type">DN</span>
                     <span class="optional"> 
-                        [ pin : <span class="type">String</span>
+                        [, pin : <span class="type">String</span>
                         [, ekuOids : <span class="type">Array</span> 
                         [, providerType : <span class="type">Number</span> ]]]
                     </span> 
@@ -134,7 +139,7 @@
                 <span class="function">certificateInfo</span>
                 ( 
                     certThumbprint : <span class="type">String</span>
-                ) : <span class="type">Promise&lt;String&gt;</span>
+                ) : <span class="type">Promise&lt;Object&gt;</span>
             </h5>
             <p>Получение информации об установленном сертификате.</p>
             <table class="u-full-width">
@@ -167,7 +172,7 @@
 
             <h5 id="listCertificates">
                 <span class="function">listCertificates</span> () : 
-                <span class="type">Promise&lt;String&gt;</span>
+                <span class="type">Promise&lt;Array&gt;</span>
             </h5>
             <p>Получение списка доступных сертификатов.</p>
             <p>
