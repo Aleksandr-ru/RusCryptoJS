@@ -18,3 +18,19 @@ h1 a {
 textarea {
     height: 400px;
 }
+
+h2, h5 {
+    margin-top: 50px;
+}
+.function {
+    font-size: 105%;
+}
+.type {
+    color: gray;
+}
+.returns {
+    color: gray;
+}
+.optional {
+    font-size: 90%;
+}

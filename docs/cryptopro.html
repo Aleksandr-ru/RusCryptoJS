@@ -33,7 +33,325 @@
 
         <div class="container">
             <h2>Function reference</h2>
-            <p>TODO! см. комментарии в коде</p>
+            <ul>
+                <li><a href="#init">init</a></li>
+                <li><a href="#generateCSR">generateCSR</a></li>
+                <li><a href="#writeCertificate">writeCertificate</a></li>
+                <li><a href="#certificateInfo">certificateInfo</a></li>
+                <li><a href="#listCertificates">listCertificates</a></li>
+                <li><a href="#readCertificate">readCertificate</a></li>
+                <li><a href="#signData">signData</a></li>
+                <li><a href="#signData2">signData2</a></li>
+                <li><a href="#addSign">addSign</a></li>
+                <li><a href="#verifySign">verifySign</a></li>
+            </ul>
+
+            <h5 id="init">
+                <span class="function">init</span> () : 
+                <span class="type">Promise&lt;String&gt;</span>
+            </h5>
+            <p>Инициализация и проверка наличия требуемых возможностей. Должна быть вызвана первой до всех прочих вызовов.</p>
+            <p><b class="returns">Возвращает</b> версию плагина.</p>
+
+            <h5 id="generateCSR">
+                <span class="function">generateCSR</span>
+                ( 
+                    dn : <span class="type">DN</span>, 
+                    <span class="optional"> 
+                        [ pin : <span class="type">String</span>
+                        [, ekuOids : <span class="type">Array</span> 
+                        [, providerType : <span class="type">Number</span> ]]]
+                    </span> 
+                ) : <span class="type">Promise&lt;Object&gt;</span>
+            </h5>
+            <p>Создание запроса на сертификат.</p>
+            <table class="u-full-width">
+                <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>dn</td>
+                        <td>Объект DN с полями запроса на сертификат (см. пример в коде).</td>
+                    </tr>
+                    <tr>
+                        <td>pin</td>
+                        <td>
+                            Пин-код создаваемого контейнера закрытого ключа, если отсутствует, будет запрошен через GUI.<br>
+                            Задание пин не поддерживается в синхронном режиме (IE).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>ekuOids</td>
+                        <td>
+                            Массив расширений использования ключа, по умолчанию:
+                            <pre><code>'1.3.6.1.5.5.7.3.2', // Аутентификация клиента
+'1.3.6.1.5.5.7.3.4' // Защищенная электронная почта</code></pre>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>providerType</td>
+                        <td>По умолчанию <code>80</code> (ГОСТ Р 34.10-2012) или <code>75</code> (ГОСТ Р 34.10-2001)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <b class="returns">Возвращает</b> объект с полями 
+                <pre><code>{
+    csr: 'base64 запрос на сертификат' 
+}</code></pre>
+            </p>
+
+            <h5 id="writeCertificate">
+                <span class="function">writeCertificate</span>
+                ( 
+                    certBase64 : <span class="type">String</span>
+                ) : <span class="type">Promise&lt;String&gt;</span>
+            </h5>
+            <p>Запись сертификата (полученного от УЦ).</p>
+            <table class="u-full-width">
+                <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>certBase64</td>
+                        <td>Сертификат, закодированный в base64.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <b class="returns">Возвращает</b> отпечаток (thumbprint) установленного сертификата.
+            </p>
+
+            <h5 id="certificateInfo">
+                <span class="function">certificateInfo</span>
+                ( 
+                    certThumbprint : <span class="type">String</span>
+                ) : <span class="type">Promise&lt;String&gt;</span>
+            </h5>
+            <p>Получение информации об установленном сертификате.</p>
+            <table class="u-full-width">
+                <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>certThumbprint</td>
+                        <td>Отпечаток сертификата.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <b class="returns">Возвращает</b> объект с полями и строковым представлением:
+                <pre><code>'Название:              ' + this.Name +
+'Издатель:              ' + this.IssuerName +
+'Субъект:               ' + this.SubjectName +
+'Версия:                ' + this.Version +
+'Серийный №:            ' + this.SerialNumber +
+'Отпечаток SHA1:        ' + this.Thumbprint +
+'Не дествителен до:     ' + this.ValidFromDate +
+'Не действителен после: ' + this.ValidToDate +
+'Приватный ключ:        ' + (this.HasPrivateKey ? 'Есть' : 'Нет') +
+'Валидный:              ' + (this.IsValid ? 'Да' : 'Нет')</code></pre>
+            </p>
+
+            <h5 id="listCertificates">
+                <span class="function">listCertificates</span> () : 
+                <span class="type">Promise&lt;String&gt;</span>
+            </h5>
+            <p>Получение списка доступных сертификатов.</p>
+            <p>
+                <b class="returns">Возвращает</b> массив объектов с полями:
+                <pre><code>[{
+    id: 'thumbprint', 
+    name: 'subject'
+}, ...]</code></pre>
+            </p>
+
+            <h5 id="readCertificate">
+                <span class="function">readCertificate</span> 
+                (
+                    certThumbprint : <span class="type">String</span>
+                ) : <span class="type">Promise&lt;String&gt;</span>
+            </h5>
+            <p>Чтение (экспорт) сертификата.</p>
+            <table class="u-full-width">
+                <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>certThumbprint</td>
+                        <td>Отпечаток сертификата.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <b class="returns">Возвращает</b> base64 закодированное тело сертификата.
+            </p>
+
+            <h5 id="signData">
+                <span class="function">signData</span> 
+                (
+                    dataBase64 : <span class="type">String</span>,
+                    certThumbprint : <span class="type">String</span>
+                    <span class="optional">[, pin : <span class="type">String</span>]</span>
+                ) : <span class="type">Promise&lt;String&gt;</span>
+            </h5>
+            <p>Подпись данных (отсоединенная).</p>
+            <table class="u-full-width">
+                <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>dataBase64</td>
+                        <td>Данные для подписи.</td>
+                    </tr>
+                    <tr>
+                        <td>certThumbprint</td>
+                        <td>Отпечаток сертификата.</td>
+                    </tr>
+                    <tr>
+                        <td>pin</td>
+                        <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <b class="returns">Возвращает</b> base64 закодированную подпись.
+            </p>
+
+            <h5 id="signData2">
+                <span class="function">signData2</span> 
+                (
+                    dataBase64 : <span class="type">String</span>,
+                    certThumbprint : <span class="type">String</span>,
+                    pin : <span class="type">String</span>,
+                    certThumbprint2 : <span class="type">String</span>,
+                    pin2 : <span class="type">String</span>
+                ) : <span class="type">Promise&lt;String&gt;</span>
+            </h5>
+            <p>Совместная подпись данных (двумя сертификатами).</p>
+            <table class="u-full-width">
+                <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>dataBase64</td>
+                        <td>Данные для подписи.</td>
+                    </tr>
+                    <tr>
+                        <td>certThumbprint</td>
+                        <td>Отпечаток сертификата.</td>
+                    </tr>
+                    <tr>
+                        <td>pin</td>
+                        <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
+                    </tr>
+                    <tr>
+                        <td>certThumbprint2</td>
+                        <td>Отпечаток сертификата.</td>
+                    </tr>
+                    <tr>
+                        <td>pin2</td>
+                        <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <b class="returns">Возвращает</b> base64 закодированную подпись.
+            </p>
+
+            <h5 id="addSign">
+                <span class="function">addSign</span> 
+                (
+                    dataBase64 : <span class="type">String</span>,
+                    signBase64 : <span class="type">String</span>,
+                    certThumbprint : <span class="type">String</span>
+                    <span class="optional">[, pin : <span class="type">String</span>]</span>
+                ) : <span class="type">Promise&lt;String&gt;</span>
+            </h5>
+            <p>Добавление подписи к существующей.</p>
+            <table class="u-full-width">
+                <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>dataBase64</td>
+                        <td>Данные для подписи.</td>
+                    </tr>
+                    <tr>
+                        <td>signBase64</td>
+                        <td>Существующая подпись.</td>
+                    </tr>
+                    <tr>
+                        <td>certThumbprint</td>
+                        <td>Отпечаток сертификата.</td>
+                    </tr>
+                    <tr>
+                        <td>pin</td>
+                        <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <b class="returns">Возвращает</b> base64 закодированную подпись.
+            </p>
+
+            <h5 id="verifySign">
+                <span class="function">verifySign</span> 
+                (
+                    dataBase64 : <span class="type">String</span>,
+                    signBase64 : <span class="type">String</span>
+                ) : <span class="type">Promise&lt;Boolean&gt;</span>
+            </h5>
+            <p>Проверка подписи.</p>
+            <table class="u-full-width">
+                <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>dataBase64</td>
+                        <td>Данные для подписи.</td>
+                    </tr>
+                    <tr>
+                        <td>signBase64</td>
+                        <td>Существующая подпись.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <b class="returns">Возвращает</b> истину <code>true</code> или выбрасывает ошибку в случае неуспешной проверки.
+            </p>
             
             <h2>Выпуск сертификата</h2>
             <form id="formCert">

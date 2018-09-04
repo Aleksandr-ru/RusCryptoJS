@@ -1,8 +1,8 @@
-# RusCryptoJS
+# [RusCryptoJS](https://aleksandr-ru.github.io/RusCryptoJS/)
 JS для Российской криптографии (ГОСТ).
 
 ### Общие требования
-- ES2015
+- Окружение с поддержкой ES2015
 
 ## Крипто-ПРО
 Для работы с Крипто-ПРО 4.x и Browser Plugin 2.x (cades plugin)

@@ -13,7 +13,8 @@ import {
 	X500NameFlags, 
 	EncodingType, 
 	InstallResponseRestrictionFlags, 
-	ProviderTypes, cadesErrorMesages 
+	ProviderTypes, 
+	cadesErrorMesages 
 } from './constants';
 
 function CryptoPro() {
@@ -514,7 +515,7 @@ function CryptoPro() {
 
 	/**
 	 * Получение массива доступных сертификатов
-	 * @returns {Promise<Array>} [[thumbprint, subject], ...]
+	 * @returns {Promise<Array>} [ {id: thumbprint, name: subject}, ...]
 	 */
 	this.listCertificates = function(){
 		if(canAsync) {
