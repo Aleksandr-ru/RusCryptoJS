@@ -49,7 +49,9 @@ module.exports = (env, argv) => {
         plugins: plugins,
         devtool: "source-map",
         devServer: {
-            hot: true
+            hot: true,
+            publicPath: "/js/",
+            contentBase: "./docs",
         }
     }
 };
