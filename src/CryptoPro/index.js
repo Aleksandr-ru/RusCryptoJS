@@ -693,6 +693,7 @@ function CryptoPro() {
 				var promises = [
 					oSigner.propset_Certificate(oCertificate),
 					oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN)
+					//TODO: CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY чтоб не проверять цепочку сертификатов
 				];
 				if(pin) {
 					promises.push(oSigner.propset_KeyPin(pin));
