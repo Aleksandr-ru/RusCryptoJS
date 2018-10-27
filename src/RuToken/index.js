@@ -134,12 +134,35 @@ function RuToken() {
 	};
 
 	/**
-	 * Очистка токена (удаление всех контейнеров)
-	 * @returns {Promise<number>} количество удаленных контейнеров
+	 * Очистка токена (удаление всех сертификатов и ключей)
+	 * @returns {Promise<number>} количество удаленных элементов
 	 */
 	this.clean = function(){
-		return new Promise(resolve => {
-			throw new Error('Not implemented yet :(');
+		let count = 0;
+		return plugin.enumerateCertificates(deviceId, plugin.CERT_CATEGORY_USER).then(results => {
+			let promises = [];
+			for (let i in results) {
+				const certId = results[i];
+				promises.push(plugin.deleteCertificate(deviceId, certId));
+			}
+			count += promises.length;
+			return Promise.all(promises);
+		}).then(() => {
+			const marker = ''; // Идентификатор группы ключей, "" - все ключи
+			return plugin.enumerateKeys(deviceId, marker);
+		}).then(results => {
+			let promises = [];
+			for (let i in results) {
+				const keyId = results[i];
+				promises.push(plugin.deleteKeyPair(deviceId, keyId));
+			}
+			count += promises.length;
+			return Promise.all(promises);
+		}).then(() => {
+			return count;
+		}).catch(e => {
+			const err = getError(e);
+			throw new Error(err);
 		});
 	};
 
