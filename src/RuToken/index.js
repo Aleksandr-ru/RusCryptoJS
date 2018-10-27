@@ -169,45 +169,102 @@ function RuToken() {
 	/**
 	 * Создать запрос на сертификат
 	 * @param {DN} dn
-	 * @param {string} description описание контейнера
+	 * @param {string} marker Идентификатор группы ключей
 	 * @param {array} ekuOids массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
-	 * @param {string} ecParams параметры эллиптической кривой ключевой пары. Может принимать значения A, B, C, XA, XB.
+	 * @param {string} algorithm Алгоритм "PUBLIC_KEY_ALGORITHM_GOST3410_2012_256" (по-умолчанию) или "PUBLIC_KEY_ALGORITHM_GOST3410_2001".
 	 * @returns {Promise<Object>} объект с полями { csr: 'base64 запрос на сертификат', containerId }
 	 * @see DN
 	 */
-	this.generateCSR = function(dn, description, ekuOids, ecParams){
-		if(!ekuOids || !ekuOids.length) {
+	this.generateCSR = function(dn, marker, ekuOids, algorithm){
+		let keyId = '';
+		if (!marker) {
+			marker = '';
+		}
+		if (!ekuOids || !ekuOids.length) {
 			ekuOids = [
 				'1.3.6.1.5.5.7.3.2', // Аутентификация клиента
 				'1.3.6.1.5.5.7.3.4' // Защищенная электронная почта
 			];
 		}
-		if(!ecParams) ecParams = 'XA';
-		return new Promise(resolve => {
-			throw new Error('Not implemented yet :(');
+		if (!algorithm) {
+			algorithm = plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_256;
+		}
+		let paramset = 'XA';
+		if (algorithm === plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_512) {
+			paramset = 'A';
+		}
+		const reserved = undefined;
+		const options = {
+			publicKeyAlgorithm: algorithm,
+			paramset: paramset
+		};
+		return plugin.generateKeyPair(deviceId, reserved, marker, options).then(result => {
+			keyId = result;
+			let subject = [];
+			for (let i in dn) {
+				subject.push({
+					rdn: i,
+					value: dn[i]
+				});
+			}
+			const keyUsageVal = [
+				"digitalSignature"
+				,"nonRepudiation"
+				,"keyEncipherment"
+				,"dataEncipherment"
+			];
+			const extensions = {
+				keyUsage: keyUsageVal,
+				extKeyUsage: ekuOids
+			};
+			const options = {
+				subjectSignTool: 'СКЗИ "РУТОКЕН ЭЦП"',
+				hashAlgorithm: algorithm
+			};
+			return plugin.createPkcs10(deviceId, keyId, subject, extensions, options);
+		}).then(result => {
+			return {
+				csr: result,
+				keyPairId: keyId
+			};
+		}).catch(e => {
+			const err = getError(e);
+			throw new Error(err);
 		});
 	};
 
 	/**
-	 * Записать сертификат в контейнер
+	 * Записать сертификат на токен
 	 * @param {string} certificate base64(массив байт со значением сертификата в формате DER)
-	 * @param {int} идентификатор контейнера куда записывать
 	 * @returns {Promise}
 	 */
-	this.writeCertificate = function(certificate, containerId){
-		return new Promise(resolve => {
-			throw new Error('Not implemented yet :(');
+	this.writeCertificate = function(certificate){
+		const category = plugin.CERT_CATEGORY_USER;
+		return plugin.importCertificate(deviceId, certificate, category).catch(e => {
+			const err = getError(e);
+			throw new Error(err);
 		});
 	};
 
 	/**
 	 * Получение информации о сертификате.
-	 * @param {int} containerId идентификатор контейнера (сертификата)
+	 * @param {int} certId идентификатор сертификата
 	 * @returns {Promise<Object>}
 	 */
 	this.certificateInfo = function(certId){
+		let hasPrivateKey = false;
 		let serialNumber = '';
-		return plugin.getCertificateInfo(deviceId, certId, plugin.CERT_INFO_SERIAL_NUMBER).then(result => {
+		return new Promise(resolve => {
+			plugin.getKeyByCertificate(deviceId, certId).then(keyId => {
+				resolve(!!keyId);
+			}).catch(e => {
+				console.log('getKeyByCertificate', certId, e);
+				resolve(false);
+			});
+		}).then(result => {
+			hasPrivateKey = result;
+			return plugin.getCertificateInfo(deviceId, certId, plugin.CERT_INFO_SERIAL_NUMBER);
+		}).then(result => {
 			serialNumber = result;
 			return plugin.parseCertificate(deviceId, certId);
 		}).then(o => {
@@ -237,7 +294,7 @@ function RuToken() {
 				Thumbprint: certId,
 				ValidFromDate: new Date(o.validNotBefore),
 				ValidToDate: new Date(o.validNotAfter),
-				HasPrivateKey: true, //TODO: getKeyByCertificate ?
+				HasPrivateKey: hasPrivateKey,
 				IsValid: dt >= new Date(o.validNotBefore) && dt <= new Date(o.validNotAfter),
 				toString: function(){
 					return 'Название:              ' + this.Name +

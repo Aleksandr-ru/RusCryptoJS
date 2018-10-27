@@ -43,7 +43,7 @@ function loadCerts() {
         }
     });
 }
-/*
+
 function requestCertificate() {
     inputCsr.value = inputCert.value = '';
     try {
@@ -54,20 +54,17 @@ function requestCertificate() {
         alert(e.message || e);
     }
     var dn = Object.assign(new window.RusCryptoJS.DN, oDn);
-    var jacarta = new window.RusCryptoJS.JaCarta;
-    var containerId;
-    return jacarta.init().then(info => {
+    var rutoken = new window.RusCryptoJS.RuToken;
+    return rutoken.init().then(info => {
         console.log('Initialized', info);
-        return jacarta.bind();
+        return rutoken.bind();
     }).then(_ => { 
-        return jacarta.generateCSR(dn, inputDescr.value);
+        return rutoken.generateCSR(dn, inputDescr.value);
     }).then(result => {
         console.log('generateCSR', result);
 
         const csr = result.csr;
         inputCsr.value = csr;
-        
-        containerId = result.containerId;
         
         const data = new FormData();
         data.append('csr', csr);
@@ -87,10 +84,10 @@ function requestCertificate() {
         console.log('JSON', json);
         const cert = json.cert;
         inputCert = cert;
-        return jacarta.writeCertificate(cert, containerId);
-    }).then(contId => {
-        console.log('writeCertificate', contId);
-        return jacarta.certificateInfo(contId);
+        return rutoken.writeCertificate(cert);
+    }).then(certId => {
+        console.log('writeCertificate', certId);
+        return rutoken.certificateInfo(certId);
     }).then(info => {
         console.log('Certificate info', info);
         alert('Success!');
@@ -98,10 +95,10 @@ function requestCertificate() {
     }).catch(e => {
         alert('Failed! ' + e);
     }).finally(() => {
-        jacarta.unbind();
+        rutoken.unbind();
     });
 }
-*/
+
 function signData() {
     inputSign.value = '';
     var rutoken = new window.RusCryptoJS.RuToken;
