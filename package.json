@@ -14,7 +14,8 @@
   },
   "keywords": [
     "jacarta",
-    "cryptopro"
+    "cryptopro",
+    "rutoken"
   ],
   "author": "Aleksandr.ru",
   "license": "ISC",
@@ -34,6 +35,7 @@
     "webpack-dev-server": "^3.1.5"
   },
   "dependencies": {
-    "babel-polyfill": "^6.26.0"
+    "babel-polyfill": "^6.26.0",
+    "rutoken": "^1.0.8"
   }
 }
