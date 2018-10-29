@@ -285,7 +285,7 @@ function JaCarta() {
 							'\nВерсия:                ' + this.Version +
 							'\nСерийный №:            ' + this.SerialNumber +
 							'\nОтпечаток SHA1:        ' + this.Thumbprint +
-							'\nНе дествителен до:     ' + this.ValidFromDate +
+							'\nНе действителен до:    ' + this.ValidFromDate +
 							'\nНе действителен после: ' + this.ValidToDate +
 							'\nПриватный ключ:        ' + (this.HasPrivateKey ? 'Есть' : 'Нет') +
 							'\nВалидный:              ' + (this.IsValid ? 'Да' : 'Нет');

@@ -10,9 +10,9 @@ var oDn = {
     '2.5.4.8': '77 г. Москва', //S tateOrProvinceName регион
     'C': 'RU',
     '1.2.840.113549.1.9.1': 'example@domain.ru',
-    '1.2.643.3.131.1.1': 'NUMERICSTRING:000000000076', //ИНН
-    '1.2.643.100.1': 'NUMERICSTRING:0000000000024',
-    '1.2.643.100.3': 'NUMERICSTRING:00000000052' // снилс
+    '1.2.643.3.131.1.1': '000000000076', //'NUMERICSTRING:000000000076', //ИНН
+    '1.2.643.100.1': '0000000000024', // 'NUMERICSTRING:0000000000024', // ОГРН
+    '1.2.643.100.3': '00000000052', // 'NUMERICSTRING:00000000052' // СНИЛС
 };
 var inputCaUrl = document.getElementById('caUrl');
 var inputDescr = document.getElementById('descr');

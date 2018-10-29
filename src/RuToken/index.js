@@ -32,7 +32,7 @@ function RuToken() {
 			if (result) {
 				return rutoken.loadPlugin();
 			} else {
-				throw "Rutoken Plugin wasn't found";
+				throw new Error("Rutoken Plugin wasn't found");
 			}
 		}).then(result => {
 			//Можно начинать работать с плагином
@@ -65,6 +65,9 @@ function RuToken() {
 				type: infos[4],
 				model: infos[3]
 			};
+		}).then(null, e => {
+			const err = getError(e);
+			throw new Error(err);
 		});
 	};
 
@@ -96,7 +99,7 @@ function RuToken() {
 				else {
 					return true;
 				}
-			}).catch(e => {
+			}).then(null, e => {
 				const err = getError(e);
 				throw new Error(err);
 			});
@@ -110,7 +113,7 @@ function RuToken() {
 	this.unbind = function() {
 		return new Promise(resolve => {
 			plugin.getDeviceInfo(deviceId, plugin.TOKEN_INFO_IS_LOGGED_IN).then(result => {
-				if(result) {
+				if(!result) {
 					resolve('Пользователь не авторизован');
 					return false; // no need to log out
 				}
@@ -126,7 +129,7 @@ function RuToken() {
 				else {
 					return true;
 				}
-			}).catch(e => {
+			}).then(null, e => {
 				const err = getError(e);
 				throw new Error(err);
 			});
@@ -160,7 +163,7 @@ function RuToken() {
 			return Promise.all(promises);
 		}).then(() => {
 			return count;
-		}).catch(e => {
+		}).then(null, e => {
 			const err = getError(e);
 			throw new Error(err);
 		});
@@ -182,26 +185,24 @@ function RuToken() {
 		}
 		if (!ekuOids || !ekuOids.length) {
 			ekuOids = [
-				'1.3.6.1.5.5.7.3.2', // Аутентификация клиента
-				'1.3.6.1.5.5.7.3.4' // Защищенная электронная почта
+				'clientAuth', // 1.3.6.1.5.5.7.3.2', // Аутентификация клиента
+				'emailProtection', // '1.3.6.1.5.5.7.3.4' // Защищенная электронная почта
 			];
 		}
-		if (!algorithm) {
-			algorithm = plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_256;
-		}
+		const publicKeyAlgorithm = algorithm && plugin[algorithm] || plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_256;
 		let paramset = 'XA';
-		if (algorithm === plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_512) {
+		if (publicKeyAlgorithm === plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_512) {
 			paramset = 'A';
 		}
 		const reserved = undefined;
 		const options = {
-			publicKeyAlgorithm: algorithm,
-			paramset: paramset
+			publicKeyAlgorithm,
+			paramset
 		};
 		return plugin.generateKeyPair(deviceId, reserved, marker, options).then(result => {
 			keyId = result;
 			let subject = [];
-			for (let i in dn) {
+			for (let i in dn) if(dn.hasOwnProperty(i)) {
 				subject.push({
 					rdn: i,
 					value: dn[i]
@@ -215,19 +216,25 @@ function RuToken() {
 			];
 			const extensions = {
 				keyUsage: keyUsageVal,
-				extKeyUsage: ekuOids
+				extKeyUsage: ekuOids/*,
+				certificatePolicies: [
+					"1.2.643.100.113.1" // КС1
+				]*/
 			};
 			const options = {
 				subjectSignTool: 'СКЗИ "РУТОКЕН ЭЦП"',
-				hashAlgorithm: algorithm
+				hashAlgorithm: plugin.HASH_TYPE_GOST3411_94
 			};
 			return plugin.createPkcs10(deviceId, keyId, subject, extensions, options);
 		}).then(result => {
 			return {
-				csr: result,
+				csr: cleanPemString(result),
 				keyPairId: keyId
 			};
-		}).catch(e => {
+		}).then(null, e => {
+			if(keyId) {
+				plugin.deleteKeyPair(deviceId, keyId);
+			}
 			const err = getError(e);
 			throw new Error(err);
 		});
@@ -240,7 +247,7 @@ function RuToken() {
 	 */
 	this.writeCertificate = function(certificate){
 		const category = plugin.CERT_CATEGORY_USER;
-		return plugin.importCertificate(deviceId, certificate, category).catch(e => {
+		return plugin.importCertificate(deviceId, certificate, category).then(null, e => {
 			const err = getError(e);
 			throw new Error(err);
 		});
@@ -257,7 +264,7 @@ function RuToken() {
 		return new Promise(resolve => {
 			plugin.getKeyByCertificate(deviceId, certId).then(keyId => {
 				resolve(!!keyId);
-			}).catch(e => {
+			}).then(null, e => {
 				console.log('getKeyByCertificate', certId, e);
 				resolve(false);
 			});
@@ -303,14 +310,14 @@ function RuToken() {
 						'\nВерсия:                ' + this.Version +
 						'\nСерийный №:            ' + this.SerialNumber +
 						'\nОтпечаток SHA1:        ' + this.Thumbprint +
-						'\nНе дествителен до:     ' + this.ValidFromDate +
+						'\nНе действителен до:    ' + this.ValidFromDate +
 						'\nНе действителен после: ' + this.ValidToDate +
 						'\nПриватный ключ:        ' + (this.HasPrivateKey ? 'Есть' : 'Нет') +
 						'\nВалидный:              ' + (this.IsValid ? 'Да' : 'Нет');
 				}
 			};
 			return info;
-		}).catch(e => {
+		}).then(null, e => {
 			const err = getError(e);
 			throw new Error(err);
 		});
@@ -338,7 +345,7 @@ function RuToken() {
 				});
 			}
 			return certs;
-		}).catch(e => {
+		}).then(null, e => {
 			const err = getError(e);
 			throw new Error(err);
 		});
@@ -351,8 +358,8 @@ function RuToken() {
 	 */
 	this.readCertificate = function(certId){
 		return plugin.getCertificate(deviceId, certId).then(result => {
-			return result.replace(/^-+(BEGIN CERTIFICATE|END CERTIFICATE)-+$/gm, '').replace(/\r?\n/g, '').trim();
-		}).catch(e => {
+			return cleanPemString(result);
+		}).then(null, e => {
 			const err = getError(e);
 			throw new Error(err);
 		});
@@ -365,9 +372,10 @@ function RuToken() {
 	 * @returns {Promise<string>} строка-подпись в формате PKCS#7, закодированная в Base64.
 	 */
 	this.signData = function(dataBase64, certId){
-		return plugin.sign(deviceId, certId, dataBase64, plugin.DATA_FORMAT_BASE64, [
-			{ detached: true }
-		]).catch(e => {
+		const detached = true;
+		return plugin.sign(deviceId, certId, dataBase64, plugin.DATA_FORMAT_BASE64, {
+			detached
+		}).then(null, e => {
 			const err = getError(e);
 			throw new Error(err);
 		});
@@ -381,10 +389,12 @@ function RuToken() {
 	 * @returns {Promise<string>} base64
 	 */
 	this.addSign = function(dataBase64, signBase64, certId){
-		return plugin.sign(deviceId, certId, dataBase64, plugin.DATA_FORMAT_BASE64, [
-			{ detached: true },
-			{ CMS: signBase64 }
-		]).catch(e => {
+		const detached = true;
+		const CMS = signBase64;
+		return plugin.sign(deviceId, certId, dataBase64, plugin.DATA_FORMAT_BASE64, {
+			detached,
+			CMS
+		}).then(null, e => {
 			const err = getError(e);
 			throw new Error(err);
 		});
@@ -397,16 +407,20 @@ function RuToken() {
 	 * @returns {Promise<boolean>} true или reject
 	 */
 	this.verifySign = function(dataBase64, signBase64){
-		return plugin.verify(deviceId, signBase64, [
-			{ data: dataBase64 },
-			{ base64: true }
-		]).then(result => {
+		const data = dataBase64;
+		const base64 = true;
+		const verifyCertificate = false;
+		return plugin.verify(deviceId, signBase64, {
+			data,
+			base64,
+			verifyCertificate
+		}).then(result => {
 			if (!result) {
 				// потмоу что в крипто-про тоже так
 				throw new Error('подпись не верна');
 			}
 			return true;
-		}).catch(e => {
+		}).then(null, e => {
 			const err = getError(e);
 			throw new Error(err);
 		});
@@ -418,9 +432,10 @@ function RuToken() {
 	 * @returns {string} текст ошибки
 	 */
 	function getError(e) {
+		const ee = e.message && e.message.match(/^[0-9]+$/) && e.message || e;
 		let mnemo = '';
 		if (plugin) for(let i in plugin.errorCodes) {
-			if (plugin.errorCodes[i] === e) {
+			if (plugin.errorCodes[i] == ee) {
 				mnemo = i;
 				break;
 			}
@@ -449,6 +464,15 @@ function RuToken() {
 			return '' + cn + (inn ?  '; ИНН ' + inn : '') + (snils ?  '; СНИЛС ' + snils : '') + (containerName ? ' (' + containerName + ')' : '');
 		};
 		return dn.toString();
+	}
+
+	/**
+	 * Убирает все лишнее из PEM, кроме непрерывного base64 
+	 * @param {String} pem 
+	 * @returns {String}
+	 */
+	function cleanPemString(pem) {
+		return pem.replace(/^-+(BEGIN|END)[^-]+-+$/gm, '').replace(/\r?\n/g, '').trim();
 	}
 }
 
