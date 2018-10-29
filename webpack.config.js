@@ -17,11 +17,17 @@ module.exports = (env, argv) => {
                 main: '../docs/js/' + filename
             })
         ];
+        var devServer = undefined;
     }
     else {
         var plugins = [
             new webpack.HotModuleReplacementPlugin()
         ];
+        var devServer = {
+            hot: true,
+            publicPath: "/js/",
+            contentBase: "./docs",
+        };
     }
     return {
         entry: {
@@ -48,10 +54,6 @@ module.exports = (env, argv) => {
         },
         plugins: plugins,
         devtool: "source-map",
-        devServer: {
-            hot: true,
-            publicPath: "/js/",
-            contentBase: "./docs",
-        }
+        devServer: devServer
     }
 };
