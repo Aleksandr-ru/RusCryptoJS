@@ -191,8 +191,13 @@ function RuToken() {
 		}
 		const publicKeyAlgorithm = algorithm && plugin[algorithm] || plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_256;
 		let paramset = 'XA';
+		let hashAlgorithm = plugin.HASH_TYPE_GOST3411_94;
 		if (publicKeyAlgorithm === plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_512) {
 			paramset = 'A';
+			hashAlgorithm = plugin.HASH_TYPE_GOST3411_12_512;
+		} 
+		else if (publicKeyAlgorithm === plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_256) {
+			hashAlgorithm = plugin.HASH_TYPE_GOST3411_12_256;
 		}
 		const reserved = undefined;
 		const options = {
@@ -218,9 +223,10 @@ function RuToken() {
 				keyUsage,
 				extKeyUsage
 			};
+			const subjectSignTool = 'СКЗИ "РУТОКЕН ЭЦП"';
 			const options = {
-				subjectSignTool: 'СКЗИ "РУТОКЕН ЭЦП"',
-				hashAlgorithm: plugin.HASH_TYPE_GOST3411_94
+				subjectSignTool,
+				hashAlgorithm
 			};
 			return plugin.createPkcs10(deviceId, keyId, subject, extensions, options);
 		}).then(result => {
