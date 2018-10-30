@@ -1,6 +1,6 @@
 {
   "name": "ruscryptojs",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Simplified library for Russian GOST crypto providres.",
   "main": "dist/ruscrypto.min.js",
   "scripts": {
@@ -22,7 +22,7 @@
   "bugs": {
     "url": "https://github.com/Aleksandr-ru/RusCryptoJS/issues"
   },
-  "homepage": "https://github.com/Aleksandr-ru/RusCryptoJS#readme",
+  "homepage": "https://aleksandr-ru.github.io/RusCryptoJS/",
   "devDependencies": {
     "@types/webpack-env": "^1.13.6",
     "babel-core": "^6.26.3",

@@ -173,18 +173,18 @@ function RuToken() {
 	 * Создать запрос на сертификат
 	 * @param {DN} dn
 	 * @param {string} marker Идентификатор группы ключей
-	 * @param {array} ekuOids массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
+	 * @param {array} extKeyUsage массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
 	 * @param {string} algorithm Алгоритм "PUBLIC_KEY_ALGORITHM_GOST3410_2012_256" (по-умолчанию) или "PUBLIC_KEY_ALGORITHM_GOST3410_2001".
 	 * @returns {Promise<Object>} объект с полями { csr: 'base64 запрос на сертификат', containerId }
 	 * @see DN
 	 */
-	this.generateCSR = function(dn, marker, ekuOids, algorithm){
+	this.generateCSR = function(dn, marker, extKeyUsage, algorithm){
 		let keyId = '';
 		if (!marker) {
 			marker = '';
 		}
-		if (!ekuOids || !ekuOids.length) {
-			ekuOids = [
+		if (!extKeyUsage || !extKeyUsage.length) {
+			extKeyUsage = [
 				'clientAuth', // 1.3.6.1.5.5.7.3.2', // Аутентификация клиента
 				'emailProtection', // '1.3.6.1.5.5.7.3.4' // Защищенная электронная почта
 			];
@@ -208,18 +208,15 @@ function RuToken() {
 					value: dn[i]
 				});
 			}
-			const keyUsageVal = [
+			const keyUsage = [
 				"digitalSignature"
 				,"nonRepudiation"
 				,"keyEncipherment"
 				,"dataEncipherment"
 			];
 			const extensions = {
-				keyUsage: keyUsageVal,
-				extKeyUsage: ekuOids/*,
-				certificatePolicies: [
-					"1.2.643.100.113.1" // КС1
-				]*/
+				keyUsage,
+				extKeyUsage
 			};
 			const options = {
 				subjectSignTool: 'СКЗИ "РУТОКЕН ЭЦП"',
