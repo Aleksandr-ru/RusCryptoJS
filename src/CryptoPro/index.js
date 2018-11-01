@@ -77,6 +77,23 @@ function CryptoPro() {
 	};
 
 	/**
+	 * Заглушка для совместимости
+	 * @param {string} userPin не используется
+	 * @returns {Promise}
+	 */
+	this.bind = function(userPin) {
+		return Promise.resolve(true);
+	};
+
+	/**
+	 * Заглушка для совместимости
+	 * @returns {Promise}
+	 */
+	this.unbind = function() {
+		return Promise.resolve(true);
+	};
+
+	/**
 	 * Создание CSR.
 	 * @param {DN} dn
 	 * @param {string} pin
