@@ -31,7 +31,7 @@ module.exports = (env, argv) => {
     }
     return {
         entry: {
-            main: [ 'babel-polyfill', './src' ]
+            main: [ './src' ]
         },
         output: {
             path: path.resolve(__dirname, 'dist'),
@@ -48,8 +48,24 @@ module.exports = (env, argv) => {
         module: {
             rules: [{
                 test: /\.js$/, 
-                loaders: ['babel-loader'], 
-                exclude: /node_modules/
+                exclude: /node_modules/,
+                use: {
+                    loader: "babel-loader",
+					options: {
+						presets: [
+                            ["@babel/preset-env", {
+                                debug: false,
+                                useBuiltIns: "usage",
+                                targets: {
+                                    chrome: "60",
+                                    firefox: "52",
+                                    ie: "11",
+                                    safari: "10"
+                                }
+                            }]
+                        ]
+                    }
+                }
             }],
         },
         plugins: plugins,
