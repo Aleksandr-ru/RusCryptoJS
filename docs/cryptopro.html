@@ -35,10 +35,28 @@
         <hr>
 
         <div class="container">
+            <p><a href="#Использование">Использование</a></p>
             <p><a href="#Function_reference">Function reference</a></p>
             <p>Демо: <a href="#Выпуск_сертификата">Выпуск сертификата</a></p>
             <p>Демо: <a href="#Электронная_подпись">Электронная подпись</a></p>
             
+            <section id="Использование">
+                <h2>Использование</h2>
+                <pre><code>&lt;script src="ruscrypto.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+    var cryptopro = new window.RusCryptoJS.CryptoPro;
+    cryptopro.init().then(function(info) {
+        console.log('Initialized', info);
+    }
+&lt;/script&gt;</code></pre>
+                <h4>ES Module</h4>
+                <pre><code>import { CryptoPro } from 'ruscryptojs';
+const cryptopro = new CryptoPro;
+cryptopro.init().then(function(info) {
+    console.log('Initialized', info);
+}</code></pre>
+            </section>
+
             <section id="Function_reference">
                 <h2>Function reference</h2>
                 <ul>
