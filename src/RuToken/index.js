@@ -301,7 +301,7 @@ function RuToken() {
 				SubjectName: dn.toString(),
 				Version: version,
 				SerialNumber: serialNumber,
-				Thumbprint: certId,
+				Thumbprint: certId.replace(/\:/g, ''),
 				ValidFromDate: new Date(o.validNotBefore),
 				ValidToDate: new Date(o.validNotAfter),
 				HasPrivateKey: hasPrivateKey,
@@ -475,7 +475,7 @@ function RuToken() {
 	 * @returns {String}
 	 */
 	function cleanPemString(pem) {
-		return pem.replace(/^-+(BEGIN|END)[^-]+-+$/gm, '').replace(/\r?\n/g, '').trim();
+		return pem.replace(/^-+(BEGIN|END)[^-]+-+$/gm, '').trim();
 	}
 }
 

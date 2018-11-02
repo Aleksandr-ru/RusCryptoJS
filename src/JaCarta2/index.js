@@ -227,7 +227,7 @@ function JaCarta2() {
 			// base64(запрос на сертификат в формате PKCS#10)
 			var csr = btoa(String.fromCharCode.apply(null, new Uint8Array(a)));
 			return { 
-				csr: csr,
+				csr: pemSplit(csr),
 				keyPairId: id
 			};
 		});
@@ -371,7 +371,7 @@ function JaCarta2() {
 			if(a && a.length) {
 				// base64(массив байт со значением сертификата в формате DER)
 				var cert = btoa(String.fromCharCode.apply(null, new Uint8Array(a)));
-				return cert;
+				return pemSplit(cert);
 			}
 			else {
 				throw new Error('Нет сертификата в контейнере');
@@ -396,7 +396,7 @@ function JaCarta2() {
 				onError: errorHandler(reject)
 			});
 		}).then(sign => {
-			return sign;
+			return pemSplit(sign);
 		});
 	};
 
@@ -437,6 +437,12 @@ function JaCarta2() {
 	function byte2hex(byte) {
 		//console.log('byte %d -> %s', byte, byte.toString(16));
 		return ('0' + byte.toString(16)).slice(-2);
+	}
+
+	// https://gist.github.com/hendriklammers/5231994
+	function pemSplit(str) {
+		var re = new RegExp('.{1,64}', 'g');
+		return string.match(re).join('\n');
 	}
 
 	/** 
