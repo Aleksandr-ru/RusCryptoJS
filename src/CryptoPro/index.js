@@ -709,8 +709,8 @@ function CryptoPro() {
 			}).then(function(){
 				var promises = [
 					oSigner.propset_Certificate(oCertificate),
-					oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN)
-					//TODO: CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY чтоб не проверять цепочку сертификатов
+					// oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN)
+					oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY)
 				];
 				if(pin) {
 					promises.push(oSigner.propset_KeyPin(pin));
@@ -744,7 +744,8 @@ function CryptoPro() {
 
 					var oSigner = cadesplugin.CreateObject("CAdESCOM.CPSigner");
 					oSigner.Certificate = oCertificate;
-					oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
+					// oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
+					oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY;
 					if(pin) {
 						oSigner.KeyPin = pin;
 					}
@@ -777,7 +778,7 @@ function CryptoPro() {
 	 */
 	this.signData2 = function(dataBase64, certThumbprint, pin, certThumbprint2, pin2){
 		if(canAsync) {
-			var oStore, oCertificate, oCertificate2, oSigner, oSigner2, oSignedData;
+			var oStore, oCertificate, oCertificate2, oSigner, oSignedData;
 			return cadesplugin.then(function(){
 				return Promise.all([
 					cadesplugin.CreateObjectAsync("CAPICOM.Store"),
@@ -822,6 +823,8 @@ function CryptoPro() {
 			}).then(function(){
 				var promises = [
 					oSigner.propset_Certificate(oCertificate),
+					// oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN),
+					oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY),
 					oSigner.propset_KeyPin(pin ? pin : '')
 				];
 				return Promise.all(promises);
@@ -831,6 +834,8 @@ function CryptoPro() {
 				//console.log('sign1: %s', sign);
 				var promises = [
 					oSigner.propset_Certificate(oCertificate2),
+					// oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN),
+					oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY),
 					oSigner.propset_KeyPin(pin2 ? pin2 : '')
 				];
 				return Promise.all(promises);
@@ -868,15 +873,16 @@ function CryptoPro() {
 
 					var oSigner = cadesplugin.CreateObject("CAdESCOM.CPSigner");
 					oSigner.Certificate = oCertificate;
-					//oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
+					// oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
+					oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY;
 					oSigner.KeyPin = pin ? pin : '';
 					var sSignedMessage = oSignedData.SignCades(oSigner, cadesplugin.CADESCOM_CADES_BES, true);
 
-					var oSigner2 = cadesplugin.CreateObject("CAdESCOM.CPSigner");
-					oSigner2.Certificate = oCertificate2;
-					//oSigner2.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
-					oSigner2.KeyPin = pin2 ? pin2 : '';
-					var sSignedMessage2 = oSignedData.CoSignCades(oSigner2, cadesplugin.CADESCOM_CADES_BES);
+					oSigner.Certificate = oCertificate2;
+					// oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
+					oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY;
+					oSigner.KeyPin = pin2 ? pin2 : '';
+					var sSignedMessage2 = oSignedData.CoSignCades(oSigner, cadesplugin.CADESCOM_CADES_BES);
 
 					resolve(sSignedMessage2);
 				}
@@ -946,6 +952,8 @@ function CryptoPro() {
 				//console.log('sign1: %s', sign);
 				var promises = [
 					oSigner.propset_Certificate(oCertificate),
+					// oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN),
+					oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY),
 					oSigner.propset_KeyPin(pin ? pin : '')
 				];
 				return Promise.all(promises);
@@ -987,7 +995,8 @@ function CryptoPro() {
 
 					var oSigner = cadesplugin.CreateObject("CAdESCOM.CPSigner");
 					oSigner.Certificate = oCertificate;
-					//oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
+					// oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
+					oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY;
 					oSigner.KeyPin = pin ? pin : '';
 					var sSignedMessage = oSignedData.CoSignCades(oSigner, cadesplugin.CADESCOM_CADES_BES);
 
