@@ -34,7 +34,7 @@ function loadCerts() {
         }
     }).catch(e => {
         alert('Failed! ' + e);
-    }).finally(() => {
+    }).then(() => {
         for(var i in options) {
             inputCertId.appendChild(options[i]);
         }

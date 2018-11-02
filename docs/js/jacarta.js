@@ -36,7 +36,7 @@ function loadCerts() {
         }
     }).catch(e => {
         alert('Failed! ' + e);
-    }).finally(() => {
+    }).then(() => {
         jacarta.unbind();
         for(var i in options) {
             inputCertId.appendChild(options[i]);
@@ -97,7 +97,7 @@ function requestCertificate() {
         return loadCerts();
     }).catch(e => {
         alert('Failed! ' + e);
-    }).finally(() => {
+    }).then(() => {
         jacarta.unbind();
     });
 }
@@ -117,7 +117,7 @@ function signData() {
         alert('Success!');
     }).catch(e => {
         alert('Failed! ' + e);
-    }).finally(() => {
+    }).then(() => {
         jacarta.unbind();
     });
 }
