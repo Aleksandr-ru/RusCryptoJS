@@ -78,7 +78,7 @@ function requestCertificate() {
     }).then(json => {
         console.log('JSON', json);
         const cert = json.cert;
-        inputCert = cert;
+        inputCert.value = cert;
         return cryptopro.writeCertificate(cert);
     }).then(thumbprint => {
         console.log('writeCertificate', thumbprint);

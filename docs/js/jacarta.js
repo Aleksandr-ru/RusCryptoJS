@@ -86,7 +86,7 @@ function requestCertificate() {
     }).then(json => {
         console.log('JSON', json);
         const cert = json.cert;
-        inputCert = cert;
+        inputCert.value = cert;
         return jacarta.writeCertificate(cert, containerId);
     }).then(contId => {
         console.log('writeCertificate', contId);
