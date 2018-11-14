@@ -442,7 +442,7 @@ function JaCarta2() {
 	// https://gist.github.com/hendriklammers/5231994
 	function pemSplit(str) {
 		var re = new RegExp('.{1,64}', 'g');
-		return string.match(re).join('\n');
+		return str.match(re).join('\n');
 	}
 
 	/** 
