@@ -70,10 +70,10 @@ function JaCarta2() {
 				}
 			});
 		}).then(tokenID => {
-			this.tokenId = tokenID;
+			tokenId = tokenID;
 			return new Promise((resolve, reject) => {
 				client.getTokenInfo({
-					args: { tokenID: this.tokenId },
+					args: { tokenID: tokenId },
 					onSuccess: resolve,
 					onError: errorHandler(reject)
 				});
@@ -100,7 +100,7 @@ function JaCarta2() {
 			}
 			else {
 				return new Promise((resolve, reject) => {
-					var args = { tokenID: this.tokenId };
+					var args = { tokenID: tokenId };
 					if(!userPin) {
 						args.useUI = true;
 					}
@@ -150,7 +150,7 @@ function JaCarta2() {
 		return new Promise((resolve, reject) => {
 			client.getContainerList({
 				args: {
-					tokenID: this.tokenId
+					tokenID: tokenId
 				},
 				onSuccess: resolve,
 				onError: errorHandler(reject)
@@ -261,7 +261,7 @@ function JaCarta2() {
 		return new Promise((resolve, reject) => {
 			client.parseX509Certificate({
 				args: {
-					tokenID: this.tokenId,
+					tokenID: tokenId,
 					id: containerId
 				},
 				onSuccess: resolve,
@@ -319,7 +319,7 @@ function JaCarta2() {
 		return new Promise((resolve, reject) => {
 			client.getContainerList({
 				args: {
-					tokenID: this.tokenId
+					tokenID: tokenId
 				},
 				onSuccess: resolve,
 				onError: errorHandler(reject)
@@ -327,7 +327,6 @@ function JaCarta2() {
 		}).then(a => {
 			var promises = [];
 			for(var i=0; i<a.length; i++) {
-				const tokenId = this.tokenId;
 				var contId = a[i].id;
 				var contName = a[i].description;
 				(function(contId, contName) {
@@ -362,7 +361,7 @@ function JaCarta2() {
 			client.getCertificateBody({
 				args: {
 					id: containerId,
-					tokenID: this.tokenId
+					tokenID: tokenId
 				},
 				onSuccess: resolve,
 				onError: errorHandler(reject)
