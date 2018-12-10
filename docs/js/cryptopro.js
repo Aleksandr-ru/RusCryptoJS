@@ -4,6 +4,7 @@ function showInfo(thumbprint) {
         console.log('Initialized', info);
         return cryptopro.certificateInfo(thumbprint);
     }).then(info => {
+        console.log('CertInfo', info);
         inputCertInfo.value = info;
     }).catch(e => {
         alert('Failed! ' + e);

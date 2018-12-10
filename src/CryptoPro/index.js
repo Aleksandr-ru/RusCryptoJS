@@ -471,6 +471,7 @@ function CryptoPro() {
 					IssuerName: a[2],
 					SerialNumber: a[3],
 					SubjectName: a[4],
+					Subject: undefined,
 					Name: undefined,
 					Thumbprint: a[5],
 					ValidFromDate: new Date(a[6]),
@@ -481,7 +482,8 @@ function CryptoPro() {
 				return oCertificateStatus.Result;
 			}).then(function(result){
 				var oParesedSubj = parseSubject(oInfo.SubjectName);
-				oInfo.Name = oParesedSubj.toString();
+				oInfo.Subject = oParesedSubj;
+				oInfo.Name = oParesedSubj['CN'];
 				oInfo.IsValid = result;
 				oInfo.toString = infoToString;
 				return oInfo;
@@ -512,7 +514,8 @@ function CryptoPro() {
 						IssuerName: oCertificate.IssuerName,
 						SerialNumber: oCertificate.SerialNumber,
 						SubjectName: oCertificate.SubjectName,
-						Name: oParesedSubj.toString(),
+						Subject: oParesedSubj,
+						Name: oParesedSubj['CN'],
 						Thumbprint: oCertificate.Thumbprint,
 						ValidFromDate: new Date(oCertificate.ValidFromDate),
 						ValidToDate: new Date(oCertificate.ValidToDate),
@@ -561,10 +564,10 @@ function CryptoPro() {
 			}).then(function(subjects){
 				var certs = [];
 				for(var i=0; i<subjects.length; i+=2) {
-					var s = parseSubject(subjects[i]);
+					var oDN = parseSubject(subjects[i]);
 					certs.push({
 						id: subjects[i+1], 
-						name: s.toString()
+						name: formatCertificateName(oDN)
 					});
 				}
 				ret = certs;
@@ -587,10 +590,10 @@ function CryptoPro() {
 					var certs = [];
 					for(var i=1; i<=oCertificates.Count; i++) {
 						var oCertificate = oCertificates.Item(i);
-						var s = parseSubject(oCertificate.SubjectName);
+						var oDN = parseSubject(oCertificate.SubjectName);
 						certs.push({
 							id: oCertificate.Thumbprint, 
-							name: s.toString()
+							name: formatCertificateName(oDN)
 						});
 					}
 					oStore.Close();
@@ -1079,24 +1082,33 @@ function CryptoPro() {
 	}
 
 	/**
-	 * Разобрать субъект в объект с toString
+	 * Разобрать субъект в объект DN
 	 * @param {string} subjectName
-	 * @returns {object}
+	 * @returns {DN}
 	 */
 	function parseSubject(subjectName){
-		var o = {
-			toString: function(){
-				var snils = this['СНИЛС'] || this['SNILS'];
-				var inn = this['ИНН'] || this['INN'];
-				return '' + this['CN'] + (inn ?  '; ИНН ' + inn : '') + (snils ?  '; СНИЛС ' + snils : '');
+		var dn = new DN;
+		var pairs = subjectName.match(/([а-яёА-ЯЁa-zA-Z0-9\.]+)=(?:("[^"]+?")|(.+?))(?:,|$)/g).map(el => el.replace(/,$/, ''));
+		pairs.forEach(pair => {
+			var d = pair.match(/([^=]+)=(.*)/);
+			if (d.length === 3) {
+				var rdn = d[1].trim().replace(/^OID\./, '');
+				var val = d[2].trim().replace(/^"(.*)"$/, '$1');
+				dn[rdn] = val;
 			}
-		};
-		var a = subjectName.split(',');
-		for(var i in a) {
-			var b = a[i].match(/^\s*([A-ZА-ЯЁ]+)=(.+)$/);
-			if(b) o[b[1]] = b[2];
-		}
-		return o;
+		});
+		return dn;
+	}
+
+	/**
+	 * Получить название сертификата
+	 * @param {DN} o объект, включающий в себя значения всех полей сертификата.
+	 * @returns {String}
+	 */
+	function formatCertificateName(o) {
+		var snils = o['СНИЛС'] || o['SNILS'];
+		var inn = o['ИНН'] || o['INN'];
+		return '' + o['CN'] + (inn ?  '; ИНН ' + inn : '') + (snils ?  '; СНИЛС ' + snils : '');
 	}
 
 	/**

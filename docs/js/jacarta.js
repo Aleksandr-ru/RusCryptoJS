@@ -4,6 +4,7 @@ function showInfo(contId) {
         console.log('Initialized', info);
         return jacarta.certificateInfo(contId);
     }).then(info => {
+        console.log('CertInfo', info);
         inputCertInfo.value = info;
     }).catch(e => {
         alert('Failed! ' + e);
