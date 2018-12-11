@@ -61,6 +61,9 @@ function CryptoPro() {
 				return new Promise(resolve => {
 					try {
 						var oAbout = cadesplugin.CreateObject("CAdESCOM.About");
+						if(!oAbout || !oAbout.Version) {
+							throw new Error('КриптоПро ЭЦП Browser plug-in не загружен');
+						}
 						var CurrentPluginVersion = oAbout.Version;
 						resolve({
 							version: CurrentPluginVersion
