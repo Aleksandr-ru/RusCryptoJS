@@ -16,6 +16,7 @@ import {
 	ProviderTypes, 
 	cadesErrorMesages 
 } from './constants';
+import { convertInfoToLat } from '../helpers';
 
 function CryptoPro() {
 	//If the string contains fewer than 128 bytes, the Length field of the TLV triplet requires only one byte to specify the content length.
@@ -419,7 +420,7 @@ function CryptoPro() {
 	 * @param {string} certThumbprint
 	 * @returns {Promise<Object>}
 	 */
-	this.certificateInfo = function(certThumbprint){
+	this.certificateInfo = function(certThumbprint, toLat = false){
 		var infoToString = function(){
 			return	  'Название:              ' + this.Name +
 					'\nИздатель:              ' + this.IssuerName +
@@ -485,6 +486,9 @@ function CryptoPro() {
 				return oCertificateStatus.Result;
 			}).then(function(result){
 				var oParesedSubj = parseSubject(oInfo.SubjectName);
+				if (toLat) {
+					oParesedSubj = convertInfoToLat(oParesedSubj);
+				}
 				oInfo.Subject = oParesedSubj;
 				oInfo.Name = oParesedSubj['CN'];
 				oInfo.IsValid = result;
@@ -511,6 +515,9 @@ function CryptoPro() {
 
 					var oCertificateStatus = oCertificate.IsValid();
 					var oParesedSubj = parseSubject(oCertificate.SubjectName);
+					if (toLat) {
+						oParesedSubj = convertInfoToLat(oParesedSubj);
+					}
 					var oInfo = {
 						HasPrivateKey: oCertificate.HasPrivateKey(),
 						IsValid: oCertificateStatus.Result,
