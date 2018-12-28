@@ -16,7 +16,7 @@ import {
 	ProviderTypes, 
 	cadesErrorMesages 
 } from './constants';
-import { convertInfoToLat } from '../helpers';
+import { convertDN } from '../helpers';
 
 function CryptoPro() {
 	//If the string contains fewer than 128 bytes, the Length field of the TLV triplet requires only one byte to specify the content length.
@@ -420,7 +420,7 @@ function CryptoPro() {
 	 * @param {string} certThumbprint
 	 * @returns {Promise<Object>}
 	 */
-	this.certificateInfo = function(certThumbprint, toLat = false){
+	this.certificateInfo = function(certThumbprint){
 		var infoToString = function(){
 			return	  'Название:              ' + this.Name +
 					'\nИздатель:              ' + this.IssuerName +
@@ -472,6 +472,7 @@ function CryptoPro() {
 				oInfo = {
 					HasPrivateKey: a[0],
 					IsValid: undefined, // a[1],
+					//TODO: Issuer object
 					IssuerName: a[2],
 					SerialNumber: a[3],
 					SubjectName: a[4],
@@ -486,9 +487,7 @@ function CryptoPro() {
 				return oCertificateStatus.Result;
 			}).then(function(result){
 				var oParesedSubj = parseSubject(oInfo.SubjectName);
-				if (toLat) {
-					oParesedSubj = convertInfoToLat(oParesedSubj);
-				}
+				oParesedSubj = convertDN(oParesedSubj);
 				oInfo.Subject = oParesedSubj;
 				oInfo.Name = oParesedSubj['CN'];
 				oInfo.IsValid = result;
@@ -515,12 +514,11 @@ function CryptoPro() {
 
 					var oCertificateStatus = oCertificate.IsValid();
 					var oParesedSubj = parseSubject(oCertificate.SubjectName);
-					if (toLat) {
-						oParesedSubj = convertInfoToLat(oParesedSubj);
-					}
+					oParesedSubj = convertDN(oParesedSubj);
 					var oInfo = {
 						HasPrivateKey: oCertificate.HasPrivateKey(),
 						IsValid: oCertificateStatus.Result,
+						//TODO: Issuer object
 						IssuerName: oCertificate.IssuerName,
 						SerialNumber: oCertificate.SerialNumber,
 						SubjectName: oCertificate.SubjectName,

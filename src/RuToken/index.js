@@ -7,7 +7,7 @@
 import rutoken from 'rutoken';
 import DN from '../DN';
 import errors from './errors';
-import { convertInfoToLat } from '../helpers';
+import { convertDN } from '../helpers';
 
 function RuToken() {
 	var plugin, deviceId;
@@ -262,7 +262,7 @@ function RuToken() {
 	 * @param {int} certId идентификатор сертификата
 	 * @returns {Promise<Object>}
 	 */
-	this.certificateInfo = function(certId, toLat = false){
+	this.certificateInfo = function(certId){
 		let hasPrivateKey = false;
 		let serialNumber = '';
 		return new Promise(resolve => {
@@ -287,9 +287,7 @@ function RuToken() {
 				var val = o.subject[i].value;
 				dn[rdn] = val;
 			}
-			if (toLat) {
-				dn = convertInfoToLat(dn);
-			}
+			dn = convertDN(dn);
 			var dnI = new DN;
 			for(var i in o.issuer) {
 				var rdn = o.issuer[i].rdn;
@@ -299,6 +297,7 @@ function RuToken() {
 			var dt = new Date();
 			var info = {
 				Name: dn.commonName || dn.CN,
+				//TODO: Issuer object
 				Issuer: dnI,
 				IssuerName: dnI.commonName || dnI.CN,
 				Subject: dn,

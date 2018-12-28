@@ -6,7 +6,7 @@
 
 import DN from '../DN';
 import errors from './errors';
-import { convertInfoToLat } from '../helpers';
+import { convertDN } from '../helpers';
 
 function JaCarta() {
 	var client, tokenId;
@@ -249,7 +249,7 @@ function JaCarta() {
 	 * @param {int} containerId идентификатор контейнера (сертификата)
 	 * @returns {Promise<Object>}
 	 */
-	this.certificateInfo = function(containerId, toLat = false){
+	this.certificateInfo = function(containerId){
 		return new Promise(resolve => {
 			try {
 				var o = client.parseX509CertificateEx(tokenId, containerId);
@@ -259,9 +259,7 @@ function JaCarta() {
 					var val = o.Data.Subject[i].value;
 					dn[rdn] = val;
 				}
-				if (toLat) {
-					dn = convertInfoToLat(dn);
-				}
+				dn = convertDN(dn);
 				var dnI = new DN;
 				for(var i in o.Data.Issuer) {
 					var rdn = o.Data.Issuer[i].rdn;
