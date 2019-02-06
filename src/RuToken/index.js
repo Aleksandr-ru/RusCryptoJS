@@ -78,7 +78,7 @@ function RuToken() {
 	 * @returns {Promise}
 	 */
 	this.bind = function(userPin) {
-		return new Promise(resolve => {
+		return new Promise((resolve, reject) => {
 			plugin.getDeviceInfo(deviceId, plugin.TOKEN_INFO_IS_LOGGED_IN).then(result => {
 				if(result) {
 					resolve('Пользователь уже авторизован');
@@ -98,11 +98,11 @@ function RuToken() {
 					});
 				}
 				else {
-					return true;
+					resolve(true);
 				}
 			}).then(null, e => {
 				const err = getError(e);
-				throw new Error(err);
+				reject(err);
 			});
 		});
 	};
@@ -112,7 +112,7 @@ function RuToken() {
 	 * @returns {Promise}
 	 */
 	this.unbind = function() {
-		return new Promise(resolve => {
+		return new Promise((resolve, reject) => {
 			plugin.getDeviceInfo(deviceId, plugin.TOKEN_INFO_IS_LOGGED_IN).then(result => {
 				if(!result) {
 					resolve('Пользователь не авторизован');
@@ -132,7 +132,7 @@ function RuToken() {
 				}
 			}).then(null, e => {
 				const err = getError(e);
-				throw new Error(err);
+				reject(err);
 			});
 		});
 	};
