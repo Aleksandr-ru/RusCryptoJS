@@ -1,10 +1,12 @@
+import DN from './DN';
+
 /**
  * Перевод кирилицы в латиницу в ключах объекта с информацией о сертификате
  * @param {DN} dn 
  * @returns {DN}
  */
 export function convertDN(dn) {
-  let result = {};
+  let result = new DN;
   let rus = ["ИНН", "КПП", "ОГРН", "ОГРНИП", "СНИЛС"];
   let en = ["INN", "KPP", "OGRN", "OGRNIP", "SNILS"];
   //TODO: convert "OID.1.2.3.4" to "1.2.3.4"
