@@ -269,7 +269,8 @@ function RuToken() {
 			plugin.getKeyByCertificate(deviceId, certId).then(keyId => {
 				resolve(!!keyId);
 			}).then(null, e => {
-				console.log('getKeyByCertificate', certId, e);
+				const err = getError(e);
+				console.log('getKeyByCertificate', certId, err);
 				resolve(false);
 			});
 		}).then(result => {
