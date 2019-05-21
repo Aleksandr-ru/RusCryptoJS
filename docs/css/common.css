@@ -3,7 +3,7 @@
 body {
     font-family: 'Montserrat', sans-serif;
 }
-.column {
+.top .column {
     margin-top: 20%;
 }
 .container > h1 {
@@ -33,4 +33,9 @@ h2, h5 {
 }
 .optional {
     font-size: 90%;
+}
+
+.bottom img {
+    max-height: 100px;
+    margin-right: 25px;
 }
