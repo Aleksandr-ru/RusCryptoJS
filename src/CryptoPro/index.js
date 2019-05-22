@@ -28,6 +28,8 @@ function CryptoPro() {
 
 	var canAsync;
 
+	var binded = false;
+
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
 	 * @returns {Promise<Object>} версия
@@ -81,20 +83,24 @@ function CryptoPro() {
 	};
 
 	/**
-	 * Заглушка для совместимости
+	 * Включает кеширование ПИНов от контейнеров чтоб не тробовать повторного ввода
+	 * возможно не поддерживается в ИЕ
+	 * @see https://www.cryptopro.ru/forum2/default.aspx?g=posts&t=10170
 	 * @param {string} userPin не используется
-	 * @returns {Promise}
+	 * @returns {Promise<boolean>} new binded state
 	 */
 	this.bind = function(userPin) {
-		return Promise.resolve(true);
+		binded = true;
+		return Promise.resolve(binded);
 	};
 
 	/**
 	 * Заглушка для совместимости
-	 * @returns {Promise}
+	 * @returns {Promise<boolean>} new binded state
 	 */
 	this.unbind = function() {
-		return Promise.resolve(true);
+		binded = false;
+		return Promise.resolve(binded);
 	};
 
 	/**
@@ -718,6 +724,10 @@ function CryptoPro() {
 				oCertificate = certificate;
 				return oStore.Close();
 			}).then(function(){
+				return oCertificate.PrivateKey;
+			}).then(function(privateKey){
+				return privateKey.propset_CachePin(binded);
+			}).then(function(){
 				var promises = [
 					oSigner.propset_Certificate(oCertificate),
 					// oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN)
@@ -752,6 +762,12 @@ function CryptoPro() {
 					}
 					var oCertificate = oCertificates.Item(1);
 					oStore.Close();
+
+					if(oCertificate.PrivateKey && oCertificate.PrivateKey.CachePin !== undefined) {
+						// возможно не поддерживается в ИЕ
+						// https://www.cryptopro.ru/forum2/default.aspx?g=posts&t=10170
+						oCertificate.PrivateKey.CachePin = binded;
+					}
 
 					var oSigner = cadesplugin.CreateObject("CAdESCOM.CPSigner");
 					oSigner.Certificate = oCertificate;

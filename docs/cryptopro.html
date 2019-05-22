@@ -39,7 +39,8 @@
             <p><a href="#Function_reference">Function reference</a></p>
             <p>Демо: <a href="#Выпуск_сертификата">Выпуск сертификата</a></p>
             <p>Демо: <a href="#Электронная_подпись">Электронная подпись</a></p>
-            
+            <p><a href="https://github.com/Aleksandr-ru/RusCryptoJS">Скачать</a></p>
+
             <section id="Использование">
                 <h2>Использование</h2>
                 <pre><code>&lt;script src="ruscrypto.min.js"&gt;&lt;/script&gt;
@@ -61,6 +62,8 @@ cryptopro.init().then(function(info) {
                 <h2>Function reference</h2>
                 <ul>
                     <li><a href="#init">init</a></li>
+                    <li><a href="#bind">bind</a></li>
+                    <li><a href="#unbind">unbind</a></li>
                     <li><a href="#generateCSR">generateCSR</a></li>
                     <li><a href="#writeCertificate">writeCertificate</a></li>
                     <li><a href="#certificateInfo">certificateInfo</a></li>
@@ -82,6 +85,43 @@ cryptopro.init().then(function(info) {
                     <pre><code>{
     version: 'версия плагина'
 }</code></pre>
+                </p>
+
+                <h5 id="bind">
+                    <span class="function">bind</span>
+                    (
+                    userPin : <span class="type">Void</span>
+                    ) : <span class="type">Promise&lt;Boolean&gt;</span>
+                </h5>
+                <p>
+                    Включает кеширование ПИН-кодов в процессе подписания, чтобы не тробовать от пользователя повторного ввода.
+                    Применимо только для <a href="#signData">signData</a>.
+                </p>
+                <table class="u-full-width">
+                    <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>userPin</td>
+                        <td>Не используется (существует для совместимости).</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <p>
+                    <b class="returns">Возвращает</b> новое состояние (true).
+                </p>
+
+                <h5 id="unbind">
+                    <span class="function">unbind</span>
+                    () : <span class="type">Promise&lt;Boolean&gt;</span>
+                </h5>
+                <p>Отключает кеширование ПИН-кодов в процессе подписания.</p>
+                <p>
+                    <b class="returns">Возвращает</b> новое состояние (false).
                 </p>
 
                 <h5 id="generateCSR">
