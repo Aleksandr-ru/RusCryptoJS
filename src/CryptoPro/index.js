@@ -356,7 +356,7 @@ function CryptoPro() {
 			var oEnroll, existingSha = [];
 			return this.listCertificates().then(function(certs){
 				for(var i in certs) {
-					existingSha.push(certs[i].shift());
+					existingSha.push(certs[i].id);
 				}
 				return cadesplugin.CreateObjectAsync('X509Enrollment.CX509Enrollment');
 			}).then(function(enroll){
@@ -366,7 +366,7 @@ function CryptoPro() {
 				return oEnroll.InstallResponse(InstallResponseRestrictionFlags.AllowNone, certBase64, EncodingType.XCN_CRYPT_STRING_BASE64, '');
 			}).then(this.listCertificates).then(function(certs){
 				for(var i in certs) {
-					var sha = certs[i].shift();
+					var sha = certs[i].id;
 					if(existingSha.indexOf(sha) < 0) {
 						return sha;
 					}
