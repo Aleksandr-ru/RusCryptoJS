@@ -42,8 +42,16 @@ function loadCerts() {
     });
 }
 
-function requestCertificate() {
+var GlobalCryptoPro;
+
+document.getElementById('formCsr').addEventListener('submit', e => {
+    e.preventDefault();
+    requestCSR();
+});
+
+function requestCSR() {
     inputCsr.value = inputCert.value = '';
+    inputCert.disabled = true;
     try {
         var oDn = JSON.parse(inputDN.value);
     }
@@ -52,41 +60,40 @@ function requestCertificate() {
         alert(e.message || e);
     }
     var dn = Object.assign(new window.RusCryptoJS.DN, oDn);
-    var cryptopro = new window.RusCryptoJS.CryptoPro;
-    return cryptopro.init().then(info => {
+    GlobalCryptoPro = new window.RusCryptoJS.CryptoPro;
+    return GlobalCryptoPro.init().then(info => {
         console.log('Initialized', info);
-        return cryptopro.generateCSR(dn, inputDescr.value);
+        return GlobalCryptoPro.generateCSR(dn, inputDescr.value);
     }).then(result => {
         console.log('generateCSR', result);
 
         const csr = result.csr;
         inputCsr.value = csr;
-        
-        const data = new FormData();
-        data.append('csr', csr);
+        alert('Выпустите сертификат в УЦ на основе созданного CSR');
+        inputCert.disabled = false;
+        inputCsr.focus();
+    }).catch(e => {
+        alert('Failed! ' + e);
+    });
+};
 
-        const url = inputCaUrl.value
-        return fetch(url, {
-            method: 'POST',
-            body: data
-        });
-    }).then(response => {
-        console.log('CA response', response);
-        if(!response.ok) {
-            throw new Error(response.statusText);
-        }
-        return response.json();
-    }).then(json => {
-        console.log('JSON', json);
-        const cert = json.cert;
-        inputCert.value = cert;
-        return cryptopro.writeCertificate(cert);
-    }).then(thumbprint => {
+function requestCertificate() {
+    const cert = inputCert.value;
+    if(!GlobalCryptoPro || !cert) {
+        alert('Сначала надо создать CSR');
+        return false;
+    }    
+    return GlobalCryptoPro
+    .writeCertificate(cert)
+    .then(thumbprint => {
         console.log('writeCertificate', thumbprint);
-        return cryptopro.certificateInfo(thumbprint);
+        return GlobalCryptoPro.certificateInfo(thumbprint);
     }).then(info => {
         console.log('Certificate info', info);
         alert('Success!');
+        inputCsr.value = inputCert.value = '';
+        inputCert.disabled = true;
+        GlobalCryptoPro = undefined;
         return loadCerts();
     }).catch(e => {
         alert('Failed! ' + e);
