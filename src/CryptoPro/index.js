@@ -567,7 +567,6 @@ function CryptoPro() {
 				oCertificates = certificates;
 				return certificates.Count;
 			}).then(function(count){
-				if(count < 1) throw new Error('Не обнаружено сертификатов');
 				var certs = [];
 				for(var i=1; i<=count; i++) certs.push(oCertificates.Item(i));
 				return Promise.all(certs);
