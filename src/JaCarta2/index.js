@@ -157,19 +157,21 @@ function JaCarta2() {
 				onError: errorHandler(reject)
 			});
 		}).then(containers => {
-			var promises = [];
+			var p = Promise.resolve();
 			for(var i in containers) {
-				promises.push(new Promise((resolve, reject) => {
-					client.deletePKIObject({
-						args: {
-							id: containers[i].id
-						},
-						onSuccess: resolve,
-						onError: errorHandler(reject)
+				p = p.then(function(){
+					return new Promise((resolve, reject) => {
+						client.deletePKIObject({
+							args: {
+								id: containers[i].id
+							},
+							onSuccess: resolve,
+							onError: errorHandler(reject)
+						});
 					});
-				}));
+				});
 			}
-			return Promise.all(promises);
+			return p;
 		});
 	};
 
