@@ -80,5 +80,6 @@ export const cadesErrorMesages = {
     '0x800B010A': 'Не удается построить цепочку сертификатов для доверенного корневого центра',
     '0x80090020': 'Внутренняя ошибка 0x80090020. Если используется внешний токен, убедитесь, что ввели корректный PIN-код',
     '0x8007065B': 'Истекла лицензия на КриптоПро CSP',
-    '0x800B0109': 'Отсутствует сертификат УЦ в хранилище корневых сертификатов' // A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.
+    '0x800B0109': 'Отсутствует сертификат УЦ в хранилище корневых сертификатов', // A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.
+    '0x8009200C': 'Не удается найти сертификат и закрытый ключ для расшифровки'
 };

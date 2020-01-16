@@ -107,7 +107,7 @@ function encryptData() {
         inputEncrypted.value = encrypted;
         return cryptopro.decryptData(encrypted, thumbprint);
     }).then(decrypted => {
-        inputDecrypted.value = decrypted;
+        inputDecrypted.value = atob(decrypted);
         alert('Success!');
     }).catch(e => {
         alert('Failed! ' + e);
