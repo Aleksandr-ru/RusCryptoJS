@@ -330,29 +330,36 @@ function JaCarta2() {
 				onError: errorHandler(reject)
 			});
 		}).then(a => {
-			var promises = [];
+			var certs = [];
+			var p = Promise.resolve();
 			for(var i=0; i<a.length; i++) {
 				var contId = a[i].id;
 				var contName = a[i].description;
+				
 				(function(contId, contName) {
-					promises.push(new Promise((resolve, reject) => {
-						client.parseX509Certificate({
-							args: {
-								tokenID: tokenId,
-								id: contId
-							},
-							onSuccess: resolve,
-							onError: errorHandler(reject)
+					p = p.then(function() {
+						return new Promise((resolve, reject) => {
+							client.parseX509Certificate({
+								args: {
+									tokenID: tokenId,
+									id: contId
+								},
+								onSuccess: resolve,
+								onError: errorHandler(reject)
+							});
+						}).then(o => {
+							certs.push({
+								id: contId,
+								name: formatCertificateName(o, contName)
+							});
+							return certs.length;
 						});
-					}).then(o => {
-						return {
-							id: contId,
-							name: formatCertificateName(o, contName)
-						};
-					}));
+					});
 				})(contId, contName);
 			}
-			return Promise.all(promises);
+			return p.then(function(){
+				return certs;
+			});
 		});
 	};
 	

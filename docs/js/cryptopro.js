@@ -27,27 +27,13 @@ function loadCerts() {
         return cryptopro.listCertificates();
     }).then(certs => {
         console.log('Certs', certs);
-        for(var i in certs) {
-            var option = document.createElement('option');
-            option.value = certs[i].id;
-            option.text = certs[i].name;
-            options.push(option);
-        }
+        return setCertOptions(certs);
     }).catch(e => {
         alert('Failed! ' + e);
-    }).then(() => {
-        for(var i in options) {
-            inputCertId.appendChild(options[i]);
-        }
     });
 }
 
 var GlobalCryptoPro;
-
-document.getElementById('formCsr').addEventListener('submit', e => {
-    e.preventDefault();
-    requestCSR();
-});
 
 function requestCSR() {
     inputCsr.value = inputCert.value = '';
