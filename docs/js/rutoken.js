@@ -45,8 +45,11 @@ function loadCerts() {
     });
 }
 
-function requestCertificate() {
+var GlobalRuToken;
+
+function requestCSR() {
     inputCsr.value = inputCert.value = '';
+    inputCert.disabled = true;
     try {
         var oDn = JSON.parse(inputDN.value);
     }
@@ -55,48 +58,51 @@ function requestCertificate() {
         alert(e.message || e);
     }
     var dn = Object.assign(new window.RusCryptoJS.DN, oDn);
-    var rutoken = new window.RusCryptoJS.RuToken;
-    return rutoken.init().then(info => {
+    GlobalRuToken = new window.RusCryptoJS.RuToken;
+    return GlobalRuToken.init().then(info => {
         console.log('Initialized', info);
-        return rutoken.bind();
+        return GlobalRuToken.bind(inputPin.value);
     }).then(_ => { 
-        return rutoken.generateCSR(dn, inputDescr.value);
+        return GlobalRuToken.generateCSR(dn, inputDescr.value);
     }).then(result => {
         console.log('generateCSR', result);
 
         const csr = result.csr;
         inputCsr.value = csr;
-        
-        const data = new FormData();
-        data.append('csr', csr);
+                
+        alert('Выпустите сертификат в УЦ на основе созданного CSR');
+        inputCert.disabled = false;
+        inputCsr.focus();
+    }).catch(e => {
+        alert('Failed! ' + e);
+    });
+};
 
-        const url = inputCaUrl.value
-        return fetch(url, {
-            method: 'POST',
-            body: data
-        });
-    }).then(response => {
-        console.log('CA response', response);
-        if(!response.ok) {
-            throw new Error(response.statusText);
-        }
-        return response.json();
-    }).then(json => {
-        console.log('JSON', json);
-        const cert = json.cert;
-        inputCert = cert;
-        return rutoken.writeCertificate(cert);
-    }).then(certId => {
-        console.log('writeCertificate', certId);
-        return rutoken.certificateInfo(certId);
+function requestCertificate() {
+    const cert = inputCert.value;
+    if(!GlobalRuToken || !cert) {
+        alert('Сначала надо создать CSR');
+        return false;
+    }    
+    return GlobalRuToken
+    .writeCertificate(cert)
+    .then(contId => {
+        console.log('writeCertificate', contId);
+        return GlobalRuToken.certificateInfo(contId);
     }).then(info => {
         console.log('Certificate info', info);
         alert('Success!');
-        return loadCerts();
-    }).catch(e => {
+        inputCsr.value = inputCert.value = '';
+        inputCert.disabled = true;
+        return GlobalRuToken.listCertificates();
+    }).then(certs => {
+        console.log('Certs', certs);
+        return setCertOptions(certs);
+    }).then(null, e => {
         alert('Failed! ' + e);
     }).then(() => {
-        rutoken.unbind();
+        GlobalRuToken.unbind();
+        GlobalRuToken = undefined;
     });
 }
 
