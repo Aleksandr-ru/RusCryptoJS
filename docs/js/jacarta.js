@@ -13,14 +13,7 @@ function showInfo(contId) {
 
 function loadCerts() {
     inputCertId.innerHTML = inputCertInfo.value = '';
-    var options = [];
-    var placeholder = document.createElement('option');
-    placeholder.selected = true;
-    placeholder.disabled = true;
-    placeholder.text = 'Выберите сертификат';
-    placeholder.value = '';
-    options.push(placeholder);
-
+    
     var jacarta = new window.RusCryptoJS.JaCarta;
     return jacarta.init().then(info => {
         console.log('Initialized', info);
@@ -29,24 +22,20 @@ function loadCerts() {
         return jacarta.listCertificates();
     }).then(certs => {
         console.log('Certs', certs);
-        for(var i in certs) {
-            var option = document.createElement('option');
-            option.value = certs[i].id;
-            option.text = certs[i].name;
-            options.push(option);
-        }
+        return setCertOptions(certs);
     }).catch(e => {
         alert('Failed! ' + e);
     }).then(() => {
         jacarta.unbind();
-        for(var i in options) {
-            inputCertId.appendChild(options[i]);
-        }
     });
 }
 
-function requestCertificate() {
+var GlobalJaCarta;
+var GlobalKeyPairId
+
+function requestCSR() {
     inputCsr.value = inputCert.value = '';
+    inputCert.disabled = true;
     try {
         var oDn = JSON.parse(inputDN.value);
     }
@@ -55,51 +44,53 @@ function requestCertificate() {
         alert(e.message || e);
     }
     var dn = Object.assign(new window.RusCryptoJS.DN, oDn);
-    var jacarta = new window.RusCryptoJS.JaCarta;
-    var containerId;
-    return jacarta.init().then(info => {
+    GlobalJaCarta = new window.RusCryptoJS.JaCarta2;
+    return GlobalJaCarta.init().then(info => {
         console.log('Initialized', info);
-        return jacarta.bind();
+        return GlobalJaCarta.bind(inputPin.value);
     }).then(_ => { 
-        return jacarta.generateCSR(dn, inputDescr.value);
+        return GlobalJaCarta.generateCSR(dn, inputDescr.value);
     }).then(result => {
         console.log('generateCSR', result);
 
         const csr = result.csr;
         inputCsr.value = csr;
         
-        containerId = result.containerId;
+        GlobalKeyPairId = result.keyPairId;
         
-        const data = new FormData();
-        data.append('csr', csr);
+        alert('Выпустите сертификат в УЦ на основе созданного CSR');
+        inputCert.disabled = false;
+        inputCsr.focus();
+    }).catch(e => {
+        alert('Failed! ' + e);
+    });
+};
 
-        const url = inputCaUrl.value
-        return fetch(url, {
-            method: 'POST',
-            body: data
-        });
-    }).then(response => {
-        console.log('CA response', response);
-        if(!response.ok) {
-            throw new Error(response.statusText);
-        }
-        return response.json();
-    }).then(json => {
-        console.log('JSON', json);
-        const cert = json.cert;
-        inputCert.value = cert;
-        return jacarta.writeCertificate(cert, containerId);
-    }).then(contId => {
+function requestCertificate() {
+    const cert = inputCert.value;
+    if(!GlobalJaCarta || !GlobalKeyPairId || !cert) {
+        alert('Сначала надо создать CSR');
+        return false;
+    }    
+    return GlobalJaCarta
+    .writeCertificate(cert, GlobalKeyPairId)
+    .then(contId => {
         console.log('writeCertificate', contId);
-        return jacarta.certificateInfo(contId);
+        return GlobalJaCarta.certificateInfo(contId);
     }).then(info => {
         console.log('Certificate info', info);
         alert('Success!');
-        return loadCerts();
+        inputCsr.value = inputCert.value = '';
+        inputCert.disabled = true;
+        return GlobalJaCarta.listCertificates();
+    }).then(certs => {
+        console.log('Certs', certs);
+        return setCertOptions(certs);
     }).catch(e => {
         alert('Failed! ' + e);
     }).then(() => {
-        jacarta.unbind();
+        GlobalJaCarta.unbind();
+        GlobalJaCarta = undefined;
     });
 }
 

@@ -311,23 +311,13 @@ jacarta.init().then(function(info) {
             
             <section id="Выпуск_сертификата">
                 <h2>Выпуск сертификата</h2>
-                <form id="formCert">
+                <form id="formCsr">
                     <div class="row">
                         <div class="two columns">
-                            <label>URL УЦ</label>
+                            <label>Pin код</label>
                         </div>
                         <div class="ten columns">
-                            <input class="u-full-width" type="text" id="caUrl" placeholder="http://localhost:8800" required>
-                            <p>
-                                На вход 
-                                <code>$_POST['csr']</code>
-                                base64
-                            </p>
-                            <p>
-                                На выход
-                                <code>JSON['cert']</code>
-                                base64
-                            </p>
+                            <input class="u-full-width" type="text" id="pin" placeholder="Пин-код контейнера будет предложено ввести">
                         </div>
                     </div>
                     <div class="row">
@@ -350,7 +340,7 @@ jacarta.init().then(function(info) {
                         <div class="two columns">&nbsp;</div>
                         <div class="ten columns">
                             <button class="button-primary" type="submit">
-                                Выпустить сертификат
+                                Создать запрос на сертификат
                             </button>
                         </div>
                     </div>
@@ -362,12 +352,32 @@ jacarta.init().then(function(info) {
                             <textarea class="u-full-width" id="csr" readonly placeholder="Здесь будет отображен сгенерированный запрос на сертификат"></textarea>
                         </div>
                     </div>
+                </form>
+                <form id="formCert">
+                    <div class="row">
+                        <div class="two columns">
+                            <label>УЦ</label>
+                        </div>
+                        <div class="ten columns">
+                            <p>
+                                Например, тестовый УЦ <a target="_blank" href="https://www.cryptopro.ru/certsrv/certrqxt.asp">Крипто-ПРО</a>.
+                            </p>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="two columns">
                             <label>Certificate</label>
                         </div>
                         <div class="ten columns">
-                            <textarea class="u-full-width" id="cert" readonly placeholder="Здесь будет отображен сертификат, полученный от УЦ"></textarea>
+                            <textarea class="u-full-width" id="cert" placeholder="Вставьте сюда Base64, полученный от УЦ" disabled required></textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">&nbsp;</div>
+                        <div class="ten columns">
+                            <button class="button-primary" type="submit">
+                                Записать сертификат
+                            </button>
                         </div>
                     </div>
                 </form>

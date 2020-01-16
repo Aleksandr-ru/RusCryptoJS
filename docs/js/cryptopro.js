@@ -13,14 +13,7 @@ function showInfo(thumbprint) {
 
 function loadCerts() {
     inputCertId.innerHTML = inputCertInfo.value = '';
-    var options = [];
-    var placeholder = document.createElement('option');
-    placeholder.selected = true;
-    placeholder.disabled = true;
-    placeholder.text = 'Выберите сертификат';
-    placeholder.value = '';
-    options.push(placeholder);
-
+    
     var cryptopro = new window.RusCryptoJS.CryptoPro;
     return cryptopro.init().then(info => {
         console.log('Initialized', info);
