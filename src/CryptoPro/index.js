@@ -933,22 +933,46 @@ function CryptoPro() {
 	 */
 	this.encryptData = function(dataBase64, certThumbprint) {
 		if(canAsync) {
-			return cadesplugin.then(() => {
-				
-			}).catch(e => {
+			let oCertificate, oEnvelop, oRecipients;
+			return getCertificateObject(certThumbprint)
+			.then(certificate => {
+				oCertificate = certificate;
+				return cadesplugin.CreateObjectAsync("CAdESCOM.CPEnvelopedData");
+			})
+			.then(envelop => {
+				oEnvelop = envelop;
+				// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
+				return oEnvelop.propset_ContentEncoding(cadesplugin.CADESCOM_BASE64_TO_BINARY);
+			})
+			.then(() => oEnvelop.propset_Content(dataBase64))
+			.then(() => oEnvelop.Recipients)
+			.then(recipients => {
+				oRecipients = recipients;
+				return oRecipients.Clear();
+			})
+			.then(() => oRecipients.Add(oCertificate))
+			.then(() => oEnvelop.Encrypt())
+			.catch(e => {
 				console.log(arguments);
-				var err = getError(e);
+				const err = getError(e);
 				throw new Error(err);
 			});
 		}
 		else {
 			return new Promise(resolve => {
 				try {
-					
+					const oCertificate = getCertificateObject(certThumbprint);
+					const oEnvelop = cadesplugin.CreateObject("CAdESCOM.CPEnvelopedData");
+					oEnvelop.ContentEncoding = cadesplugin.CADESCOM_BASE64_TO_BINARY;
+					oEnvelop.Content = dataBase64;
+					oEnvelop.Recipients.Clear();
+					oEnvelop.Recipients.Add(oCertificate);
+					const encryptedData = oEnvelop.Encrypt();
+					resolve(encryptedData);
 				}
 				catch (e) {
 					console.log(e);
-					var err = getError(e);
+					const err = getError(e);
 					throw new Error(err);
 				}
 			});
@@ -963,22 +987,45 @@ function CryptoPro() {
 	 */
 	this.decryptData = function(dataBase64, certThumbprint) {
 		if(canAsync) {
-			return cadesplugin.then(() => {
-				
-			}).catch(e => {
-				console.log(arguments);
-				var err = getError(e);
-				throw new Error(err);
-			});
+			let oCertificate, oEnvelop, oRecipients;
+			return getCertificateObject(certThumbprint)
+				.then(certificate => {
+					oCertificate = certificate;
+					return cadesplugin.CreateObjectAsync("CAdESCOM.CPEnvelopedData");
+				})
+				.then(envelop => {
+					oEnvelop = envelop;
+					console.log(oEnvelop);
+				})
+				.then(() => oEnvelop.Recipients)
+				.then(recipients => {
+					oRecipients = recipients;
+					return oRecipients.Clear();
+				})
+				.then(() => oRecipients.Add(oCertificate))
+				.then(() => oEnvelop.Decrypt(dataBase64))
+				.then(() => oEnvelop.Content)
+				.catch(e => {
+					console.log(arguments);
+					const err = getError(e);
+					throw new Error(err);
+				});
 		}
 		else {
 			return new Promise(resolve => {
 				try {
-					
+					const oCertificate = getCertificateObject(certThumbprint);
+					const oEnvelop = cadesplugin.CreateObject("CAdESCOM.CPEnvelopedData");
+					oEnvelop.ContentEncoding = cadesplugin.CADESCOM_BASE64_TO_BINARY;
+					oEnvelop.Content = dataBase64;
+					oEnvelop.Recipients.Clear();
+					oEnvelop.Recipients.Add(oCertificate);
+					const decryptedData = oEnvelop.Decrypt();
+					resolve(decryptedData);
 				}
 				catch (e) {
 					console.log(e);
-					var err = getError(e);
+					const err = getError(e);
 					throw new Error(err);
 				}
 			});

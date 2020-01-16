@@ -94,3 +94,22 @@ function signData() {
         alert('Failed! ' + e);
     });
 }
+
+function encryptData() {
+    inputEncrypted.value = inputDecrypted.value = '';
+    var cryptopro = new window.RusCryptoJS.CryptoPro;
+    var data = btoa(inputData2.value)
+    var thumbprint = inputCertId2.value;
+    return cryptopro.init().then(info => {
+        console.log('Initialized', info);
+        return cryptopro.encryptData(data, thumbprint);
+    }).then(encrypted => {
+        inputEncrypted.value = encrypted;
+        return cryptopro.decryptData(encrypted, thumbprint);
+    }).then(decrypted => {
+        inputDecrypted.value = decrypted;
+        alert('Success!');
+    }).catch(e => {
+        alert('Failed! ' + e);
+    });
+}
