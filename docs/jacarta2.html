@@ -72,6 +72,7 @@ jacarta2.init().then(function(info) {
                     <li><a href="#listCertificates">listCertificates</a></li>
                     <li><a href="#readCertificate">readCertificate</a></li>
                     <li><a href="#signData">signData</a></li>
+                    <li><a href="#verifySign">verifySign</a></li>
                 </ul>
 
                 <h5 id="init">
@@ -310,6 +311,36 @@ jacarta2.init().then(function(info) {
                 </table>
                 <p>
                     <b class="returns">Возвращает</b> base64 закодированную подпись.
+                </p>
+
+                <h5 id="verifySign">
+                    <span class="function">verifySign</span>
+                    (
+                    dataBase64 : <span class="type">String</span>,
+                    signBase64 : <span class="type">String</span>
+                    ) : <span class="type">Promise&lt;Boolean&gt;</span>
+                </h5>
+                <p>Проверка подписи на токене.</p>
+                <table class="u-full-width">
+                    <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>dataBase64</td>
+                        <td>Данные для подписи.</td>
+                    </tr>
+                    <tr>
+                        <td>signBase64</td>
+                        <td>Существующая подпись.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <p>
+                    <b class="returns">Возвращает</b> истину <code>true</code> или выбрасывает ошибку в случае неуспешной проверки.
                 </p>
             </section>
             

@@ -412,6 +412,29 @@ function JaCarta2() {
 	};
 
 	/**
+	 * Проверить подпись.
+	 * @param {string} dataBase64
+	 * @param {string} signBase64 существующая подпись
+	 * @returns {Promise<boolean>} true или reject
+	 */
+	this.verifySign = function(dataBase64, signBase64){
+		return new Promise((resolve, reject) => {
+			client.verifyData({
+				args: {
+					signature: Array.from(atob(signBase64), c => c.charCodeAt(0)),
+					data: Array.from(atob(dataBase64), c => c.charCodeAt(0)),
+					options: {
+						tokenID: tokenId,
+						useToken: true
+					}
+				},
+				onSuccess: resolve,
+				onError: errorHandler(reject)
+			});
+		});
+	};
+
+	/**
 	 * Шифрование данных
 	 * @param {string} dataBase64 данные в base64
 	 * @param {int} containerId идентификатор контейнера (сертификата)

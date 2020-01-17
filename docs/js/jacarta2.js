@@ -103,6 +103,9 @@ function signData() {
     }).then(sign => {
         inputSign.value = sign;
         alert('Success!');
+        return jacarta2.verifySign(data, sign);
+    }).then(result => {
+        console.log('Sign Verified: ', result);
     }).catch(e => {
         alert('Failed! ' + e);
     }).then(() => {
