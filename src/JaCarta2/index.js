@@ -457,7 +457,7 @@ function JaCarta2() {
 			const base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(data)));
 			return pemSplit(base64);
 		});
-	}
+	};
 
 	/**
 	 * Дешифрование данных
@@ -479,7 +479,7 @@ function JaCarta2() {
 				onError: errorHandler(reject)
 			});
 		})).then(data => btoa(String.fromCharCode.apply(null, new Uint8Array(data))));
-	}
+	};
 
 	function errorHandler(reject)
 	{

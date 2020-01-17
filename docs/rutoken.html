@@ -39,6 +39,7 @@
             <p><a href="#Function_reference">Function reference</a></p>
             <p>Демо: <a href="#Выпуск_сертификата">Выпуск сертификата</a></p>
             <p>Демо: <a href="#Электронная_подпись">Электронная подпись</a></p>
+            <p>Демо: <a href="#Шифрование_данных">Шифрование данных</a></p>
             <p><a href="https://github.com/Aleksandr-ru/RusCryptoJS">Скачать</a></p>
 
             <section id="Использование">
@@ -492,6 +493,62 @@ rutoken.init().then(function(info) {
                         </div>
                         <div class="ten columns">
                             <textarea class="u-full-width" id="sign" readonly placeholder="Здесь будет отображена подпись"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <section id="Шифрование_данных">
+                <h2>Шифрование данных</h2>
+                <form id="formEncrypt">
+                    <div class="row">
+                        <div class="two columns">
+                            <label>Сертификат</label>
+                        </div>
+                        <div class="ten columns">
+                            <select class="u-full-width" id="certId2" required>
+                                <option value="" selected disabled>Обновите список сертификатов</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">
+                            <label>Pin код</label>
+                        </div>
+                        <div class="ten columns">
+                            <input class="u-full-width" type="text" id="pin2" placeholder="Пин-код для дешифрования будет предложено ввести">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">
+                            <label>Данные</label>
+                        </div>
+                        <div class="ten columns">
+                            <input class="u-full-width" type="text" id="data2" placeholder="Строка для шифрования" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">&nbsp;</div>
+                        <div class="ten columns">
+                            <button class="button-primary" type="submit">
+                                Зашифровать
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">
+                            <label>Зашифрованные данные</label>
+                        </div>
+                        <div class="ten columns">
+                            <textarea class="u-full-width" id="encrypted" readonly placeholder="Здесь будет отображены зашифрованные данные"></textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">
+                            <label>Расшифрованные данные</label>
+                        </div>
+                        <div class="ten columns">
+                            <input class="u-full-width" type="text" id="decrypted" readonly placeholder="Здесь будет отображены расшифрованные данные">
                         </div>
                     </div>
                 </form>

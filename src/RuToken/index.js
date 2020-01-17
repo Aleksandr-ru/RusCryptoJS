@@ -405,7 +405,7 @@ function RuToken() {
 			const err = getError(e);
 			throw new Error(err);
 		});
-	}
+	};
 
 	/**
 	 * Проверить подпись.
@@ -431,7 +431,43 @@ function RuToken() {
 			const err = getError(e);
 			throw new Error(err);
 		});
-	}
+	};
+
+	/**
+	 * Шифрование данных
+	 * @param {string} dataBase64 данные в base64
+	 * @param {string} certId идентификатор сертификата
+	 * @returns {Promise<string>} base64 enveloped data
+	 */
+	this.encryptData = function(dataBase64, certId) {
+		return plugin.getCertificate(deviceId, certId)
+		.then(cert => plugin.cmsEncrypt(deviceId, certId, cert, dataBase64, {
+			useHardwareEncryption: true,
+			base64: true
+		}))
+		.then(null, e => {
+			const err = getError(e);
+			throw new Error(err);
+		});
+	};
+
+	/**
+	 * Дешифрование данных
+	 * @param {string} dataBase64 данные в base64
+	 * @param {string} certId идентификатор сертификата
+	 * @returns {Promise<string>} base64
+	 */
+	this.decryptData = function(dataBase64, certId) {
+		// Перед расшифрованием сообщение нужно обрамить PEM-заголовками
+		// -----BEGIN PKCS7-----
+		// -----END PKCS7-----
+		return plugin.getKeyByCertificate(deviceId, certId)
+		.then(keyId => plugin.cmsDecrypt(deviceId, keyId, dataBase64, {}))
+		.then(null, e => {
+			const err = getError(e);
+			throw new Error(err);
+		});
+	};
 
 	/**
 	 * Получить ошибку по коду
