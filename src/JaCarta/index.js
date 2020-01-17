@@ -401,6 +401,31 @@ function JaCarta() {
 	};
 
 	/**
+	 * Шифрование данных
+	 * @param {string} dataBase64 данные в base64
+	 * @param {string} certThumbprint SHA1 отпечаток сертификата
+	 * @returns {Promise<string>} base64 enveloped data
+	 */
+	this.encryptData = function(dataBase64, certThumbprint) {
+		return new Promise(function () {
+			throw new Error('Encrypt feature is not supported, please upgrade to JaCarta-2 GOST');
+		});
+	}
+
+	/**
+	 * Дешифрование данных
+	 * @param {string} dataBase64 данные в base64
+	 * @param {string} certThumbprint SHA1 отпечаток сертификата
+	 * @param {string} pin будет запрошен, если отсутствует
+	 * @returns {Promise<string>} base64
+	 */
+	this.decryptData = function(dataBase64, certThumbprint, pin) {
+		return new Promise(function () {
+			throw new Error('Decrypt feature is not supported, please upgrade to JaCarta-2 GOST');
+		});
+	}
+
+	/**
 	 * Получить ошибку по коду
 	 * @param {string} mnemo мнемонический код ошибки CKR_*
 	 * @returns {string|Boolean} false если нет ошибки (CKR_OK)
