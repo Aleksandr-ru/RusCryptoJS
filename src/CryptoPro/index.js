@@ -680,9 +680,7 @@ function CryptoPro() {
 					oSigner.Certificate = oCertificate;
 					// oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
 					oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY;
-					if(pin) {
-						oSigner.KeyPin = pin;
-					}
+					oSigner.KeyPin = pin ? pin : '';
 
 					const oSignedData = cadesplugin.CreateObject("CAdESCOM.CadesSignedData");
 					// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
@@ -714,8 +712,8 @@ function CryptoPro() {
 		if(canAsync) {
 			let oCertificate, oCertificate2, oSigner, oSignedData;
 			return Promise.all([
-				getCertificateObject(certThumbprint),
-				getCertificateObject(certThumbprint2, "Не найден сертификат-2 по SHA1")
+				getCertificateObject(certThumbprint, pin),
+				getCertificateObject(certThumbprint2, pin, "Не найден сертификат-2 по SHA1")
 			])
 			.then(certs => {
 				oCertificate = certs[0];
@@ -983,12 +981,13 @@ function CryptoPro() {
 	 * Дешифрование данных
 	 * @param {string} dataBase64 данные в base64
 	 * @param {string} certThumbprint SHA1 отпечаток сертификата
+	 * @param {string} pin будет запрошен, если отсутствует
 	 * @returns {Promise<string>} base64
 	 */
-	this.decryptData = function(dataBase64, certThumbprint) {
+	this.decryptData = function(dataBase64, certThumbprint, pin) {
 		if(canAsync) {
 			let oCertificate, oEnvelop, oRecipients;
-			return getCertificateObject(certThumbprint)
+			return getCertificateObject(certThumbprint, pin)
 			.then(certificate => {
 				oCertificate = certificate;
 				return cadesplugin.CreateObjectAsync("CAdESCOM.CPEnvelopedData");
@@ -1016,7 +1015,7 @@ function CryptoPro() {
 		else {
 			return new Promise(resolve => {
 				try {
-					const oCertificate = getCertificateObject(certThumbprint);
+					const oCertificate = getCertificateObject(certThumbprint, pin);
 					const oEnvelop = cadesplugin.CreateObject("CAdESCOM.CPEnvelopedData");
 					oEnvelop.ContentEncoding = cadesplugin.CADESCOM_BASE64_TO_BINARY;
 					// oEnvelop.Content = dataBase64;
@@ -1034,11 +1033,11 @@ function CryptoPro() {
 		}
 	};
 
-	function getCertificateObject(certThumbprint, noCertMes) {
+	function getCertificateObject(certThumbprint, pin, noCertMes) {
 		if(canAsync) {
 			let oStore, oCertificate;
 			return cadesplugin
-			.then(() => cadesplugin.CreateObjectAsync("CAPICOM.Store"))
+			.then(() => cadesplugin.CreateObjectAsync("CAPICOM.Store")) //TODO: CADESCOM.Store ?
 			.then(o => {
 				oStore = o;
 				return oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE,
@@ -1060,6 +1059,17 @@ function CryptoPro() {
 				oCertificate = certificate;
 				return oStore.Close();
 			})
+			.then(() => oCertificate.HasPrivateKey())
+			.then(hasKey => {
+				let p = Promise.resolve();
+				if (hasKey) {
+					p = p.then(() => oCertificate.PrivateKey).then(privateKey => Promise.all([
+						privateKey.propset_KeyPin(pin ? pin : ''),
+						privateKey.propset_CachePin(binded)
+					]));
+				}
+				return p;
+			})
 			.then(() => oCertificate);
 		}
 		else {
@@ -1073,6 +1083,10 @@ function CryptoPro() {
 				throw new Error(noCertMes || "Не обнаружено сертификатов c указанным SHA1");
 			}
 			const oCertificate = oCertificates.Item(1);
+			if (oCertificate.HasPrivateKey) {
+				oCertificate.PrivateKey.KeyPin = pin ? pin : '';
+				oCertificate.PrivateKey.CachePin = binded;
+			}
 			oStore.Close();
 			return oCertificate;
 		}

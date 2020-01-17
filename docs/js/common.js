@@ -15,6 +15,7 @@ var oDn = {
     '1.2.643.100.3': '00000000052', // 'NUMERICSTRING:00000000052' // СНИЛС
 };
 var inputPin = document.getElementById('pin');
+var inputPin2 = document.getElementById('pin2');
 var inputDescr = document.getElementById('descr');
 var inputDN = document.getElementById('dn');
 var inputCsr = document.getElementById('csr');

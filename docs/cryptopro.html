@@ -96,7 +96,6 @@ cryptopro.init().then(function(info) {
                 </h5>
                 <p>
                     Включает кеширование ПИН-кодов в процессе подписания, чтобы не тробовать от пользователя повторного ввода.
-                    Применимо только для <a href="#signData">signData</a>.
                 </p>
                 <table class="u-full-width">
                     <thead>
@@ -434,7 +433,7 @@ cryptopro.init().then(function(info) {
                             <label>Pin код</label>
                         </div>
                         <div class="ten columns">
-                            <input class="u-full-width" type="text" id="descr" placeholder="Пин-код контейнера будет предложено ввести">
+                            <input class="u-full-width" type="text" id="pin" placeholder="Пин-код контейнера будет предложено ввести">
                         </div>
                     </div>
                     <div class="row">
@@ -554,6 +553,14 @@ cryptopro.init().then(function(info) {
                             <select class="u-full-width" id="certId2" required>
                                 <option value="" selected disabled>Обновите список сертификатов</option>
                             </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns">
+                            <label>Pin код</label>
+                        </div>
+                        <div class="ten columns">
+                            <input class="u-full-width" type="text" id="pin2" placeholder="Пин-код для дешифрования будет предложено ввести">
                         </div>
                     </div>
                     <div class="row">

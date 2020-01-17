@@ -42,7 +42,7 @@ function requestCSR() {
     GlobalCryptoPro = new window.RusCryptoJS.CryptoPro;
     return GlobalCryptoPro.init().then(info => {
         console.log('Initialized', info);
-        return GlobalCryptoPro.generateCSR(dn, inputDescr.value);
+        return GlobalCryptoPro.generateCSR(dn, inputPin.value);
     }).then(result => {
         console.log('generateCSR', result);
 
@@ -105,7 +105,7 @@ function encryptData() {
         return cryptopro.encryptData(data, thumbprint);
     }).then(encrypted => {
         inputEncrypted.value = encrypted;
-        return cryptopro.decryptData(encrypted, thumbprint);
+        return cryptopro.decryptData(encrypted, thumbprint, inputPin2.value);
     }).then(decrypted => {
         inputDecrypted.value = atob(decrypted);
         alert('Success!');
