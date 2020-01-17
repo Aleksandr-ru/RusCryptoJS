@@ -365,7 +365,7 @@ function JaCarta2() {
 	
 	/**
 	 * Получить сертификат из контейнера
-	 * @param {int} containerId 
+	 * @param {int} containerId
 	 * @returns {Promise<string>} base64(массив байт со значением сертификата в формате DER)
 	 */
 	this.readCertificate = function(containerId) {
@@ -410,6 +410,53 @@ function JaCarta2() {
 			return pemSplit(sign);
 		});
 	};
+
+	/**
+	 * Шифрование данных
+	 * @param {string} dataBase64 данные в base64
+	 * @param {int} containerId идентификатор контейнера (сертификата)
+	 * @returns {Promise<string>} base64 enveloped data
+	 */
+	this.encryptData = function(dataBase64, containerId) {
+		// https://stackoverflow.com/questions/21797299/convert-base64-string-to-arraybuffer/21797381
+		const dataByte = Array.from(atob(dataBase64), c => c.charCodeAt(0));
+		return this.readCertificate(containerId).then(cert => new Promise((resolve, reject) => {
+			client.encryptData({
+				args: {
+					contID: containerId,
+					receiverCertificate: cert,
+					data: dataByte // Данные для шифрования в виде массива байт.
+				},
+				onSuccess: resolve,
+				onError: errorHandler(reject)
+			});
+		})).then(data => {
+			const base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(data)));
+			return pemSplit(base64);
+		});
+	}
+
+	/**
+	 * Дешифрование данных
+	 * @param {string} dataBase64 данные в base64
+	 * @param {int} containerId идентификатор контейнера (сертификата)
+	 * @returns {Promise<string>} base64
+	 */
+	this.decryptData = function(dataBase64, containerId) {
+		const dataByte = Array.from(atob(dataBase64), c => c.charCodeAt(0));
+		return this.readCertificate(containerId).then(cert => new Promise((resolve, reject) => {
+			const certByte = Array.from(atob(cert), c => c.charCodeAt(0));
+			client.decryptData({
+				args: {
+					contID: containerId,
+					senderCertificate: certByte, // Сертификат отправителя в виде массива байт.
+					data: dataByte // Массив байт с зашифрованными данными в формате CMS.
+				},
+				onSuccess: resolve,
+				onError: errorHandler(reject)
+			});
+		})).then(data => btoa(String.fromCharCode.apply(null, new Uint8Array(data))));
+	}
 
 	function errorHandler(reject)
 	{

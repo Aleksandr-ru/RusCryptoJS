@@ -401,25 +401,20 @@ function JaCarta() {
 	};
 
 	/**
-	 * Шифрование данных
-	 * @param {string} dataBase64 данные в base64
-	 * @param {string} certThumbprint SHA1 отпечаток сертификата
-	 * @returns {Promise<string>} base64 enveloped data
+	 * Шифрование данных не поддерживается
+	 * @returns {Promise}
 	 */
-	this.encryptData = function(dataBase64, certThumbprint) {
+	this.encryptData = function() {
 		return new Promise(function () {
 			throw new Error('Encrypt feature is not supported, please upgrade to JaCarta-2 GOST');
 		});
 	}
 
 	/**
-	 * Дешифрование данных
-	 * @param {string} dataBase64 данные в base64
-	 * @param {string} certThumbprint SHA1 отпечаток сертификата
-	 * @param {string} pin будет запрошен, если отсутствует
-	 * @returns {Promise<string>} base64
+	 * Дешифрование данных не поддерживается
+	 * @returns {Promise<>}
 	 */
-	this.decryptData = function(dataBase64, certThumbprint, pin) {
+	this.decryptData = function() {
 		return new Promise(function () {
 			throw new Error('Decrypt feature is not supported, please upgrade to JaCarta-2 GOST');
 		});
