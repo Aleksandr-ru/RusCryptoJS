@@ -462,7 +462,7 @@ function JaCarta2() {
 	/**
 	 * Дешифрование данных
 	 * @param {string} dataBase64 данные в base64
-	 * @param {int} containerId идентификатор контейнера (сертификата)
+	 * @param {int} containerId идентификатор контейнера (ключа)
 	 * @returns {Promise<string>} base64
 	 */
 	this.decryptData = function(dataBase64, containerId) {

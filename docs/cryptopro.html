@@ -74,6 +74,8 @@ cryptopro.init().then(function(info) {
                     <li><a href="#signData2">signData2</a></li>
                     <li><a href="#addSign">addSign</a></li>
                     <li><a href="#verifySign">verifySign</a></li>
+                    <li><a href="#encryptData">encryptData</a></li>
+                    <li><a href="#decryptData">decryptData</a></li>
                 </ul>
 
                 <h5 id="init">
@@ -422,6 +424,71 @@ cryptopro.init().then(function(info) {
                 </table>
                 <p>
                     <b class="returns">Возвращает</b> истину <code>true</code> или выбрасывает ошибку в случае неуспешной проверки.
+                </p>
+
+                <h5 id="encryptData">
+                    <span class="function">encryptData</span>
+                    (
+                    dataBase64 : <span class="type">String</span>,
+                    certThumbprint : <span class="type">String</span>
+                    ) : <span class="type">Promise&lt;String&gt;</span>
+                </h5>
+                <p>Шифрование данных в формате CMS.</p>
+                <table class="u-full-width">
+                    <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>dataBase64</td>
+                        <td>Данные для шифрования.</td>
+                    </tr>
+                    <tr>
+                        <td>certThumbprint</td>
+                        <td>Отпечаток сертификата.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <p>
+                    <b class="returns">Возвращает</b> зашифрованные данные в формате CMS.
+                </p>
+
+                <h5 id="decryptData">
+                    <span class="function">decryptData</span>
+                    (
+                    dataBase64 : <span class="type">String</span>,
+                    certThumbprint : <span class="type">String</span>
+                    <span class="optional">[, pin : <span class="type">String</span>]</span>
+                    ) : <span class="type">Promise&lt;String&gt;</span>
+                </h5>
+                <p>Расшифрование данных в формате CMS.</p>
+                <table class="u-full-width">
+                    <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>dataBase64</td>
+                        <td>CMS-сообщение, содержащие зашифрованные данные.</td>
+                    </tr>
+                    <tr>
+                        <td>certThumbprint</td>
+                        <td>Отпечаток сертификата.</td>
+                    </tr>
+                    <tr>
+                        <td>pin</td>
+                        <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <p>
+                    <b class="returns">Возвращает</b> расшифрованные данные.
                 </p>
             </section>
             
