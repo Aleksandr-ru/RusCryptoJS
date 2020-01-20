@@ -17,16 +17,12 @@ function loadCerts() {
     var jacarta2 = new window.RusCryptoJS.JaCarta2;
     return jacarta2.init().then(info => {
         console.log('Initialized', info);
-        return jacarta2.bind();
-    }).then(_ => { 
         return jacarta2.listCertificates();
     }).then(certs => {
         console.log('Certs', certs);
         return setCertOptions(certs);
     }).catch(e => {
         alert('Failed! ' + e);
-    }).then(() => {
-        jacarta2.unbind();        
     });
 }
 
@@ -106,6 +102,32 @@ function signData() {
         return jacarta2.signData(data, contId);
     }).then(sign => {
         inputSign.value = sign;
+        alert('Success!');
+        return jacarta2.verifySign(data, sign);
+    }).then(result => {
+        console.log('Sign Verified: ', result);
+    }).catch(e => {
+        alert('Failed! ' + e);
+    }).then(() => {
+        jacarta2.unbind();
+    });
+}
+
+function encryptData() {
+    inputEncrypted.value = inputDecrypted.value = '';
+    var jacarta2 = new window.RusCryptoJS.JaCarta2;
+    var data = btoa(inputData2.value)
+    var contId = inputCertId2.value;
+    return jacarta2.init().then(info => {
+        console.log('Initialized', info);
+        return jacarta2.bind(inputPin2.value);
+    }).then(_ => {
+        return jacarta2.encryptData(data, contId);
+    }).then(encrypted => {
+        inputEncrypted.value = encrypted;
+        return jacarta2.decryptData(encrypted, contId, inputPin2.value);
+    }).then(decrypted => {
+        inputDecrypted.value = atob(decrypted);
         alert('Success!');
     }).catch(e => {
         alert('Failed! ' + e);

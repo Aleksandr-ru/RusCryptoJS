@@ -13,35 +13,16 @@ function showInfo(contId) {
 
 function loadCerts() {
     inputCertId.innerHTML = inputCertInfo.value = '';
-    var options = [];
-    var placeholder = document.createElement('option');
-    placeholder.selected = true;
-    placeholder.disabled = true;
-    placeholder.text = 'Выберите сертификат';
-    placeholder.value = '';
-    options.push(placeholder);
 
     var rutoken = new window.RusCryptoJS.RuToken;
     return rutoken.init().then(info => {
         console.log('Initialized', info);
-        return rutoken.bind();
-    }).then(_ => { 
         return rutoken.listCertificates();
     }).then(certs => {
         console.log('Certs', certs);
-        for(var i in certs) {
-            var option = document.createElement('option');
-            option.value = certs[i].id;
-            option.text = certs[i].name;
-            options.push(option);
-        }
+        return setCertOptions(certs);
     }).catch(e => {
         alert('Failed! ' + e);
-    }).then(() => {
-        rutoken.unbind();
-        for(var i in options) {
-            inputCertId.appendChild(options[i]);
-        }
     });
 }
 
@@ -121,6 +102,29 @@ function signData() {
         return rutoken.verifySign(data, sign);
     }).then(_ => {
         console.log('Signed and verified')
+        alert('Success!');
+    }).catch(e => {
+        alert('Failed! ' + e);
+    }).then(() => {
+        rutoken.unbind();
+    });
+}
+
+function encryptData() {
+    inputEncrypted.value = inputDecrypted.value = '';
+    var rutoken = new window.RusCryptoJS.RuToken;
+    var data = btoa(inputData2.value)
+    var contId = inputCertId2.value;
+    return rutoken.init().then(info => {
+        console.log('Initialized', info);
+        return rutoken.bind(inputPin2.value);
+    }).then(_ => {
+        return rutoken.encryptData(data, contId);
+    }).then(encrypted => {
+        inputEncrypted.value = encrypted;
+        return rutoken.decryptData(encrypted, contId, inputPin2.value);
+    }).then(decrypted => {
+        inputDecrypted.value = atob(decrypted);
         alert('Success!');
     }).catch(e => {
         alert('Failed! ' + e);

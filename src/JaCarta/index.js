@@ -401,6 +401,26 @@ function JaCarta() {
 	};
 
 	/**
+	 * Шифрование данных не поддерживается
+	 * @returns {Promise}
+	 */
+	this.encryptData = function() {
+		return new Promise(function () {
+			throw new Error('Encrypt feature is not supported, please upgrade to JaCarta-2 GOST');
+		});
+	}
+
+	/**
+	 * Дешифрование данных не поддерживается
+	 * @returns {Promise<>}
+	 */
+	this.decryptData = function() {
+		return new Promise(function () {
+			throw new Error('Decrypt feature is not supported, please upgrade to JaCarta-2 GOST');
+		});
+	}
+
+	/**
 	 * Получить ошибку по коду
 	 * @param {string} mnemo мнемонический код ошибки CKR_*
 	 * @returns {string|Boolean} false если нет ошибки (CKR_OK)

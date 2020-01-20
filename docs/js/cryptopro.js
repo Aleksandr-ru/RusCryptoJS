@@ -42,7 +42,7 @@ function requestCSR() {
     GlobalCryptoPro = new window.RusCryptoJS.CryptoPro;
     return GlobalCryptoPro.init().then(info => {
         console.log('Initialized', info);
-        return GlobalCryptoPro.generateCSR(dn, inputDescr.value);
+        return GlobalCryptoPro.generateCSR(dn, inputPin.value);
     }).then(result => {
         console.log('generateCSR', result);
 
@@ -89,6 +89,25 @@ function signData() {
         return cryptopro.signData(data, thumbprint);
     }).then(sign => {
         inputSign.value = sign;
+        alert('Success!');
+    }).catch(e => {
+        alert('Failed! ' + e);
+    });
+}
+
+function encryptData() {
+    inputEncrypted.value = inputDecrypted.value = '';
+    var cryptopro = new window.RusCryptoJS.CryptoPro;
+    var data = btoa(inputData2.value)
+    var thumbprint = inputCertId2.value;
+    return cryptopro.init().then(info => {
+        console.log('Initialized', info);
+        return cryptopro.encryptData(data, thumbprint);
+    }).then(encrypted => {
+        inputEncrypted.value = encrypted;
+        return cryptopro.decryptData(encrypted, thumbprint, inputPin2.value);
+    }).then(decrypted => {
+        inputDecrypted.value = atob(decrypted);
         alert('Success!');
     }).catch(e => {
         alert('Failed! ' + e);

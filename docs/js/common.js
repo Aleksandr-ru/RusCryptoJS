@@ -15,17 +15,23 @@ var oDn = {
     '1.2.643.100.3': '00000000052', // 'NUMERICSTRING:00000000052' // СНИЛС
 };
 var inputPin = document.getElementById('pin');
+var inputPin2 = document.getElementById('pin2');
 var inputDescr = document.getElementById('descr');
 var inputDN = document.getElementById('dn');
 var inputCsr = document.getElementById('csr');
 var inputCert = document.getElementById('cert');
 var inputCertInfo = document.getElementById('certInfo');
 var inputCertId = document.getElementById('certId');
+var inputCertId2 = document.getElementById('certId2');
 var inputData = document.getElementById('data');
+var inputData2 = document.getElementById('data2');
 var inputSign = document.getElementById('sign');
+var inputEncrypted = document.getElementById('encrypted');
+var inputDecrypted = document.getElementById('decrypted');
 var formCsr = document.getElementById('formCsr');
 var formCert = document.getElementById('formCert');
 var formSign = document.getElementById('formSign');
+var formEncrypt = document.getElementById('formEncrypt');
 var buttonRefresh = document.getElementById('refresh');
 
 inputDN.value = JSON.stringify(oDn, null, '\t');
@@ -57,8 +63,14 @@ formSign.addEventListener('submit', e => {
     signData();
 });
 
+formEncrypt.addEventListener('submit', e => {
+    e.preventDefault();
+    encryptData();
+});
+
 function setCertOptions(certs) {
     inputCertId.innerHTML = '';
+    inputCertId2.innerHTML = '';
     var options = [];
     var placeholder = document.createElement('option');
     placeholder.selected = true;
@@ -76,4 +88,5 @@ function setCertOptions(certs) {
     for(var i in options) {
         inputCertId.appendChild(options[i]);
     }
+    inputCertId2.innerHTML = inputCertId.innerHTML;
 }
