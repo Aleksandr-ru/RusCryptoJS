@@ -441,8 +441,7 @@ function RuToken() {
 	 */
 	this.encryptData = function(dataBase64, certId) {
 		return plugin.getCertificate(deviceId, certId)
-		.then(cert => plugin.cmsEncrypt(deviceId, certId, cert, dataBase64, {
-			useHardwareEncryption: true,
+		.then(cert => plugin.cmsEncrypt(deviceId, "", [cert], dataBase64, {
 			base64: true
 		}))
 		.then(null, e => {
@@ -458,11 +457,10 @@ function RuToken() {
 	 * @returns {Promise<string>} base64
 	 */
 	this.decryptData = function(dataBase64, certId) {
-		// Перед расшифрованием сообщение нужно обрамить PEM-заголовками
-		// -----BEGIN PKCS7-----
-		// -----END PKCS7-----
 		return plugin.getKeyByCertificate(deviceId, certId)
-		.then(keyId => plugin.cmsDecrypt(deviceId, keyId, dataBase64, {}))
+		.then(keyId => plugin.cmsDecrypt(deviceId, keyId, dataBase64, {
+			base64: true
+		}))
 		.then(null, e => {
 			const err = getError(e);
 			throw new Error(err);
