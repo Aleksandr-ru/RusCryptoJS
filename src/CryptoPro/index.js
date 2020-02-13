@@ -712,8 +712,8 @@ function CryptoPro() {
 		if(canAsync) {
 			let oCertificate, oCertificate2, oSigner, oSignedData;
 			return Promise.all([
-				getCertificateObject(certThumbprint, pin),
-				getCertificateObject(certThumbprint2, pin, "Не найден сертификат-2 по SHA1")
+				getCertificateObject(certThumbprint),
+				getCertificateObject(certThumbprint2)
 			])
 			.then(certs => {
 				oCertificate = certs[0];
@@ -754,7 +754,7 @@ function CryptoPro() {
 			return new Promise(resolve => {
 				try {
 					const oCertificate = getCertificateObject(certThumbprint);
-					const oCertificate2 = getCertificateObject(certThumbprint2, "Не найден сертификат-2 по SHA1");
+					const oCertificate2 = getCertificateObject(certThumbprint2);
 
 					const oSignedData = cadesplugin.CreateObject("CAdESCOM.CadesSignedData");
 					// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
@@ -1033,7 +1033,7 @@ function CryptoPro() {
 		}
 	};
 
-	function getCertificateObject(certThumbprint, pin, noCertMes) {
+	function getCertificateObject(certThumbprint, pin) {
 		if(canAsync) {
 			let oStore, oCertificate;
 			return cadesplugin
@@ -1054,7 +1054,7 @@ function CryptoPro() {
 			})
 			.then(([count, certificate]) => {
 				if(count != 1) {
-					throw new Error(noCertMes || "Не обнаружено сертификатов c указанным SHA1");
+					throw new Error("Не обнаружен сертификат c отпечатком " + certThumbprint);
 				}
 				oCertificate = certificate;
 				return oStore.Close();
@@ -1062,7 +1062,7 @@ function CryptoPro() {
 			.then(() => oCertificate.HasPrivateKey())
 			.then(hasKey => {
 				let p = Promise.resolve();
-				if (hasKey) {
+				if (hasKey && pin) {
 					p = p.then(() => oCertificate.PrivateKey).then(privateKey => Promise.all([
 						privateKey.propset_KeyPin(pin ? pin : ''),
 						privateKey.propset_CachePin(binded)
@@ -1080,12 +1080,16 @@ function CryptoPro() {
 
 			const oCertificates = oStore.Certificates.Find(cadesplugin.CAPICOM_CERTIFICATE_FIND_SHA1_HASH, certThumbprint);
 			if (oCertificates.Count != 1) {
-				throw new Error(noCertMes || "Не обнаружено сертификатов c указанным SHA1");
+				throw new Error("Не обнаружен сертификат c отпечатком " + certThumbprint);
 			}
 			const oCertificate = oCertificates.Item(1);
-			if (oCertificate.HasPrivateKey) {
+			if (oCertificate.HasPrivateKey && pin) {
 				oCertificate.PrivateKey.KeyPin = pin ? pin : '';
-				oCertificate.PrivateKey.CachePin = binded;
+				if(oCertificate.PrivateKey.CachePin !== undefined) {
+					// возможно не поддерживается в ИЕ
+					// https://www.cryptopro.ru/forum2/default.aspx?g=posts&t=10170
+					oCertificate.PrivateKey.CachePin = binded;
+				}
 			}
 			oStore.Close();
 			return oCertificate;
