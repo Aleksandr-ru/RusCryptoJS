@@ -1,6 +1,6 @@
 {
   "name": "ruscryptojs",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Simplified library for Russian GOST crypto providres.",
   "main": "dist/ruscrypto.min.js",
   "scripts": {
@@ -33,12 +33,11 @@
     "babel-loader": "^8.0.4",
     "clean-webpack-plugin": "^0.1.19",
     "webpack": "^4.17.0",
-    "webpack-cli": "^3.1.0",
+    "webpack-cli": "^3.3.12",
     "webpack-copy-after-build-plugin": "^1.0.1",
-    "webpack-dev-server": "^3.1.5"
+    "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
-    "@babel/runtime": "^7.1.2",
     "rutoken": "^1.0.8"
   }
 }
