@@ -21,14 +21,14 @@ import { convertDN } from '../helpers';
 function CryptoPro() {
 	//If the string contains fewer than 128 bytes, the Length field of the TLV triplet requires only one byte to specify the content length.
 	//If the string is more than 127 bytes, bit 7 of the Length field is set to 1 and bits 6 through 0 specify the number of additional bytes used to identify the content length.
-	var maxLengthCSPName = 127;
+	const maxLengthCSPName = 127;
 	
 	// https://www.cryptopro.ru/forum2/default.aspx?g=posts&m=38467#post38467
-	var asn1UTF8StringTag = 0x0c; // 12, UTF8String
+	const asn1UTF8StringTag = 0x0c; // 12, UTF8String
 
-	var canAsync;
+	let canAsync;
 
-	var binded = false;
+	let binded = false;
 
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
@@ -56,25 +56,25 @@ function CryptoPro() {
 					return {version };
 				}).catch(function(e) {
 					// 'Плагин не загружен'
-					var err = getError(e);
+					const err = getError(e);
 					throw new Error(err);
 				});
 			}
 			else {
 				return new Promise(resolve => {
 					try {
-						var oAbout = cadesplugin.CreateObject("CAdESCOM.About");
+						const oAbout = cadesplugin.CreateObject("CAdESCOM.About");
 						if(!oAbout || !oAbout.Version) {
 							throw new Error('КриптоПро ЭЦП Browser plug-in не загружен');
 						}
-						var CurrentPluginVersion = oAbout.Version;
+						const CurrentPluginVersion = oAbout.Version;
 						resolve({
 							version: CurrentPluginVersion
 						});
 					}
 					catch(e) {
 						// 'Плагин не загружен'
-						var err = getError(e);
+						const err = getError(e);
 						throw new Error(err);
 					}
 				});
@@ -123,7 +123,7 @@ function CryptoPro() {
 			providerType = ProviderTypes.GOST_R_34_10_2012;
 		}
 		if(canAsync) {
-			var oEnroll, oRequest, oPrivateKey, oExtensions, oKeyUsage, oEnhancedKeyUsage, oEnhancedKeyUsageOIDs, aOIDs, oSstOID, oDn, oCspInformations, sCSPName, oSubjectSignTool;
+			let oEnroll, oRequest, oPrivateKey, oExtensions, oKeyUsage, oEnhancedKeyUsage, oEnhancedKeyUsageOIDs, aOIDs, oSstOID, oDn, oCspInformations, sCSPName, oSubjectSignTool;
 			return cadesplugin.then(function(){
 				return Promise.all([
 					cadesplugin.CreateObjectAsync('X509Enrollment.CX509Enrollment'), // 0
@@ -154,24 +154,24 @@ function CryptoPro() {
 				return oCspInformations.Count;
 			}).then(function(cnt){
 				if(!cnt) throw new Error('No CSP informations!');
-				var aPromises = [];
-				for(var i=0; i<cnt; i++) aPromises.push(oCspInformations.ItemByIndex(i));
+				const aPromises = [];
+				for(let i=0; i<cnt; i++) aPromises.push(oCspInformations.ItemByIndex(i));
 				return Promise.all(aPromises);
 			}).then(function(aCspInformation){
-				var aPromises = [];
-				for(var i in aCspInformation) {
-					var a = aCspInformation[i];
+				const aPromises = [];
+				for(let i in aCspInformation) {
+					const a = aCspInformation[i];
 					aPromises.push(a.LegacyCsp);
 					aPromises.push(a.Type);
 					aPromises.push(a.Name);
 				}
 				return Promise.all(aPromises);
 			}).then(function(aCspInfo){
-				var cspType, cspName;
-				for(var i=0; i<aCspInfo.length; i+=3) {
-					var bLegacyCsp = aCspInfo[i];
-					var nType = aCspInfo[i+1];
-					var sName = aCspInfo[i+2];
+				let cspType, cspName;
+				for(let i=0; i<aCspInfo.length; i+=3) {
+					const bLegacyCsp = aCspInfo[i];
+					const nType = aCspInfo[i+1];
+					const sName = aCspInfo[i+2];
 
 					if(bLegacyCsp && nType == providerType) {
 						cspType = nType;
@@ -183,7 +183,7 @@ function CryptoPro() {
 					throw new Error('No suitable CSP!');
 				}
 
-				var aPromises = [
+				const aPromises = [
 					oPrivateKey.propset_KeySpec(X509KeySpec.XCN_AT_SIGNATURE),
 					oPrivateKey.propset_Existing(false),
 					oPrivateKey.propset_ExportPolicy(X509PrivateKeyExportFlags.XCN_NCRYPT_ALLOW_EXPORT_FLAG),
@@ -202,22 +202,22 @@ function CryptoPro() {
 					X509KeyUsageFlags.XCN_CERT_DATA_ENCIPHERMENT_KEY_USAGE
 				);
 			}).then(function(){
-				var promises = [];
-				for(var i=0; i<ekuOids.length; i++) {
+				const promises = [];
+				for(let i=0; i<ekuOids.length; i++) {
 					promises.push(cadesplugin.CreateObjectAsync('X509Enrollment.CObjectId'));
 				}
 				return Promise.all(promises);
 			}).then(function(objects){
 				aOIDs = objects;
-				var promises = [];
-				for(var i=0; i<ekuOids.length; i++) {
-					aOIDs[i].InitializeFromValue(ekuOids[i]);
+				const promises = [];
+				for(let i=0; i<ekuOids.length; i++) {
+					promises.push(aOIDs[i].InitializeFromValue(ekuOids[i]));
 				}
 				return Promise.all(promises);
 			}).then(function(){
-				var promises = [];
-				for(var i=0; i<ekuOids.length; i++) {
-					oEnhancedKeyUsageOIDs.Add(aOIDs[i]);
+				const promises = [];
+				for(let i=0; i<ekuOids.length; i++) {
+					promises.push(oEnhancedKeyUsageOIDs.Add(aOIDs[i]));
 				}
 				return Promise.all(promises);
 			}).then(function(){
@@ -226,10 +226,10 @@ function CryptoPro() {
 				oSstOID = oid;
 				return oSstOID.InitializeFromValue('1.2.643.100.111'); // Subject Sign Tool
 			}).then(function(){
-				var shortName = sCSPName.slice(0, maxLengthCSPName);
-				var utf8arr = stringToUtf8ByteArray(shortName);
+				const shortName = sCSPName.slice(0, maxLengthCSPName);
+				const utf8arr = stringToUtf8ByteArray(shortName);
 				utf8arr.unshift(asn1UTF8StringTag, utf8arr.length);
-				var base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(utf8arr)));
+				const base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(utf8arr)));
 				//return oSubjectSignTool.Initialize(oSstOID, EncodingType.XCN_CRYPT_STRING_BINARY, utf8string); // не работает на винде
 				return oSubjectSignTool.Initialize(oSstOID, EncodingType.XCN_CRYPT_STRING_BASE64, base64String);
 			}).then(function(){
@@ -255,28 +255,26 @@ function CryptoPro() {
 			}).then(function(csr){
 				return { csr };
 			}).catch(function(e){
-				console.log(arguments);
-				var err = getError(e);
+				const err = getError(e);
 				throw new Error(err);
 			});
 		}
 		else {
 			return new Promise(resolve => {
 				try {
-					var oCspInformations = cadesplugin.CreateObject('X509Enrollment.CCspInformations');
-					var oEnroll = cadesplugin.CreateObject('X509Enrollment.CX509Enrollment');
-					var oRequest = cadesplugin.CreateObject('X509Enrollment.CX509CertificateRequestPkcs10');
-					var oPrivateKey = cadesplugin.CreateObject('X509Enrollment.CX509PrivateKey');
-					var oKeyUsage = cadesplugin.CreateObject('X509Enrollment.CX509ExtensionKeyUsage');
-					var oEnhancedKeyUsage = cadesplugin.CreateObject('X509Enrollment.CX509ExtensionEnhancedKeyUsage');
-					var oEnhancedKeyUsageOIDs = cadesplugin.CreateObject('X509Enrollment.CObjectIds');
-					var oDn = cadesplugin.CreateObject('X509Enrollment.CX500DistinguishedName');
-					var oExtensions = cadesplugin.CreateObject('X509Enrollment.CX509Extensions');
+					const oCspInformations = cadesplugin.CreateObject('X509Enrollment.CCspInformations');
+					const oEnroll = cadesplugin.CreateObject('X509Enrollment.CX509Enrollment');
+					const oRequest = cadesplugin.CreateObject('X509Enrollment.CX509CertificateRequestPkcs10');
+					const oPrivateKey = cadesplugin.CreateObject('X509Enrollment.CX509PrivateKey');
+					const oKeyUsage = cadesplugin.CreateObject('X509Enrollment.CX509ExtensionKeyUsage');
+					const oEnhancedKeyUsage = cadesplugin.CreateObject('X509Enrollment.CX509ExtensionEnhancedKeyUsage');
+					const oEnhancedKeyUsageOIDs = cadesplugin.CreateObject('X509Enrollment.CObjectIds');
+					const oDn = cadesplugin.CreateObject('X509Enrollment.CX500DistinguishedName');
 
-					var cspType, cspName;
+					let cspType, cspName;
 					oCspInformations.AddAvailableCsps();
-					for(var i=0; i<oCspInformations.Count; i++) {
-						var oCspInfo = oCspInformations.ItemByIndex(i);
+					for(let i=0; i<oCspInformations.Count; i++) {
+						const oCspInfo = oCspInformations.ItemByIndex(i);
 						if(oCspInfo.LegacyCsp && oCspInfo.Type == providerType) {
 							cspType = oCspInfo.Type;
 							cspName = oCspInfo.Name;
@@ -304,8 +302,8 @@ function CryptoPro() {
 						X509KeyUsageFlags.XCN_CERT_DATA_ENCIPHERMENT_KEY_USAGE
 					);
 
-					var aEnhancedKeyUsageOIDs = [];
-					for(var i=0; i<ekuOids.length; i++) {
+					const aEnhancedKeyUsageOIDs = [];
+					for(let i=0; i<ekuOids.length; i++) {
 						aEnhancedKeyUsageOIDs.push(cadesplugin.CreateObject('X509Enrollment.CObjectId'));
 						aEnhancedKeyUsageOIDs[i].InitializeFromValue(ekuOids[i]);
 						oEnhancedKeyUsageOIDs.Add(aEnhancedKeyUsageOIDs[i]);
@@ -317,29 +315,28 @@ function CryptoPro() {
 					oRequest.X509Extensions.Add(oEnhancedKeyUsage);
 
 					//subject sign tool
-					var ssOID = cadesplugin.CreateObject('X509Enrollment.CObjectId');
+					const ssOID = cadesplugin.CreateObject('X509Enrollment.CObjectId');
 					ssOID.InitializeFromValue('1.2.643.100.111');
-					var shortName = cspName.slice(0, maxLengthCSPName);
-					var utf8arr = stringToUtf8ByteArray(shortName);
+					const shortName = cspName.slice(0, maxLengthCSPName);
+					const utf8arr = stringToUtf8ByteArray(shortName);
 					utf8arr.unshift(asn1UTF8StringTag, shortName.length);
-					var base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(utf8arr)));
-					var oSubjectSignTool = cadesplugin.CreateObject('X509Enrollment.CX509Extension');
+					const base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(utf8arr)));
+					const oSubjectSignTool = cadesplugin.CreateObject('X509Enrollment.CX509Extension');
 					oSubjectSignTool.Initialize(ssOID, EncodingType.XCN_CRYPT_STRING_BASE64, base64String);
 					oRequest.X509Extensions.Add(oSubjectSignTool);
 
-					var strName = dn.toString();
+					const strName = dn.toString();
 					oDn.Encode(strName, X500NameFlags.XCN_CERT_X500_NAME_STR);
 
 					oRequest.Subject = oDn;
 
 					oEnroll.InitializeFromRequest(oRequest);
 
-					var csr = oEnroll.CreateRequest(EncodingType.XCN_CRYPT_STRING_BASE64);
+					const csr = oEnroll.CreateRequest(EncodingType.XCN_CRYPT_STRING_BASE64);
 					resolve({ csr });
 				}
 				catch(e) {
-					console.log(e);
-					var err = getError(e);
+					const err = getError(e);
 					throw new Error(err);
 				}
 			});
@@ -353,9 +350,9 @@ function CryptoPro() {
 	 */
 	this.writeCertificate = function(certBase64){
 		if(canAsync) {
-			var oEnroll, existingSha = [];
+			let oEnroll, existingSha = [];
 			return this.listCertificates().then(function(certs){
-				for(var i in certs) {
+				for(let i in certs) {
 					existingSha.push(certs[i].id);
 				}
 				return cadesplugin.CreateObjectAsync('X509Enrollment.CX509Enrollment');
@@ -365,41 +362,41 @@ function CryptoPro() {
 			}).then(function(){
 				return oEnroll.InstallResponse(InstallResponseRestrictionFlags.AllowNone, certBase64, EncodingType.XCN_CRYPT_STRING_BASE64, '');
 			}).then(this.listCertificates).then(function(certs){
-				for(var i in certs) {
-					var sha = certs[i].id;
+				for(let i in certs) {
+					const sha = certs[i].id;
 					if(existingSha.indexOf(sha) < 0) {
 						return sha;
 					}
 				}
 				throw new Error('Не удалось найти установленный сертификат по отпечатку');
 			}).catch(function(e){
-				console.log(arguments);
-				var err = getError(e);
+				const err = getError(e);
 				throw new Error(err);
 			});
 		}
 		else {
 			return new Promise(resolve => {
 				try {
-					var existingSha = [];
-					var oStore = cadesplugin.CreateObject("CAPICOM.Store");
+					const existingSha = [];
+					let oStore = cadesplugin.CreateObject("CAPICOM.Store");
 					oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE, cadesplugin.CAPICOM_MY_STORE, cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
-					var oCertificates = oStore.Certificates;
-					for(var i=1; i<=oCertificates.Count; i++) {
+					let oCertificates = oStore.Certificates;
+					for(let i=1; i<=oCertificates.Count; i++) {
 						existingSha.push(oCertificates.Item(i).Thumbprint);
 					}
 					oStore.Close();
 
-					var oEnroll = cadesplugin.CreateObject('X509Enrollment.CX509Enrollment');
+					const oEnroll = cadesplugin.CreateObject('X509Enrollment.CX509Enrollment');
 					oEnroll.Initialize(X509CertificateEnrollmentContext.ContextUser);
 					oEnroll.InstallResponse(InstallResponseRestrictionFlags.AllowNone, certBase64, EncodingType.XCN_CRYPT_STRING_BASE64, '');
 
-					var oStore = cadesplugin.CreateObject("CAPICOM.Store");
+					oStore = cadesplugin.CreateObject("CAPICOM.Store");
 					oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE, cadesplugin.CAPICOM_MY_STORE, cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
-					var oCertificates = oStore.Certificates;
-					var found = false;
-					for(var i=1; i<=oCertificates.Count; i++) {
-						var sha = oCertificates.Item(i).Thumbprint;
+					oCertificates = oStore.Certificates;
+					let found = false;
+					let sha = '';
+					for(let i=1; i<=oCertificates.Count; i++) {
+						sha = oCertificates.Item(i).Thumbprint;
 						if(existingSha.indexOf(sha) < 0) {
 							found = true;
 						}
@@ -413,8 +410,7 @@ function CryptoPro() {
 					}
 				}
 				catch(e) {
-					console.log(e);
-					var err = getError(e);
+					const err = getError(e);
 					throw new Error(err);
 				}
 			});
@@ -482,7 +478,6 @@ function CryptoPro() {
 				return oInfo;
 			})
 			.catch(e => {
-				console.log(arguments);
 				const err = getError(e);
 				throw new Error(err);
 			});
@@ -512,7 +507,6 @@ function CryptoPro() {
 					resolve(oInfo);
 				}
 				catch (e) {
-					console.log(e);
 					const err = getError(e);
 					throw new Error(err);
 				}
@@ -526,7 +520,7 @@ function CryptoPro() {
 	 */
 	this.listCertificates = function(){
 		if(canAsync) {
-			var oStore, oCertificates, ret;
+			let oStore, oCertificates, ret;
 			return cadesplugin.then(function(){
 				return cadesplugin.CreateObjectAsync("CAPICOM.Store");
 			}).then(function(store){
@@ -540,17 +534,17 @@ function CryptoPro() {
 				oCertificates = certificates;
 				return certificates.Count;
 			}).then(function(count){
-				var certs = [];
-				for(var i=1; i<=count; i++) certs.push(oCertificates.Item(i));
+				const certs = [];
+				for(let i=1; i<=count; i++) certs.push(oCertificates.Item(i));
 				return Promise.all(certs);
 			}).then(function(certificates){
-				var certs = [];
-				for(var i in certificates) certs.push(certificates[i].SubjectName, certificates[i].Thumbprint);
+				const certs = [];
+				for(let i in certificates) certs.push(certificates[i].SubjectName, certificates[i].Thumbprint);
 				return Promise.all(certs);
 			}).then(function(subjects){
-				var certs = [];
-				for(var i=0; i<subjects.length; i+=2) {
-					var oDN = parseSubject(subjects[i]);
+				const certs = [];
+				for(let i=0; i<subjects.length; i+=2) {
+					const oDN = parseSubject(subjects[i]);
 					certs.push({
 						id: subjects[i+1], 
 						name: formatCertificateName(oDN)
@@ -561,22 +555,21 @@ function CryptoPro() {
 			}).then(function(){
 				return ret;
 			}).catch(function(e){
-				console.log(arguments);
-				var err = getError(e);
+				const err = getError(e);
 				throw new Error(err);
 			});
 		}
 		else {
 			return new Promise(resolve => {
 				try {
-					var oStore = cadesplugin.CreateObject("CAPICOM.Store");
+					const oStore = cadesplugin.CreateObject("CAPICOM.Store");
 					oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE, cadesplugin.CAPICOM_MY_STORE, cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
 
-					var oCertificates = oStore.Certificates;
-					var certs = [];
-					for(var i=1; i<=oCertificates.Count; i++) {
-						var oCertificate = oCertificates.Item(i);
-						var oDN = parseSubject(oCertificate.SubjectName);
+					const oCertificates = oStore.Certificates;
+					const certs = [];
+					for(let i=1; i<=oCertificates.Count; i++) {
+						const oCertificate = oCertificates.Item(i);
+						const oDN = parseSubject(oCertificate.SubjectName);
 						certs.push({
 							id: oCertificate.Thumbprint, 
 							name: formatCertificateName(oDN)
@@ -586,8 +579,7 @@ function CryptoPro() {
 					resolve(certs);
 				}
 				catch(e) {
-					console.log(e);
-					var err = getError(e);
+					const err = getError(e);
 					throw new Error(err);
 				}
 			});
@@ -604,7 +596,6 @@ function CryptoPro() {
 			return getCertificateObject(certThumbprint)
 			.then(cert => cert.Export(cadesplugin.CADESCOM_ENCODE_BASE64))
 			.catch(e => {
-				console.log(arguments);
 				const err = getError(e);
 				throw new Error(err);
 			});
@@ -617,7 +608,6 @@ function CryptoPro() {
 					resolve(data);
 				}
 				catch (e) {
-					console.log(e);
 					const err = getError(e);
 					throw new Error(err);
 				}
@@ -657,7 +647,6 @@ function CryptoPro() {
 			.then(() => oSignedData.propset_Content(dataBase64))
 			.then(() => oSignedData.SignCades(oSigner, cadesplugin.CADESCOM_CADES_BES, true))
 			.catch(e => {
-				console.log(arguments);
 				const err = getError(e);
 				throw new Error(err);
 			});
@@ -680,7 +669,6 @@ function CryptoPro() {
 					resolve(sSignedMessage);
 				}
 				catch (e) {
-					console.log(e);
 					const err = getError(e);
 					throw new Error(err);
 				}
@@ -762,7 +750,6 @@ function CryptoPro() {
 					resolve(sSignedMessage2);
 				}
 				catch (e) {
-					console.log(e);
 					const err = getError(e);
 					throw new Error(err);
 				}
@@ -780,7 +767,7 @@ function CryptoPro() {
 	 */
 	this.addSign = function(dataBase64, signBase64, certThumbprint, pin){
 		if(canAsync) {
-			var oCertificate, oSigner, oSignedData;
+			let oCertificate, oSigner, oSignedData;
 			return getCertificateObject(certThumbprint, pin)
 			.then(certificate => {
 				oCertificate = certificate;
@@ -813,7 +800,6 @@ function CryptoPro() {
 			]))
 			.then(() => oSignedData.CoSignCades(oSigner, cadesplugin.CADESCOM_CADES_BES))
 			.catch(e => {
-				console.log(arguments);
 				const err = getError(e);
 				throw new Error(err);
 			});
@@ -846,7 +832,6 @@ function CryptoPro() {
 					resolve(sSignedMessage);
 				}
 				catch (e) {
-					console.log(e);
 					const err = getError(e);
 					throw new Error(err);
 				}
@@ -862,7 +847,7 @@ function CryptoPro() {
 	 */
 	this.verifySign = function(dataBase64, signBase64){
 		if(canAsync) {
-			var oSignedData;
+			let oSignedData;
 			return cadesplugin.then(function(){
 				return cadesplugin.CreateObjectAsync("CAdESCOM.CadesSignedData");
 			}).then(function(object){
@@ -878,15 +863,14 @@ function CryptoPro() {
 				//console.log('sign2: %s', sign2);
 				return true;
 			}).catch(function(e){
-				console.log(arguments);
-				var err = getError(e);
+				const err = getError(e);
 				throw new Error(err);
 			});
 		}
 		else {
 			return new Promise(resolve => {
 				try {
-					var oSignedData = cadesplugin.CreateObject("CAdESCOM.CadesSignedData");
+					const oSignedData = cadesplugin.CreateObject("CAdESCOM.CadesSignedData");
 					// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
 					oSignedData.ContentEncoding = cadesplugin.CADESCOM_BASE64_TO_BINARY;
 					oSignedData.Content = dataBase64;
@@ -894,8 +878,7 @@ function CryptoPro() {
 					resolve(true);
 				}
 				catch (e) {
-					console.log(e);
-					var err = getError(e);
+					const err = getError(e);
 					throw new Error(err);
 				}
 			});
@@ -930,7 +913,6 @@ function CryptoPro() {
 			.then(() => oRecipients.Add(oCertificate))
 			.then(() => oEnvelop.Encrypt())
 			.catch(e => {
-				console.log(arguments);
 				const err = getError(e);
 				throw new Error(err);
 			});
@@ -948,7 +930,6 @@ function CryptoPro() {
 					resolve(encryptedData);
 				}
 				catch (e) {
-					console.log(e);
 					const err = getError(e);
 					throw new Error(err);
 				}
@@ -986,7 +967,6 @@ function CryptoPro() {
 			.then(() => oEnvelop.Decrypt(dataBase64))
 			.then(() => oEnvelop.Content)
 			.catch(e => {
-				console.log(arguments);
 				const err = getError(e);
 				throw new Error(err);
 			});
@@ -1004,7 +984,6 @@ function CryptoPro() {
 					resolve(oEnvelop.Content);
 				}
 				catch (e) {
-					console.log(e);
 					const err = getError(e);
 					throw new Error(err);
 				}
@@ -1081,10 +1060,11 @@ function CryptoPro() {
 	 * @returns {string}
 	 */
 	function getError(e) {
+		console.log('Crypto-Pro error', e.message || e);
 		if(e.message) {
 			for(var i in cadesErrorMesages) {
 				if(cadesErrorMesages.hasOwnProperty(i)) {
-					if(e.message.indexOf(i)+1) {
+					if(e.message.indexOf(i) + 1) {
 						e.message = cadesErrorMesages[i];
 						break;
 					}
