@@ -1,6 +1,6 @@
 {
   "name": "ruscryptojs",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "Simplified library for Russian GOST crypto providres.",
   "main": "dist/ruscrypto.min.js",
   "scripts": {
@@ -38,6 +38,7 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
+    "console-polyfill": "^0.3.0",
     "rutoken": "^1.0.8"
   }
 }
