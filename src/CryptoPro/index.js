@@ -41,7 +41,7 @@ function CryptoPro() {
 		require('./cadesplugin_api');
 		canAsync = !!cadesplugin.CreateObjectAsync;
 
-		return new Promise((resolve, reject) => {
+		return new Promise(resolve => {
 			if(!window.cadesplugin) {
 				throw new Error('КриптоПро ЭЦП Browser plug-in не обнаружен');
 			}
@@ -53,7 +53,7 @@ function CryptoPro() {
 				}).then(function(oAbout){
 					return oAbout.Version;
 				}).then(function(version) {
-					return {version };
+					return { version };
 				}).catch(function(e) {
 					// 'Плагин не загружен'
 					const err = getError(e);
@@ -107,7 +107,7 @@ function CryptoPro() {
 	 * Создание CSR.
 	 * @param {DN} dn
 	 * @param {string} pin
-	 * @param {array} ekuOids массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
+	 * @param {string[]} ekuOids массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
 	 * @param {int} providerType по умолчанию 80 (ГОСТ Р 34.10-2012) или 75 (ГОСТ Р 34.10-2001)
 	 * @returns {Promise<Object>} объект с полями { csr: 'base64 запрос на сертификат' }
 	 * @see DN
