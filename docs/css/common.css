@@ -39,3 +39,19 @@ h2, h5 {
     max-height: 100px;
     margin-right: 25px;
 }
+
+.alert {
+    border-radius: 4px;
+    background-color: lightpink;
+    border: solid 1px;
+    border-color: palevioletred;
+    color: maroon;
+    text-align: center;
+    padding: 1em 1em;
+    margin: 1em 0;;
+}
+.alert a {
+    color: darkred;
+    font-weight: bold;
+    white-space: nowrap;
+}
