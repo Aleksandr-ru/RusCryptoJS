@@ -299,11 +299,15 @@ function JaCarta2() {
 				ValidToDate: o.Data.Validity['Not After'],
 				HasPrivateKey: true,
 				IsValid: dt >= o.Data.Validity['Not Before'] && dt <= o.Data.Validity['Not After'],
+				Algorithm: o.Data['Subject Public Key Info']['Public Key Algorithm'],
+				//ProviderName: '', //TODO
+				//ProviderType: undefined, //TODO
 				toString: function() {
 					return 'Название:              ' + this.Name +
 						 '\nИздатель:              ' + this.IssuerName +
 						 '\nСубъект:               ' + this.SubjectName +
 						 '\nВерсия:                ' + this.Version +
+						 '\nАлгоритм:              ' + this.Algorithm + // PublicKey Algorithm
 						 '\nСерийный №:            ' + this.SerialNumber +
 						 '\nОтпечаток SHA1:        ' + this.Thumbprint +
 						 '\nНе действителен до:    ' + this.ValidFromDate +

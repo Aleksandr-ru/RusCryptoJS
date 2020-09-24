@@ -428,13 +428,13 @@ function CryptoPro() {
 					'\nИздатель:              ' + this.IssuerName +
 					'\nСубъект:               ' + this.SubjectName +
 					'\nВерсия:                ' + this.Version +
-					'\nАлгоритм ключа:        ' + this.PublicKeyAlgorithm +
+					'\nАлгоритм:              ' + this.Algorithm + // PublicKey Algorithm
 					'\nСерийный №:            ' + this.SerialNumber +
 					'\nОтпечаток SHA1:        ' + this.Thumbprint +
 					'\nНе действителен до:    ' + this.ValidFromDate +
 					'\nНе действителен после: ' + this.ValidToDate +
 					'\nПриватный ключ:        ' + (this.HasPrivateKey ? 'Есть' : 'Нет') +
-					'\nКриптопровайдер:       ' + this.PrivateKeyProviderName +
+					'\nКриптопровайдер:       ' + this.ProviderName + // PrivateKey ProviderName
 					'\nВалидный:              ' + (this.IsValid ? 'Да' : 'Нет');
 		};
 
@@ -470,9 +470,9 @@ function CryptoPro() {
 					ValidFromDate: new Date(a[6]),
 					ValidToDate: new Date(a[7]),
 					Version: a[8],
-					PublicKeyAlgorithm: a[9],
-					PrivateKeyProviderName: a[10][0],
-					PrivateKeyProviderType: a[10][1]
+					Algorithm: a[9],
+					ProviderName: a[10][0],
+					ProviderType: a[10][1]
 				};
 
 				let oParsedSubj = parseSubject(oInfo.SubjectName);
@@ -507,9 +507,9 @@ function CryptoPro() {
 						ValidFromDate: new Date(oCertificate.ValidFromDate),
 						ValidToDate: new Date(oCertificate.ValidToDate),
 						Version: oCertificate.Version,
-						PublicKeyAlgorithm: oCertificate.PublicKey().Algorithm.FriendlyName,
-						PrivateKeyProviderName: hasKey && oCertificate.PrivateKey.ProviderName || '',
-						PrivateKeyProviderType: hasKey && oCertificate.PrivateKey.ProviderType || undefined,
+						Algorithm: oCertificate.PublicKey().Algorithm.FriendlyName,
+						ProviderName: hasKey && oCertificate.PrivateKey.ProviderName || '',
+						ProviderType: hasKey && oCertificate.PrivateKey.ProviderType || undefined,
 
 					};
 					oInfo.toString = infoToString;
