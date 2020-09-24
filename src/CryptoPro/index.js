@@ -428,7 +428,7 @@ function CryptoPro() {
 					'\nИздатель:              ' + this.IssuerName +
 					'\nСубъект:               ' + this.SubjectName +
 					'\nВерсия:                ' + this.Version +
-					'\nАлгоритм ключа:         ' + this.PublicKeyAlgorithm +
+					'\nАлгоритм ключа:        ' + this.PublicKeyAlgorithm +
 					'\nСерийный №:            ' + this.SerialNumber +
 					'\nОтпечаток SHA1:        ' + this.Thumbprint +
 					'\nНе действителен до:    ' + this.ValidFromDate +
