@@ -264,25 +264,10 @@ function RuToken() {
 	 */
 	this.certificateInfo = function(certId){
 		let hasPrivateKey = false;
-		let keyAlgorithm = '';
 		let serialNumber = '';
 		return new Promise(resolve => {
-			plugin.getKeyByCertificate(deviceId, certId).then(keyId => plugin.getKeyInfo(deviceId, keyId, plugin.KEY_INFO_ALGORITHM)).then(a => {
-				switch (a) {
-					case plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2001:
-						keyAlgorithm = 'ГОСТ Р 34.10-2001';
-						break;
-					case plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_256:
-						keyAlgorithm = 'ГОСТ Р 34.10-2012 длина закрытого ключа 256 бит';
-						break;
-					case plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_512:
-						keyAlgorithm = 'ГОСТ Р 34.10-2012 длина закрытого ключа 512 бит';
-						break;
-					case plugin.PUBLIC_KEY_ALGORITHM_RSA:
-						keyAlgorithm = 'RSA';
-						break;
-				}
-				resolve(true);
+			plugin.getKeyByCertificate(deviceId, certId).then(keyId => {
+				resolve(!!keyId);
 			}).then(null, e => {
 				const err = getError(e);
 				console.log('getKeyByCertificate', certId, err);
@@ -297,6 +282,8 @@ function RuToken() {
 		}).then(o => {
 			const ver = o.text.match(/Version: (\d+)/);
 			const version = ver.length > 1 ? ver[1] : undefined;
+			const algo = o.text.match(/Public Key Algorithm: (.+)$/m);
+			const keyAlgorithm = algo.length > 1 ? algo[1] : '';
 			var dn = new DN;
 			for(var i in o.subject) {
 				var rdn = o.subject[i].rdn;
@@ -338,7 +325,7 @@ function RuToken() {
 						'\nОтпечаток SHA1:        ' + this.Thumbprint +
 						'\nНе действителен до:    ' + this.ValidFromDate +
 						'\nНе действителен после: ' + this.ValidToDate +
-						'\nПриватный ключ:        ' + (this.HasPrivateKey ? 'Есть' : 'Нет') +
+						'\nПриватный ключ:        ' + (this.HasPrivateKey ? 'Есть' : 'Нет (или не выполнен вход)') +
 						'\nВалидный:              ' + (this.IsValid ? 'Да' : 'Нет');
 				}
 			};

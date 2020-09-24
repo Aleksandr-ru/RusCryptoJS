@@ -233,11 +233,12 @@ rutoken.init().then(function(info) {
 'Издатель:              ' + this.IssuerName +
 'Субъект:               ' + this.SubjectName +
 'Версия:                ' + this.Version +
+'Алгоритм:              ' + this.Algorithm + // PublicKey Algorithm
 'Серийный №:            ' + this.SerialNumber +
 'Отпечаток SHA1:        ' + this.Thumbprint +
 'Не дествителен до:     ' + this.ValidFromDate +
 'Не действителен после: ' + this.ValidToDate +
-'Приватный ключ:        ' + (this.HasPrivateKey ? 'Есть' : 'Нет') +
+'Приватный ключ:        ' + (this.HasPrivateKey ? 'Есть' : 'Нет (или не выполнен вход)') +
 'Валидный:              ' + (this.IsValid ? 'Да' : 'Нет')</code></pre>
                 </p>
 
