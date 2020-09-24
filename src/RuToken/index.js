@@ -264,10 +264,25 @@ function RuToken() {
 	 */
 	this.certificateInfo = function(certId){
 		let hasPrivateKey = false;
+		let keyAlgorithm = '';
 		let serialNumber = '';
 		return new Promise(resolve => {
-			plugin.getKeyByCertificate(deviceId, certId).then(keyId => {
-				resolve(!!keyId);
+			plugin.getKeyByCertificate(deviceId, certId).then(keyId => plugin.getKeyInfo(deviceId, keyId, plugin.KEY_INFO_ALGORITHM)).then(a => {
+				switch (a) {
+					case plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2001:
+						keyAlgorithm = 'ГОСТ Р 34.10-2001';
+						break;
+					case plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_256:
+						keyAlgorithm = 'ГОСТ Р 34.10-2012 длина закрытого ключа 256 бит';
+						break;
+					case plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_512:
+						keyAlgorithm = 'ГОСТ Р 34.10-2012 длина закрытого ключа 512 бит';
+						break;
+					case plugin.PUBLIC_KEY_ALGORITHM_RSA:
+						keyAlgorithm = 'RSA';
+						break;
+				}
+				resolve(true);
 			}).then(null, e => {
 				const err = getError(e);
 				console.log('getKeyByCertificate', certId, err);
@@ -304,17 +319,21 @@ function RuToken() {
 				Subject: dn,
 				SubjectName: dn.toString(),
 				Version: version,
+				Algorithm: keyAlgorithm,
 				SerialNumber: serialNumber,
 				Thumbprint: certId.replace(/\:/g, ''),
 				ValidFromDate: new Date(o.validNotBefore),
 				ValidToDate: new Date(o.validNotAfter),
 				HasPrivateKey: hasPrivateKey,
 				IsValid: dt >= new Date(o.validNotBefore) && dt <= new Date(o.validNotAfter),
+				//ProviderName: '', //TODO
+				//ProviderType: undefined, //TODO
 				toString: function(){
 					return 'Название:              ' + this.Name +
 						'\nИздатель:              ' + this.IssuerName +
 						'\nСубъект:               ' + this.SubjectName +
 						'\nВерсия:                ' + this.Version +
+						'\nАлгоритм:              ' + this.Algorithm + // PublicKey Algorithm
 						'\nСерийный №:            ' + this.SerialNumber +
 						'\nОтпечаток SHA1:        ' + this.Thumbprint +
 						'\nНе действителен до:    ' + this.ValidFromDate +

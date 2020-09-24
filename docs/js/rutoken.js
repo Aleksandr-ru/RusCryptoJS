@@ -1,11 +1,17 @@
+var chkAuth = document.getElementById('chkauth');
+
 function showInfo(contId) {
     var rutoken = new window.RusCryptoJS.RuToken;
     return rutoken.init().then(info => {
         console.log('Initialized', info);
+        if (chkAuth.checked) return rutoken.bind();
+        else return Promise.resolve();
+    }).then(() => {
         return rutoken.certificateInfo(contId);
     }).then(info => {
         console.log('CertInfo', info);
         inputCertInfo.value = info;
+        if (chkAuth.checked) return rutoken.unbind();
     }).catch(e => {
         alert('Failed! ' + e);
     });
