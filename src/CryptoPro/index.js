@@ -428,11 +428,13 @@ function CryptoPro() {
 					'\nИздатель:              ' + this.IssuerName +
 					'\nСубъект:               ' + this.SubjectName +
 					'\nВерсия:                ' + this.Version +
+					'\nАлгоритм ключа:         ' + this.PublicKeyAlgorithm +
 					'\nСерийный №:            ' + this.SerialNumber +
 					'\nОтпечаток SHA1:        ' + this.Thumbprint +
 					'\nНе действителен до:    ' + this.ValidFromDate +
 					'\nНе действителен после: ' + this.ValidToDate +
 					'\nПриватный ключ:        ' + (this.HasPrivateKey ? 'Есть' : 'Нет') +
+					'\nКриптопровайдер:       ' + this.PrivateKeyProviderName +
 					'\nВалидный:              ' + (this.IsValid ? 'Да' : 'Нет');
 		};
 
@@ -441,19 +443,23 @@ function CryptoPro() {
 			return getCertificateObject(certThumbprint)
 			.then(oCertificate => Promise.all([
 				oCertificate.HasPrivateKey(),
-				oCertificate.IsValid(),
+				oCertificate.IsValid().then(v => v.Result),
 				oCertificate.IssuerName,
 				oCertificate.SerialNumber,
 				oCertificate.SubjectName,
 				oCertificate.Thumbprint,
 				oCertificate.ValidFromDate,
 				oCertificate.ValidToDate,
-				oCertificate.Version
+				oCertificate.Version,
+				oCertificate.PublicKey().then(k => k.Algorithm).then(a => a.FriendlyName),
+				oCertificate.HasPrivateKey().then(key => !key && ['', undefined] || oCertificate.PrivateKey.then(k => Promise.all([
+					k.ProviderName, k.ProviderType
+				])))
 			]))
 			.then(a => {
 				oInfo = {
 					HasPrivateKey: a[0],
-					IsValid: undefined, // a[1],
+					IsValid: a[1],
 					//TODO: Issuer object
 					IssuerName: a[2],
 					SerialNumber: a[3],
@@ -463,17 +469,16 @@ function CryptoPro() {
 					Thumbprint: a[5],
 					ValidFromDate: new Date(a[6]),
 					ValidToDate: new Date(a[7]),
-					Version: a[8]
+					Version: a[8],
+					PublicKeyAlgorithm: a[9],
+					PrivateKeyProviderName: a[10][0],
+					PrivateKeyProviderType: a[10][1]
 				};
-				const oCertificateStatus = a[1];
-				return oCertificateStatus.Result;
-			})
-			.then(result => {
+
 				let oParsedSubj = parseSubject(oInfo.SubjectName);
 				oParsedSubj = convertDN(oParsedSubj);
 				oInfo.Subject = oParsedSubj;
 				oInfo.Name = oParsedSubj['CN'];
-				oInfo.IsValid = result;
 				oInfo.toString = infoToString;
 				return oInfo;
 			})
@@ -486,12 +491,12 @@ function CryptoPro() {
 			return new Promise(resolve => {
 				try {
 					const oCertificate = getCertificateObject(certThumbprint);
-					const oCertificateStatus = oCertificate.IsValid();
+					const hasKey = oCertificate.HasPrivateKey();
 					let oParesedSubj = parseSubject(oCertificate.SubjectName);
 					oParesedSubj = convertDN(oParesedSubj);
 					const oInfo = {
-						HasPrivateKey: oCertificate.HasPrivateKey(),
-						IsValid: oCertificateStatus.Result,
+						HasPrivateKey: hasKey,
+						IsValid: oCertificate.IsValid().Result,
 						//TODO: Issuer object
 						IssuerName: oCertificate.IssuerName,
 						SerialNumber: oCertificate.SerialNumber,
@@ -501,7 +506,11 @@ function CryptoPro() {
 						Thumbprint: oCertificate.Thumbprint,
 						ValidFromDate: new Date(oCertificate.ValidFromDate),
 						ValidToDate: new Date(oCertificate.ValidToDate),
-						Version: oCertificate.Version
+						Version: oCertificate.Version,
+						PublicKeyAlgorithm: oCertificate.PublicKey().Algorithm.FriendlyName,
+						PrivateKeyProviderName: hasKey && oCertificate.PrivateKey.ProviderName || '',
+						PrivateKeyProviderType: hasKey && oCertificate.PrivateKey.ProviderType || undefined,
+
 					};
 					oInfo.toString = infoToString;
 					resolve(oInfo);
