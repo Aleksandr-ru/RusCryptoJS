@@ -284,27 +284,15 @@ function RuToken() {
 			const version = ver.length > 1 ? ver[1] : undefined;
 			const algo = o.text.match(/Public Key Algorithm: (.+)$/m);
 			const keyAlgorithm = algo.length > 1 ? algo[1] : '';
-			var dn = new DN;
-			for(var i in o.subject) {
-				var rdn = o.subject[i].rdn;
-				var val = o.subject[i].value;
-				dn[rdn] = val;
-			}
-			dn = convertDN(dn);
-			var dnI = new DN;
-			for(var i in o.issuer) {
-				var rdn = o.issuer[i].rdn;
-				var val = o.issuer[i].value;
-				dnI[rdn] = val;
-			}
-			var dt = new Date();
-			var info = {
+			const dn = makeDN(o.subject);
+			const dnI = makeDN(o.issuer);
+			const dt = new Date();
+			const info = {
 				Name: dn.commonName || dn.CN,
-				//TODO: Issuer object
 				Issuer: dnI,
-				IssuerName: dnI.commonName || dnI.CN,
+				IssuerName: stripDnQuotes(dnI.toString()),
 				Subject: dn,
-				SubjectName: dn.toString(),
+				SubjectName: stripDnQuotes(dn.toString()),
 				Version: version,
 				Algorithm: keyAlgorithm,
 				SerialNumber: serialNumber,
@@ -488,6 +476,33 @@ function RuToken() {
 			}
 		}
 		return mnemo && errors[mnemo] || mnemo || e.message || e;
+	}
+
+	/**
+	 * Создать DN из массива [{rdn: ..., value: ...}, ...]
+	 * @param {[index: number]: { rdn: string, value: string }} obj 
+	 * @returns {DN}
+	 */
+	function makeDN(obj)
+	{
+		var dn = new DN;
+		for(var i in obj) {
+			var rdn = obj[i].rdn;
+			var val = obj[i].value;
+			if (rdn && val) {
+				dn[rdn] = val;
+			}
+		}
+		return convertDN(dn);
+	}
+
+	/**
+	 * Убирает кавычки из строки DN
+	 * @param {string} str 
+	 */
+	function stripDnQuotes(str) 
+	{
+		return str.replace(/(?<==)"|"(?=,)/g, '');//.replace(/\\/g, '');
 	}
 
 	/**

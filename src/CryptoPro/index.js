@@ -460,8 +460,8 @@ function CryptoPro() {
 				oInfo = {
 					HasPrivateKey: a[0],
 					IsValid: a[1],
-					//TODO: Issuer object
 					IssuerName: a[2],
+					Issuer: undefined,
 					SerialNumber: a[3],
 					SubjectName: a[4],
 					Subject: undefined,
@@ -474,11 +474,10 @@ function CryptoPro() {
 					ProviderName: a[10][0],
 					ProviderType: a[10][1]
 				};
-
-				let oParsedSubj = parseSubject(oInfo.SubjectName);
-				oParsedSubj = convertDN(oParsedSubj);
-				oInfo.Subject = oParsedSubj;
-				oInfo.Name = oParsedSubj['CN'];
+		
+				oInfo.Subject = string2dn(oInfo.SubjectName);
+				oInfo.Issuer  = string2dn(oInfo.IssuerName);
+				oInfo.Name = oInfo.Subject['CN'];
 				oInfo.toString = infoToString;
 				return oInfo;
 			})
@@ -492,13 +491,12 @@ function CryptoPro() {
 				try {
 					const oCertificate = getCertificateObject(certThumbprint);
 					const hasKey = oCertificate.HasPrivateKey();
-					let oParesedSubj = parseSubject(oCertificate.SubjectName);
-					oParesedSubj = convertDN(oParesedSubj);
+					const oParesedSubj = string2dn(oCertificate.SubjectName);
 					const oInfo = {
 						HasPrivateKey: hasKey,
-						IsValid: oCertificate.IsValid().Result,
-						//TODO: Issuer object
+						IsValid: oCertificate.IsValid().Result,						
 						IssuerName: oCertificate.IssuerName,
+						Issuer: string2dn(oCertificate.IssuerName),
 						SerialNumber: oCertificate.SerialNumber,
 						SubjectName: oCertificate.SubjectName,
 						Subject: oParesedSubj,
@@ -553,7 +551,7 @@ function CryptoPro() {
 			}).then(function(subjects){
 				const certs = [];
 				for(let i=0; i<subjects.length; i+=2) {
-					const oDN = parseSubject(subjects[i]);
+					const oDN = string2dn(subjects[i]);
 					certs.push({
 						id: subjects[i+1], 
 						name: formatCertificateName(oDN)
@@ -578,7 +576,7 @@ function CryptoPro() {
 					const certs = [];
 					for(let i=1; i<=oCertificates.Count; i++) {
 						const oCertificate = oCertificates.Item(i);
-						const oDN = parseSubject(oCertificate.SubjectName);
+						const oDN = string2dn(oCertificate.SubjectName);
 						certs.push({
 							id: oCertificate.Thumbprint, 
 							name: formatCertificateName(oDN)
@@ -1088,7 +1086,7 @@ function CryptoPro() {
 	 * @param {string} subjectName
 	 * @returns {DN}
 	 */
-	function parseSubject(subjectName){
+	function string2dn(subjectName){
 		var dn = new DN;
 		var pairs = subjectName.match(/([а-яёА-ЯЁa-zA-Z0-9\.]+)=(?:("[^"]+?")|(.+?))(?:,|$)/g).map(el => el.replace(/,$/, ''));
 		pairs.forEach(pair => {
@@ -1099,17 +1097,18 @@ function CryptoPro() {
 				dn[rdn] = val;
 			}
 		});
-		return dn;
+		return convertDN(dn);
 	}
 
 	/**
 	 * Получить название сертификата
-	 * @param {DN} o объект, включающий в себя значения всех полей сертификата.
+	 * @param {DN} o объект, включающий в себя значения всех полей сертификата с латинскими ключами
+	 * @see convertDN
 	 * @returns {String}
 	 */
 	function formatCertificateName(o) {
-		var snils = o['СНИЛС'] || o['SNILS'];
-		var inn = o['ИНН'] || o['INN'];
+		var snils = o['SNILS'];
+		var inn = o['INN'];
 		return '' + o['CN'] + (inn ?  '; ИНН ' + inn : '') + (snils ?  '; СНИЛС ' + snils : '');
 	}
 

@@ -271,27 +271,15 @@ function JaCarta2() {
 				onError: errorHandler(reject)
 			});
 		}).then(o => {
-			var dn = new DN;
-			for(var i in o.Data.Subject) {
-				var rdn = o.Data.Subject[i].rdn;
-				var val = o.Data.Subject[i].value;
-				dn[rdn] = val;
-			}
-			dn = convertDN(dn);
-			var dnI = new DN;
-			for(var i in o.Data.Issuer) {
-				var rdn = o.Data.Issuer[i].rdn;
-				var val = o.Data.Issuer[i].value;
-				dnI[rdn] = val;
-			}
+			var dn = makeDN(o.Data.Subject);
+			var dnI = makeDN(o.Data.Issuer);
 			var dt = new Date();
 			var info = {
 				Name: dn.CN,
-				Issuer: dnI,
-				//TODO: Issuer object
-				IssuerName: dnI.CN,
+				Issuer: dnI,			
+				IssuerName: stripDnQuotes(dnI.toString()),
 				Subject: dn,
-				SubjectName: dn.toString(),
+				SubjectName: stripDnQuotes(dn.toString()),
 				Version: o.Data.Version,
 				SerialNumber: o.Data['Serial Number'].map(byte2hex).join(''),
 				Thumbprint: o.Signature.map(byte2hex).join(''),
@@ -494,6 +482,33 @@ function JaCarta2() {
 			}
 			reject(e);
 		}
+	}
+
+	/**
+	 * Создать DN из массива [{rdn: ..., value: ...}, ...]
+	 * @param {[index: number]: { rdn: string, value: string }} obj 
+	 * @returns {DN}
+	 */
+	function makeDN(obj)
+	{
+		var dn = new DN;
+		for(var i in obj) {
+			var rdn = obj[i].rdn;
+			var val = obj[i].value;
+			if (rdn && val) {
+				dn[rdn] = val;
+			}
+		}
+		return convertDN(dn);
+	}
+
+	/**
+	 * Убирает кавычки из строки DN
+	 * @param {string} str 
+	 */
+	function stripDnQuotes(str) 
+	{
+		return str.replace(/(?<==)"|"(?=,)/g, '');//.replace(/\\/g, '');
 	}
 
 	/**
