@@ -1,6 +1,6 @@
 {
   "name": "ruscryptojs",
-  "version": "2.2.6",
+  "version": "2.2.7",
   "description": "Simplified library for Russian GOST crypto providres.",
   "main": "dist/ruscrypto.min.js",
   "scripts": {
