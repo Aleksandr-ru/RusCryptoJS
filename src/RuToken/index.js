@@ -9,6 +9,30 @@ import DN from '../DN';
 import errors from './errors';
 import { convertDN } from '../helpers';
 
+const requiredFunctions = [
+	'cmsDecrypt',
+	'cmsEncrypt',
+	'createPkcs10',
+	'deleteCertificate',
+	'deleteKeyPair',
+	'enumerateCertificates',
+	'enumerateDevices',
+	'enumerateKeys',
+	'generateKeyPair',
+	'getCertificate',
+	'getCertificateInfo',
+	'getDeviceInfo',
+	'getDeviceModel',
+	'getDeviceType',
+	'getKeyByCertificate',
+	'importCertificate',
+	'login',
+	'logout',
+	'parseCertificate',
+	'sign',
+	'verify'
+];
+
 function RuToken() {
 	var plugin, deviceId;
 
@@ -36,6 +60,11 @@ function RuToken() {
 				throw new Error("Rutoken Plugin wasn't found");
 			}
 		}).then(result => {
+			const absentFn = requiredFunctions.filter(fn => !result[fn]);
+			if (absentFn.length) {
+				console.log('Missing plugin functions: ', absentFn);
+				throw new Error("Отсутствует функционал, убедитесь, что у вас установлен Рутокен Плагин и вы используете Рутокен ЭЦП 2.0");
+			}
 			//Можно начинать работать с плагином
 			plugin = result;
 			return plugin.enumerateDevices();
