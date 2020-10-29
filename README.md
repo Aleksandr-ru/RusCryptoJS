@@ -74,6 +74,12 @@ JS для Российской криптографии (ГОСТ).
 - В Linux старые версии рутокен плагин работает только в Firefox 52 (тк использует устаревший NPAPI), информацию о том, как установить и совместно использовать старый FF вместе с новым см. [здесь](http://aleksandr.ru/blog/neskolko_versiy_firefox_v_linux_odnovremenno/);
 - В Linux свежие версии рутокен плагин не работают в Сhrome (но работают в Opera).
 
+## Помогите развивать проект
+
+<a href="https://www.buymeacoffee.com/aleksandr.ru" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+В отличие от ведущих производителей СКЗИ, которые требуют покупать лицензии для использования своего софта, библиотека **RusCryptoJS всегда будет бесплатной и открытой**. Поскольку проект развивается на общественных началах и не приносит прибыли, то не всегда есть достаточно времени на его разработку. Благодаря вашей поддержке сил на развитие будет больше, спасибо!
+
 ## Благодарности
 
 [![JetBrains](docs/images/jetbrains.png?raw=true)](https://www.jetbrains.com/?from=RusCryptoJS "Проект разрабатывается при поддержке JetBrains")
