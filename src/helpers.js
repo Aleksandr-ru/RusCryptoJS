@@ -37,3 +37,12 @@ export function convertDN(dn) {
   }
   return result;
 }
+
+/**
+ * Убирает кавычки из строки DN
+ * @param {string} str 
+ */
+export function stripDnQuotes(str) 
+{
+  return str.replace(/="/g, '=').replace(/",/g, ',');
+}

@@ -7,7 +7,7 @@
 import rutoken from 'rutoken';
 import DN from '../DN';
 import errors from './errors';
-import { convertDN } from '../helpers';
+import { convertDN, stripDnQuotes } from '../helpers';
 
 const requiredFunctions = [
 	'cmsDecrypt',
@@ -523,15 +523,6 @@ function RuToken() {
 			}
 		}
 		return convertDN(dn);
-	}
-
-	/**
-	 * Убирает кавычки из строки DN
-	 * @param {string} str 
-	 */
-	function stripDnQuotes(str) 
-	{
-		return str.replace(/(?<==)"|"(?=,)/g, '');//.replace(/\\/g, '');
 	}
 
 	/**
