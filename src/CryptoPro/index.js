@@ -16,7 +16,7 @@ import {
 	ProviderTypes, 
 	cadesErrorMesages 
 } from './constants';
-import { convertDN } from '../helpers';
+import { convertDN, versionCompare } from '../helpers';
 
 function CryptoPro() {
 	//If the string contains fewer than 128 bytes, the Length field of the TLV triplet requires only one byte to specify the content length.
@@ -27,7 +27,7 @@ function CryptoPro() {
 	const asn1UTF8StringTag = 0x0c; // 12, UTF8String
 
 	let canAsync;
-
+	let pluginVersion = '';
 	let binded = false;
 
 	/**
@@ -53,6 +53,7 @@ function CryptoPro() {
 				}).then(function(oAbout){
 					return oAbout.Version;
 				}).then(function(version) {
+					pluginVersion = version;
 					return { version };
 				}).catch(function(e) {
 					// 'Плагин не загружен'
@@ -67,9 +68,9 @@ function CryptoPro() {
 						if(!oAbout || !oAbout.Version) {
 							throw new Error('КриптоПро ЭЦП Browser plug-in не загружен');
 						}
-						const CurrentPluginVersion = oAbout.Version;
+						pluginVersion = oAbout.Version;
 						resolve({
-							version: CurrentPluginVersion
+							version: pluginVersion
 						});
 					}
 					catch(e) {
@@ -521,47 +522,100 @@ function CryptoPro() {
 		}
 	};
 
+	function fetchCertsFromStore(oStore, skipIds = []) {
+		if (canAsync) {
+			let oCertificates;
+			return oStore.Certificates.then(certificates => {
+				oCertificates = certificates;
+				return certificates.Count;
+			}).then(count => {
+				const certs = [];
+				for (let i = 1; i <= count; i++) certs.push(oCertificates.Item(i));
+				return Promise.all(certs);
+			}).then(certificates => {
+				const certs = [];
+				for (let i in certificates) certs.push(certificates[i].SubjectName, certificates[i].Thumbprint);
+				return Promise.all(certs);
+			}).then(subjects => {
+				const certs = [];
+				for (let i = 0; i < subjects.length; i += 2) {
+					const id = subjects[i + 1];
+					if (skipIds.indexOf(id) + 1) break;
+					const oDN = string2dn(subjects[i]);
+					certs.push({
+						id,
+						name: formatCertificateName(oDN)
+					});
+				}
+				return certs;
+			});
+		}
+		else {
+			const oCertificates = oStore.Certificates;
+			const certs = [];
+			for (let i = 1; i <= oCertificates.Count; i++) {
+				const oCertificate = oCertificates.Item(i);
+				const id = oCertificate.Thumbprint;
+				if (skipIds.indexOf(id) + 1) break;
+				const oDN = string2dn(oCertificate.SubjectName);
+				certs.push({
+					id,
+					name: formatCertificateName(oDN)
+				});
+			}
+			return certs;
+		}
+	}
+
 	/**
 	 * Получение массива доступных сертификатов
 	 * @returns {Promise<Array>} [ {id: thumbprint, name: subject}, ...]
 	 */
 	this.listCertificates = function(){
+		//В версии плагина 2.0.13292+ есть возможность получить сертификаты из
+		//закрытых ключей и не установленных в хранилище
+		const tryContainerStore = versionCompare(pluginVersion, '2.0.13292') >= 0;
+		// но не смотря на это, все равно приходится собирать список сертификатов
+		// старым и новым способом тк в новом будет отсутствовать часть старого
+		// предположительно ГОСТ-2001 с какими-то определенными Extended Key Usage OID
+
 		if(canAsync) {
-			let oStore, oCertificates, ret;
+			let oStore, ret;
 			return cadesplugin.then(function(){
 				return cadesplugin.CreateObjectAsync("CAPICOM.Store");
-			}).then(function(store){
+			}).then(store => {
 				oStore = store;
 				return oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE,
-								   cadesplugin.CAPICOM_MY_STORE,
-								   cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
-			}).then(function(){
-				return oStore.Certificates;
-			}).then(function(certificates){
-				oCertificates = certificates;
-				return certificates.Count;
-			}).then(function(count){
-				const certs = [];
-				for(let i=1; i<=count; i++) certs.push(oCertificates.Item(i));
-				return Promise.all(certs);
-			}).then(function(certificates){
-				const certs = [];
-				for(let i in certificates) certs.push(certificates[i].SubjectName, certificates[i].Thumbprint);
-				return Promise.all(certs);
-			}).then(function(subjects){
-				const certs = [];
-				for(let i=0; i<subjects.length; i+=2) {
-					const oDN = string2dn(subjects[i]);
-					certs.push({
-						id: subjects[i+1], 
-						name: formatCertificateName(oDN)
-					});
-				}
+					cadesplugin.CAPICOM_MY_STORE,
+					cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
+			}).then(() => {
+				return fetchCertsFromStore(oStore);
+			}).then(certs => {
 				ret = certs;
 				return oStore.Close();
-			}).then(function(){
+			}).then(() => {
+				if (tryContainerStore) {
+					let certificates;
+					return oStore.Open(cadesplugin.CADESCOM_CONTAINER_STORE).then(() => {
+						const skipIds = ret.map(a => a.id);
+						return fetchCertsFromStore(oStore, skipIds);
+					}).then(certs => {
+						certificates = certs;
+						return oStore.Close();
+					}).then(() => {
+						return certificates;
+					}).catch(e => {
+						console.log(e);
+						return [];
+					});
+				}
+				else {
+					return [];
+				}
+			}).then(certs => {
+				ret.push(...certs);
 				return ret;
-			}).catch(function(e){
+			}).catch(e => {
 				const err = getError(e);
 				throw new Error(err);
 			});
@@ -570,22 +624,26 @@ function CryptoPro() {
 			return new Promise(resolve => {
 				try {
 					const oStore = cadesplugin.CreateObject("CAPICOM.Store");
-					oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE, cadesplugin.CAPICOM_MY_STORE, cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
-
-					const oCertificates = oStore.Certificates;
-					const certs = [];
-					for(let i=1; i<=oCertificates.Count; i++) {
-						const oCertificate = oCertificates.Item(i);
-						const oDN = string2dn(oCertificate.SubjectName);
-						certs.push({
-							id: oCertificate.Thumbprint, 
-							name: formatCertificateName(oDN)
-						});
-					}
+					oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE,
+						cadesplugin.CAPICOM_MY_STORE,
+						cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
+					const ret = fetchCertsFromStore(oStore);
 					oStore.Close();
-					resolve(certs);
+
+					if (tryContainerStore) {
+						try {
+							oStore.Open(cadesplugin.CADESCOM_CONTAINER_STORE);
+							const certs = fetchCertsFromStore(oStore);
+							oStore.Close();
+							ret.push(...certs);
+						}
+						catch (e) {
+							console.log(e);
+						}
+					}
+					resolve(ret);
 				}
-				catch(e) {
+				catch (e) {
 					const err = getError(e);
 					throw new Error(err);
 				}
