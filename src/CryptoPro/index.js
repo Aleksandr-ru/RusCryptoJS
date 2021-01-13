@@ -583,7 +583,8 @@ function CryptoPro() {
 					if (tryContainerStore) {
 						try {
 							oStore.Open(cadesplugin.CADESCOM_CONTAINER_STORE);
-							const certs = fetchCertsFromStore(oStore);
+							const skipIds = ret.map(a => a.id);
+							const certs = fetchCertsFromStore(oStore, skipIds);
 							oStore.Close();
 							ret.push(...certs);
 						}
