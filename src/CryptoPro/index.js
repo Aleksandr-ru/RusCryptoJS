@@ -522,62 +522,12 @@ function CryptoPro() {
 		}
 	};
 
-	function fetchCertsFromStore(oStore, skipIds = []) {
-		if (canAsync) {
-			let oCertificates;
-			return oStore.Certificates.then(certificates => {
-				oCertificates = certificates;
-				return certificates.Count;
-			}).then(count => {
-				const certs = [];
-				for (let i = 1; i <= count; i++) certs.push(oCertificates.Item(i));
-				return Promise.all(certs);
-			}).then(certificates => {
-				const certs = [];
-				for (let i in certificates) certs.push(certificates[i].SubjectName, certificates[i].Thumbprint);
-				return Promise.all(certs);
-			}).then(subjects => {
-				const certs = [];
-				for (let i = 0; i < subjects.length; i += 2) {
-					const id = subjects[i + 1];
-					if (skipIds.indexOf(id) + 1) break;
-					const oDN = string2dn(subjects[i]);
-					certs.push({
-						id,
-						name: formatCertificateName(oDN)
-					});
-				}
-				return certs;
-			});
-		}
-		else {
-			const oCertificates = oStore.Certificates;
-			const certs = [];
-			for (let i = 1; i <= oCertificates.Count; i++) {
-				const oCertificate = oCertificates.Item(i);
-				const id = oCertificate.Thumbprint;
-				if (skipIds.indexOf(id) + 1) break;
-				const oDN = string2dn(oCertificate.SubjectName);
-				certs.push({
-					id,
-					name: formatCertificateName(oDN)
-				});
-			}
-			return certs;
-		}
-	}
-
 	/**
 	 * Получение массива доступных сертификатов
 	 * @returns {Promise<Array>} [ {id: thumbprint, name: subject}, ...]
 	 */
 	this.listCertificates = function(){
-		//В версии плагина 2.0.13292+ есть возможность получить сертификаты из
-		//закрытых ключей и не установленных в хранилище
-		const tryContainerStore = versionCompare(pluginVersion, '2.0.13292') >= 0;
-		// но не смотря на это, все равно приходится собирать список сертификатов
-		// старым и новым способом тк в новом будет отсутствовать часть старого
-		// предположительно ГОСТ-2001 с какими-то определенными Extended Key Usage OID
+		const tryContainerStore = hasContainerStore();
 
 		if(canAsync) {
 			let oStore, ret;
@@ -1056,6 +1006,85 @@ function CryptoPro() {
 		}
 	};
 
+	function hasContainerStore() {
+		//В версии плагина 2.0.13292+ есть возможность получить сертификаты из
+		//закрытых ключей и не установленных в хранилище
+		// но не смотря на это, все равно приходится собирать список сертификатов
+		// старым и новым способом тк в новом будет отсутствовать часть старого
+		// предположительно ГОСТ-2001 с какими-то определенными Extended Key Usage OID
+
+		return versionCompare(pluginVersion, '2.0.13292') >= 0;
+	}
+
+	function fetchCertsFromStore(oStore, skipIds = []) {
+		if (canAsync) {
+			let oCertificates;
+			return oStore.Certificates.then(certificates => {
+				oCertificates = certificates;
+				return certificates.Count;
+			}).then(count => {
+				const certs = [];
+				for (let i = 1; i <= count; i++) certs.push(oCertificates.Item(i));
+				return Promise.all(certs);
+			}).then(certificates => {
+				const certs = [];
+				for (let i in certificates) certs.push(certificates[i].SubjectName, certificates[i].Thumbprint);
+				return Promise.all(certs);
+			}).then(subjects => {
+				const certs = [];
+				for (let i = 0; i < subjects.length; i += 2) {
+					const id = subjects[i + 1];
+					if (skipIds.indexOf(id) + 1) break;
+					const oDN = string2dn(subjects[i]);
+					certs.push({
+						id,
+						name: formatCertificateName(oDN)
+					});
+				}
+				return certs;
+			});
+		}
+		else {
+			const oCertificates = oStore.Certificates;
+			const certs = [];
+			for (let i = 1; i <= oCertificates.Count; i++) {
+				const oCertificate = oCertificates.Item(i);
+				const id = oCertificate.Thumbprint;
+				if (skipIds.indexOf(id) + 1) break;
+				const oDN = string2dn(oCertificate.SubjectName);
+				certs.push({
+					id,
+					name: formatCertificateName(oDN)
+				});
+			}
+			return certs;
+		}
+	}
+
+	function findCertInStore(oStore, certThumbprint) {
+		if(canAsync) {
+			return oStore.Certificates
+				.then(certificates => certificates.Find(cadesplugin.CAPICOM_CERTIFICATE_FIND_SHA1_HASH, certThumbprint))
+				.then(certificates => certificates.Count.then(count => {
+					if (count === 1) {
+						return certificates.Item(1);
+					}
+					else {
+						return null;
+					}
+				}));
+		}
+		else {
+			const oCertificates = oStore.Certificates.Find(cadesplugin.CAPICOM_CERTIFICATE_FIND_SHA1_HASH, certThumbprint);
+			if (oCertificates.Count === 1) {
+				return oCertificates.Item(1);
+			}
+			else {
+				return null;
+			}
+		}
+	}
+
 	function getCertificateObject(certThumbprint, pin) {
 		if(canAsync) {
 			let oStore, oCertificate;
@@ -1067,20 +1096,18 @@ function CryptoPro() {
 								   cadesplugin.CAPICOM_MY_STORE,
 								   cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
 			})
-			.then(() => oStore.Certificates)
-			.then(certificates => certificates.Find(cadesplugin.CAPICOM_CERTIFICATE_FIND_SHA1_HASH, certThumbprint))
-			.then(certificates => {
-				return Promise.all([
-					certificates.Count,
-					certificates.Item(1)
-				]);
-			})
-			.then(([count, certificate]) => {
-				if(count != 1) {
+			.then(() => findCertInStore(oStore, certThumbprint))
+			.then(cert => oStore.Close().then(() => {
+				if (!cert && hasContainerStore()) return oStore.Open(cadesplugin.CADESCOM_CONTAINER_STORE)
+					.then(() => findCertInStore(oStore, certThumbprint))
+					.then(c => oStore.Close().then(() => c));
+				else return cert;
+			}))
+			.then(certificate => {
+				if(!certificate) {
 					throw new Error("Не обнаружен сертификат c отпечатком " + certThumbprint);
 				}
-				oCertificate = certificate;
-				return oStore.Close();
+				return oCertificate = certificate;
 			})
 			.then(() => oCertificate.HasPrivateKey())
 			.then(hasKey => {
@@ -1096,16 +1123,24 @@ function CryptoPro() {
 			.then(() => oCertificate);
 		}
 		else {
+			let oCertificate;
 			const oStore = cadesplugin.CreateObject("CAPICOM.Store");
 			oStore.Open(cadesplugin.CAPICOM_CURRENT_USER_STORE,
 						cadesplugin.CAPICOM_MY_STORE,
 						cadesplugin.CAPICOM_STORE_OPEN_MAXIMUM_ALLOWED);
+			oCertificate = findCertInStore(oStore, certThumbprint);
+			oStore.Close();
 
-			const oCertificates = oStore.Certificates.Find(cadesplugin.CAPICOM_CERTIFICATE_FIND_SHA1_HASH, certThumbprint);
-			if (oCertificates.Count != 1) {
+			if (!oCertificate && hasContainerStore()) {
+				oStore.Open(cadesplugin.CADESCOM_CONTAINER_STORE);
+				oCertificate = findCertInStore(oStore, certThumbprint);
+				oStore.Close();
+			}
+
+			if(!oCertificate) {
 				throw new Error("Не обнаружен сертификат c отпечатком " + certThumbprint);
 			}
-			const oCertificate = oCertificates.Item(1);
+
 			if (oCertificate.HasPrivateKey && pin) {
 				oCertificate.PrivateKey.KeyPin = pin ? pin : '';
 				if(oCertificate.PrivateKey.CachePin !== undefined) {
@@ -1114,7 +1149,6 @@ function CryptoPro() {
 					oCertificate.PrivateKey.CachePin = binded;
 				}
 			}
-			oStore.Close();
 			return oCertificate;
 		}
 	}
