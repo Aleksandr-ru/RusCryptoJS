@@ -5,7 +5,7 @@ JS для Российской криптографии (ГОСТ).
 - Окружение с поддержкой ES2015
 
 ## Крипто-ПРО
-Для работы с Крипто-ПРО 4.x и Browser Plugin 2.x (cades plugin)
+Для работы с [КриптоПро ЭЦП Browser plug-in 2.x](https://www.cryptopro.ru/products/cades/plugin) (cades plugin)
 
 ### Возможности
 - Электронная подпись
@@ -27,7 +27,7 @@ JS для Российской криптографии (ГОСТ).
 - Дешифрование может не работаь при использовании сертификатов ГОСТ Р 34.10-2012 под macOS.
 
 ## JaCarta ГОСТ
-Для работы с JaCarta Web Client 3.x
+Для работы с [JaCarta Web Client 3.x](https://www.aladdin-rd.ru/catalog/jcwebclient)
 
 **Считается устаревшим и не рекомендуется к использованию, вместо него используйте JaCarta-2 ГОСТ**
 
@@ -42,7 +42,7 @@ JS для Российской криптографии (ГОСТ).
 Примеры использования см. в [документации](https://aleksandr-ru.github.io/RusCryptoJS/jacarta.html).
 
 ## JaCarta-2 ГОСТ
-Для работы с JaCarta Web Client 4.x
+Для работы с [JaCarta Web Client 4.x](https://www.aladdin-rd.ru/catalog/jcwebclient)
 
 ### Возможности
 - Электронная подпись
@@ -56,7 +56,7 @@ JS для Российской криптографии (ГОСТ).
 Примеры использования см. в [документации](https://aleksandr-ru.github.io/RusCryptoJS/jacarta2.html).
 
 ## RuToken
-Для работы с RuToken ЭЦП (не путать с RuToken Lite и др.)
+Для работы с [плагином RuToken ЭЦП 2.0](https://www.rutoken.ru/products/all/rutoken-plugin/) (не путать с RuToken Lite и др.)
 
 ### Возможности
 - Электронная подпись
