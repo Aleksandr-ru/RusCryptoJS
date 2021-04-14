@@ -93,17 +93,18 @@ function requestCertificate() {
 function signData() {
     inputSign.value = '';
     var jacarta2 = new window.RusCryptoJS.JaCarta2;
-    var data = btoa(inputData.value)
+    var data = btoa(inputData.value);
+    var attached = inputAttached.checked;
     var contId = inputCertId.value;
     return jacarta2.init().then(info => {
         console.log('Initialized', info);
         return jacarta2.bind();
     }).then(_ => { 
-        return jacarta2.signData(data, contId);
+        return jacarta2.signData(data, contId, { attached });
     }).then(sign => {
         inputSign.value = sign;
         alert('Success!');
-        return jacarta2.verifySign(data, sign);
+        return jacarta2.verifySign(data, sign, { attached });
     }).then(result => {
         console.log('Sign Verified: ', result);
     }).catch(e => {
@@ -116,7 +117,7 @@ function signData() {
 function encryptData() {
     inputEncrypted.value = inputDecrypted.value = '';
     var jacarta2 = new window.RusCryptoJS.JaCarta2;
-    var data = btoa(inputData2.value)
+    var data = btoa(inputData2.value);
     var contId = inputCertId2.value;
     return jacarta2.init().then(info => {
         console.log('Initialized', info);

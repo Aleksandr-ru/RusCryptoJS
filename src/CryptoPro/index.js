@@ -638,7 +638,7 @@ function CryptoPro() {
 	 * Подпись данных отсоединенная или присоединенная
 	 * @param {string} dataBase64
 	 * @param {string} certThumbprint
-	 * @param {object} options
+	 * @param {object} [options]
 	 * @param {string} [options.pin] будет запрошен, если отсутствует
 	 * @param {boolean} [options.attached] присоединенная подпись
 	 * @returns {Promise<string>} base64
@@ -706,7 +706,7 @@ function CryptoPro() {
 	 * @param {string} dataBase64
 	 * @param {string} certThumbprint SHA1 отпечаток первого сертификата
 	 * @param {string} certThumbprint2 SHA1 отпечаток второго сертификата
-	 * @param {object} options
+	 * @param {object} [options]
 	 * @param {string} [options.pin] будет запрошен, если отсутствует
 	 * @param {string} [options.pin2] будет запрошен, если отсутствует
 	 * @param {boolean} [options.attached] присоединенная подпись
@@ -787,7 +787,7 @@ function CryptoPro() {
 	 * @param {string} dataBase64 игнорируется если прикрепленная подпись
 	 * @param {string} signBase64 существующая подпись
 	 * @param {string} certThumbprint SHA1 отпечаток первого сертификата
-	 * @param {object} options
+	 * @param {object} [options]
 	 * @param {string} [options.pin] будет запрошен, если отсутствует
 	 * @param {boolean} [options.attached] присоединенная подпись
 	 * @returns {Promise<string>} base64
@@ -875,7 +875,7 @@ function CryptoPro() {
 	 * Проверить подпись.
 	 * @param {string} dataBase64 игнорируется если прикрепленная подпись
 	 * @param {string} signBase64 существующая подпись
-	 * @param {object} options
+	 * @param {object} [options]
 	 * @param {boolean} [options.attached] присоединенная подпись
 	 * @returns {Promise<boolean>} true или reject
 	 */

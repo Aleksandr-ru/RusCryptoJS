@@ -383,17 +383,22 @@ function JaCarta2() {
 	};
 
 	/**
-	 * Подписать данные. Выдает подпись в формате PKCS#7, опционально закодированную в Base64
-	 * @param {string} data данные (и подпись) закодированы в base64
+	 * Подписать данные. Выдает подпись в формате PKCS#7, закодированную в Base64
+	 * @param {string} dataBase64 Данные для подписи в виде строки, закодированной в Base64
 	 * @param {int} containerId идентификатор контейнера (сертификата)
+	 * @param {object} [options]
+	 * @param {boolean} [options.attached] присоединенная подпись
 	 * @returns {Promise<string>} строка-подпись в формате PKCS#7, закодированная в Base64.
 	 */
-	this.signData = function(dataBase64, containerId){
+	this.signData = function(dataBase64, containerId, options){
+		if (!options) options = {};
+		const { attached } = options;
 		return new Promise((resolve, reject) => {
 			client.signBase64EncodedData({
 				args: {
 					contID: containerId,
-					data: dataBase64
+					data: dataBase64,
+					attachedSignature: !!attached
 				},
 				onSuccess: resolve,
 				onError: errorHandler(reject)
@@ -405,21 +410,28 @@ function JaCarta2() {
 
 	/**
 	 * Проверить подпись.
-	 * @param {string} dataBase64
+	 * @param {string} dataBase64 игнорируется если прикрепленная подпись
 	 * @param {string} signBase64 существующая подпись
+	 * @param {object} [options]
+	 * @param {boolean} [options.attached] присоединенная подпись
 	 * @returns {Promise<boolean>} true или reject
 	 */
-	this.verifySign = function(dataBase64, signBase64){
+	this.verifySign = function(dataBase64, signBase64, options){
+		if (!options) options = {};
+		const { attached } = options;
+		const args = {
+			signature: Array.from(atob(signBase64), c => c.charCodeAt(0)),
+			options: {
+				tokenID: tokenId,
+				useToken: true
+			}
+		};
+		if (!attached) {
+			args.data = Array.from(atob(dataBase64), c => c.charCodeAt(0));
+		}
 		return new Promise((resolve, reject) => {
 			client.verifyData({
-				args: {
-					signature: Array.from(atob(signBase64), c => c.charCodeAt(0)),
-					data: Array.from(atob(dataBase64), c => c.charCodeAt(0)),
-					options: {
-						tokenID: tokenId,
-						useToken: true
-					}
-				},
+				args,
 				onSuccess: resolve,
 				onError: errorHandler(reject)
 			});
