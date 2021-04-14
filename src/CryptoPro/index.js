@@ -26,12 +26,10 @@ function CryptoPro() {
 	// https://www.cryptopro.ru/forum2/default.aspx?g=posts&m=38467#post38467
 	const asn1UTF8StringTag = 0x0c; // 12, UTF8String
 
-	// const signerOptions = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
-	const signerOptions = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY;
-
 	let canAsync;
 	let pluginVersion = '';
 	let binded = false;
+	let signerOptions = 0;
 
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
@@ -43,6 +41,8 @@ function CryptoPro() {
 
 		require('./cadesplugin_api');
 		canAsync = !!cadesplugin.CreateObjectAsync;
+		// signerOptions = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
+		signerOptions = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY;
 
 		return new Promise(resolve => {
 			if(!window.cadesplugin) {

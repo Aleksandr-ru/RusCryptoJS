@@ -82,13 +82,21 @@ function requestCertificate() {
 function signData() {
     inputSign.value = '';
     var cryptopro = new window.RusCryptoJS.CryptoPro;
-    var data = btoa(inputData.value)
+    var data = btoa(inputData.value);
+    var attached = inputAttached.checked;
     var thumbprint = inputCertId.value;
     return cryptopro.init().then(info => {
         console.log('Initialized', info);
-        return cryptopro.signData(data, thumbprint);
+        return cryptopro.signData(data, thumbprint, { attached });
     }).then(sign => {
         inputSign.value = sign;
+        return cryptopro.verifySign(data, sign, { attached }).catch(e => {
+            console.warn(e);
+            return false;
+        });
+    })
+    .then(verified => {
+        console.log('Verified: ', verified);
         alert('Success!');
     }).catch(e => {
         alert('Failed! ' + e);

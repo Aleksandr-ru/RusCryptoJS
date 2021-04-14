@@ -281,10 +281,11 @@ cryptopro.init().then(function(info) {
                     (
                         dataBase64 : <span class="type">String</span>,
                         certThumbprint : <span class="type">String</span>
-                        <span class="optional">[, pin : <span class="type">String</span>]</span>
+                        <span class="optional">[, options : <span class="type">Object</span>]</span>
                     ) : <span class="type">Promise&lt;String&gt;</span>
                 </h5>
-                <p>Подпись данных (отсоединенная).</p>
+                <p><b>Начиная с версии 2.4</b></p>
+                <p>Подпись данных отсоединенная или присоединенная.</p>
                 <table class="u-full-width">
                     <thead>
                         <tr>
@@ -302,9 +303,52 @@ cryptopro.init().then(function(info) {
                             <td>Отпечаток сертификата.</td>
                         </tr>
                         <tr>
-                            <td>pin</td>
+                            <td>options</td>
+                            <td>Для обратной совместимости можно передать строку, содержащую пин-код вместо объекта.</td>
+                        </tr>
+                        <tr>
+                            <td>options.pin</td>
                             <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
                         </tr>
+                        <tr>
+                            <td>options.attached</td>
+                            <td>Признак присоединенной подписи (по-умолчанию <code>false</code>).</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>
+                    <b class="returns">Возвращает</b> base64 закодированную подпись.
+                </p>
+                <h5>
+                    <span class="function">signData</span>
+                    (
+                    dataBase64 : <span class="type">String</span>,
+                    certThumbprint : <span class="type">String</span>
+                    <span class="optional">[, pin : <span class="type">String</span>]</span>
+                    ) : <span class="type">Promise&lt;String&gt;</span>
+                </h5>
+                <p><b>До версии 2.4</b></p>
+                <p>Подпись данных (отсоединенная).</p>
+                <table class="u-full-width">
+                    <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>dataBase64</td>
+                        <td>Данные для подписи.</td>
+                    </tr>
+                    <tr>
+                        <td>certThumbprint</td>
+                        <td>Отпечаток сертификата.</td>
+                    </tr>
+                    <tr>
+                        <td>pin</td>
+                        <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
+                    </tr>
                     </tbody>
                 </table>
                 <p>
@@ -316,11 +360,11 @@ cryptopro.init().then(function(info) {
                     (
                         dataBase64 : <span class="type">String</span>,
                         certThumbprint : <span class="type">String</span>,
-                        pin : <span class="type">String</span>,
                         certThumbprint2 : <span class="type">String</span>,
-                        pin2 : <span class="type">String</span>
+                        options : <span class="type">Object</span>
                     ) : <span class="type">Promise&lt;String&gt;</span>
                 </h5>
+                <p><b>Начиная с версии 2.4</b> нет обратной совместимости!</p>
                 <p>Совместная подпись данных (двумя сертификатами).</p>
                 <table class="u-full-width">
                     <thead>
@@ -339,17 +383,70 @@ cryptopro.init().then(function(info) {
                             <td>Отпечаток сертификата.</td>
                         </tr>
                         <tr>
-                            <td>pin</td>
-                            <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
-                        </tr>
-                        <tr>
                             <td>certThumbprint2</td>
                             <td>Отпечаток сертификата.</td>
                         </tr>
                         <tr>
-                            <td>pin2</td>
+                            <td>options</td>
+                            <td>Объект с параметрами:</td>
+                        </tr>
+                        <tr>
+                            <td>options.pin</td>
                             <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
                         </tr>
+                        <tr>
+                            <td>options.pin2</td>
+                            <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
+                        </tr>
+                        <tr>
+                            <td>options.attached</td>
+                            <td>Признак присоединенной подписи (по-умолчанию <code>false</code>).</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>
+                    <b class="returns">Возвращает</b> base64 закодированную подпись.
+                </p>
+                <h5>
+                    <span class="function">signData2</span>
+                    (
+                    dataBase64 : <span class="type">String</span>,
+                    certThumbprint : <span class="type">String</span>,
+                    pin : <span class="type">String</span>,
+                    certThumbprint2 : <span class="type">String</span>,
+                    pin2 : <span class="type">String</span>
+                    ) : <span class="type">Promise&lt;String&gt;</span>
+                </h5>
+                <p><b>До версии 2.4</b></p>
+                <p>Совместная подпись данных (двумя сертификатами).</p>
+                <table class="u-full-width">
+                    <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>dataBase64</td>
+                        <td>Данные для подписи.</td>
+                    </tr>
+                    <tr>
+                        <td>certThumbprint</td>
+                        <td>Отпечаток сертификата.</td>
+                    </tr>
+                    <tr>
+                        <td>pin</td>
+                        <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
+                    </tr>
+                    <tr>
+                        <td>certThumbprint2</td>
+                        <td>Отпечаток сертификата.</td>
+                    </tr>
+                    <tr>
+                        <td>pin2</td>
+                        <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
+                    </tr>
                     </tbody>
                 </table>
                 <p>
@@ -362,9 +459,10 @@ cryptopro.init().then(function(info) {
                         dataBase64 : <span class="type">String</span>,
                         signBase64 : <span class="type">String</span>,
                         certThumbprint : <span class="type">String</span>
-                        <span class="optional">[, pin : <span class="type">String</span>]</span>
+                        <span class="optional">[, options : <span class="type">Object</span>]</span>
                     ) : <span class="type">Promise&lt;String&gt;</span>
                 </h5>
+                <p><b>Начиная с версии 2.4</b> нет обратной совместимости!</p>
                 <p>Добавление подписи к существующей.</p>
                 <table class="u-full-width">
                     <thead>
@@ -376,7 +474,7 @@ cryptopro.init().then(function(info) {
                     <tbody>
                         <tr>
                             <td>dataBase64</td>
-                            <td>Данные для подписи.</td>
+                            <td>Данные для подписи, игнорируется если прикрепленная подпись.</td>
                         </tr>
                         <tr>
                             <td>signBase64</td>
@@ -387,9 +485,57 @@ cryptopro.init().then(function(info) {
                             <td>Отпечаток сертификата.</td>
                         </tr>
                         <tr>
-                            <td>pin</td>
+                            <td>options</td>
+                            <td>Объект с параметрами:</td>
+                        </tr>
+                        <tr>
+                            <td>options.pin</td>
                             <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
                         </tr>
+                        <tr>
+                            <td>options.attached</td>
+                            <td>Признак присоединенной подписи (по-умолчанию <code>false</code>).</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>
+                    <b class="returns">Возвращает</b> base64 закодированную подпись.
+                </p>
+                <h5>
+                    <span class="function">addSign</span>
+                    (
+                    dataBase64 : <span class="type">String</span>,
+                    signBase64 : <span class="type">String</span>,
+                    certThumbprint : <span class="type">String</span>
+                    <span class="optional">[, pin : <span class="type">String</span>]</span>
+                    ) : <span class="type">Promise&lt;String&gt;</span>
+                </h5>
+                <p><b>До версии 2.4</b></p>
+                <p>Добавление подписи к существующей.</p>
+                <table class="u-full-width">
+                    <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>dataBase64</td>
+                        <td>Данные для подписи.</td>
+                    </tr>
+                    <tr>
+                        <td>signBase64</td>
+                        <td>Существующая подпись.</td>
+                    </tr>
+                    <tr>
+                        <td>certThumbprint</td>
+                        <td>Отпечаток сертификата.</td>
+                    </tr>
+                    <tr>
+                        <td>pin</td>
+                        <td>Пин-код контейнера закрытого ключа, будет запрошен через GUI, если отсутствует.</td>
+                    </tr>
                     </tbody>
                 </table>
                 <p>
@@ -401,8 +547,10 @@ cryptopro.init().then(function(info) {
                     (
                         dataBase64 : <span class="type">String</span>,
                         signBase64 : <span class="type">String</span>
+                        <span class="optional">[, options : <span class="type">Object</span>]</span>
                     ) : <span class="type">Promise&lt;Boolean&gt;</span>
                 </h5>
+                <p><b>Начиная с версии 2.4</b></p>
                 <p>Проверка подписи.</p>
                 <table class="u-full-width">
                     <thead>
@@ -420,6 +568,44 @@ cryptopro.init().then(function(info) {
                             <td>signBase64</td>
                             <td>Существующая подпись.</td>
                         </tr>
+                        <tr>
+                            <td>options</td>
+                            <td>Объект с параметрами:</td>
+                        </tr>
+                        <tr>
+                            <td>options.attached</td>
+                            <td>Признак присоединенной подписи (по-умолчанию <code>false</code>).</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>
+                    <b class="returns">Возвращает</b> истину <code>true</code> или выбрасывает ошибку в случае неуспешной проверки.
+                </p>
+                <h5>
+                    <span class="function">verifySign</span>
+                    (
+                    dataBase64 : <span class="type">String</span>,
+                    signBase64 : <span class="type">String</span>
+                    ) : <span class="type">Promise&lt;Boolean&gt;</span>
+                </h5>
+                <p><b>До версии 2.4</b></p>
+                <p>Проверка подписи.</p>
+                <table class="u-full-width">
+                    <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Описание</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>dataBase64</td>
+                        <td>Данные для подписи.</td>
+                    </tr>
+                    <tr>
+                        <td>signBase64</td>
+                        <td>Существующая подпись.</td>
+                    </tr>
                     </tbody>
                 </table>
                 <p>
@@ -592,10 +778,16 @@ cryptopro.init().then(function(info) {
                     </div>
                     <div class="row">
                         <div class="two columns">&nbsp;</div>
-                        <div class="ten columns">
+                        <div class="two columns">
                             <button class="button-primary" type="submit">
                                 Подписать
                             </button>
+                        </div>
+                        <div class="eight columns">
+                            <label>
+                                <input type="checkbox" id="attached">
+                                <span class="label-body">Присоединенная подпись</span>
+                            </label>
                         </div>
                     </div>
                     <div class="row">
