@@ -29,6 +29,7 @@ function CryptoPro() {
 	let canAsync;
 	let pluginVersion = '';
 	let binded = false;
+	let signerOptions = 0;
 
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
@@ -40,6 +41,8 @@ function CryptoPro() {
 
 		require('./cadesplugin_api');
 		canAsync = !!cadesplugin.CreateObjectAsync;
+		// signerOptions = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
+		signerOptions = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY;
 
 		return new Promise(resolve => {
 			if(!window.cadesplugin) {
@@ -632,13 +635,21 @@ function CryptoPro() {
 	};
 
 	/**
-	 * Подпись данных (отсоединенная).
+	 * Подпись данных отсоединенная или присоединенная
 	 * @param {string} dataBase64
 	 * @param {string} certThumbprint
-	 * @param {string} pin будет запрошен, если отсутствует
+	 * @param {object} [options]
+	 * @param {string} [options.pin] будет запрошен, если отсутствует
+	 * @param {boolean} [options.attached] присоединенная подпись
 	 * @returns {Promise<string>} base64
 	 */
-	this.signData = function(dataBase64, certThumbprint, pin){
+	this.signData = function(dataBase64, certThumbprint, options){
+		if (typeof options === 'string') {
+			// обратная совместимость с версией 2.3
+			options = { pin: options };
+		}
+		if (!options) options = {};
+		const { pin, attached } = options;
 		if(canAsync) {
 			let oCertificate, oSigner, oSignedData;
 			return getCertificateObject(certThumbprint, pin)
@@ -654,14 +665,13 @@ function CryptoPro() {
 				oSignedData = objects[1];
 				return Promise.all([
 					oSigner.propset_Certificate(oCertificate),
-					// oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN),
-					oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY),
+					oSigner.propset_Options(signerOptions),
 					// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
 					oSignedData.propset_ContentEncoding(cadesplugin.CADESCOM_BASE64_TO_BINARY)
 				]);
 			})
 			.then(() => oSignedData.propset_Content(dataBase64))
-			.then(() => oSignedData.SignCades(oSigner, cadesplugin.CADESCOM_CADES_BES, true))
+			.then(() => oSignedData.SignCades(oSigner, cadesplugin.CADESCOM_CADES_BES, !attached))
 			.catch(e => {
 				const err = getError(e);
 				throw new Error(err);
@@ -673,15 +683,14 @@ function CryptoPro() {
 					const oCertificate = getCertificateObject(certThumbprint, pin);
 					const oSigner = cadesplugin.CreateObject("CAdESCOM.CPSigner");
 					oSigner.Certificate = oCertificate;
-					// oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
-					oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY;
+					oSigner.Options = signerOptions;
 
 					const oSignedData = cadesplugin.CreateObject("CAdESCOM.CadesSignedData");
 					// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
 					oSignedData.ContentEncoding = cadesplugin.CADESCOM_BASE64_TO_BINARY;
 					oSignedData.Content = dataBase64;
 
-					const sSignedMessage = oSignedData.SignCades(oSigner, cadesplugin.CADESCOM_CADES_BES, true);
+					const sSignedMessage = oSignedData.SignCades(oSigner, cadesplugin.CADESCOM_CADES_BES, !attached);
 					resolve(sSignedMessage);
 				}
 				catch (e) {
@@ -696,12 +705,16 @@ function CryptoPro() {
 	 * Совместная подпись данных (двумя сертификатами).
 	 * @param {string} dataBase64
 	 * @param {string} certThumbprint SHA1 отпечаток первого сертификата
-	 * @param {string} pin будет запрошен, если отсутствует
 	 * @param {string} certThumbprint2 SHA1 отпечаток второго сертификата
-	 * @param {string} pin2 будет запрошен, если отсутствует
+	 * @param {object} [options]
+	 * @param {string} [options.pin] будет запрошен, если отсутствует
+	 * @param {string} [options.pin2] будет запрошен, если отсутствует
+	 * @param {boolean} [options.attached] присоединенная подпись
 	 * @returns {Promise<string>} base64
 	 */
-	this.signData2 = function(dataBase64, certThumbprint, pin, certThumbprint2, pin2){
+	this.signData2 = function(dataBase64, certThumbprint, certThumbprint2, options){
+		if (!options) options = {};
+		const { pin, pin2, attached } = options;
 		if(canAsync) {
 			let oCertificate, oCertificate2, oSigner, oSignedData;
 			return Promise.all([
@@ -725,14 +738,12 @@ function CryptoPro() {
 			.then(() => oSignedData.propset_Content(dataBase64))
 			.then(() => Promise.all([
 				oSigner.propset_Certificate(oCertificate),
-				// oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN),
-				oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY)
+				oSigner.propset_Options(signerOptions)
 			]))
-			.then(() => oSignedData.SignCades(oSigner, cadesplugin.CADESCOM_CADES_BES, true))
+			.then(() => oSignedData.SignCades(oSigner, cadesplugin.CADESCOM_CADES_BES, !attached))
 			.then(() => Promise.all([
 				oSigner.propset_Certificate(oCertificate2),
-				// oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN),
-				oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY)
+				oSigner.propset_Options(signerOptions)
 			]))
 			.then(() => oSignedData.CoSignCades(oSigner, cadesplugin.CADESCOM_CADES_BES))
 			.catch(e => {
@@ -754,13 +765,11 @@ function CryptoPro() {
 
 					const oSigner = cadesplugin.CreateObject("CAdESCOM.CPSigner");
 					oSigner.Certificate = oCertificate;
-					// oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
-					oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY;
-					const sSignedMessage = oSignedData.SignCades(oSigner, cadesplugin.CADESCOM_CADES_BES, true);
+					oSigner.Options = signerOptions;
+					const sSignedMessage = oSignedData.SignCades(oSigner, cadesplugin.CADESCOM_CADES_BES, !attached);
 
 					oSigner.Certificate = oCertificate2;
-					// oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
-					oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY;
+					oSigner.Options = signerOptions;
 					const sSignedMessage2 = oSignedData.CoSignCades(oSigner, cadesplugin.CADESCOM_CADES_BES);
 
 					resolve(sSignedMessage2);
@@ -775,13 +784,17 @@ function CryptoPro() {
 
 	/**
 	 * Добавить подпись к существующей.
-	 * @param {string} dataBase64
+	 * @param {string} dataBase64 игнорируется если прикрепленная подпись
 	 * @param {string} signBase64 существующая подпись
 	 * @param {string} certThumbprint SHA1 отпечаток первого сертификата
-	 * @param {string} pin будет запрошен, если отсутствует
+	 * @param {object} [options]
+	 * @param {string} [options.pin] будет запрошен, если отсутствует
+	 * @param {boolean} [options.attached] присоединенная подпись
 	 * @returns {Promise<string>} base64
 	 */
-	this.addSign = function(dataBase64, signBase64, certThumbprint, pin){
+	this.addSign = function(dataBase64, signBase64, certThumbprint, options){
+		if (!options) options = {};
+		const { pin, attached } = options;
 		if(canAsync) {
 			let oCertificate, oSigner, oSignedData;
 			return getCertificateObject(certThumbprint, pin)
@@ -795,14 +808,17 @@ function CryptoPro() {
 			.then(objects => {
 				oSigner = objects[0];
 				oSignedData = objects[1];
-				// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
-				return oSignedData.propset_ContentEncoding(cadesplugin.CADESCOM_BASE64_TO_BINARY);
+				if (attached) {
+					return Promise.resolve();
+				}
+				else {
+					// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
+					return oSignedData.propset_ContentEncoding(cadesplugin.CADESCOM_BASE64_TO_BINARY)
+						.then(() => oSignedData.propset_Content(dataBase64));
+				}
 			})
 			.then(() => {
-				return oSignedData.propset_Content(dataBase64);
-			})
-			.then(() => {
-				return oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, true).catch(function(e){
+				return oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, !attached).catch(function(e){
 					console.log('Existing sign not verified: %o', e);
 					// Для создания второй подписи успешная проверка не требуется.
 					// Вы можете перехватить исключение при проверке, и добавить подпись вторую.
@@ -811,8 +827,7 @@ function CryptoPro() {
 			})
 			.then(() => Promise.all([
 				oSigner.propset_Certificate(oCertificate),
-				// oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN),
-				oSigner.propset_Options(cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY)
+				oSigner.propset_Options(signerOptions)
 			]))
 			.then(() => oSignedData.CoSignCades(oSigner, cadesplugin.CADESCOM_CADES_BES))
 			.catch(e => {
@@ -825,12 +840,14 @@ function CryptoPro() {
 				try {
 					const oCertificate = getCertificateObject(certThumbprint, pin);
 					const oSignedData = cadesplugin.CreateObject("CAdESCOM.CadesSignedData");
-					// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
-					oSignedData.ContentEncoding = cadesplugin.CADESCOM_BASE64_TO_BINARY;
-					oSignedData.Content = dataBase64;
+					if (!attached) {
+						// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
+						oSignedData.ContentEncoding = cadesplugin.CADESCOM_BASE64_TO_BINARY;
+						oSignedData.Content = dataBase64;
+					}
 
 					try {
-						oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, true);
+						oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, !attached);
 					}
 					catch(e) {
 						console.log('Existing sign not verified: %o', e);
@@ -841,8 +858,7 @@ function CryptoPro() {
 
 					const oSigner = cadesplugin.CreateObject("CAdESCOM.CPSigner");
 					oSigner.Certificate = oCertificate;
-					// oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_WHOLE_CHAIN;
-					oSigner.Options = cadesplugin.CAPICOM_CERTIFICATE_INCLUDE_END_ENTITY_ONLY;
+					oSigner.Options = signerOptions;
 					const sSignedMessage = oSignedData.CoSignCades(oSigner, cadesplugin.CADESCOM_CADES_BES);
 
 					resolve(sSignedMessage);
@@ -857,24 +873,31 @@ function CryptoPro() {
 
 	/**
 	 * Проверить подпись.
-	 * @param {string} dataBase64
+	 * @param {string} dataBase64 игнорируется если прикрепленная подпись
 	 * @param {string} signBase64 существующая подпись
+	 * @param {object} [options]
+	 * @param {boolean} [options.attached] присоединенная подпись
 	 * @returns {Promise<boolean>} true или reject
 	 */
-	this.verifySign = function(dataBase64, signBase64){
+	this.verifySign = function(dataBase64, signBase64, options){
+		if (!options) options = {};
+		const { attached } = options;
 		if(canAsync) {
 			let oSignedData;
 			return cadesplugin.then(function(){
 				return cadesplugin.CreateObjectAsync("CAdESCOM.CadesSignedData");
 			}).then(function(object){
 				oSignedData = object;
-
-				// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
-				return oSignedData.propset_ContentEncoding(cadesplugin.CADESCOM_BASE64_TO_BINARY);
+				if (attached) {
+					return Promise.resolve();
+				}
+				else {
+					// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
+					return oSignedData.propset_ContentEncoding(cadesplugin.CADESCOM_BASE64_TO_BINARY)
+						.then(() => oSignedData.propset_Content(dataBase64));
+				}
 			}).then(function(){
-				return oSignedData.propset_Content(dataBase64);
-			}).then(function(){
-				return oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, true);
+				return oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, !attached);
 			}).then(function(){
 				//console.log('sign2: %s', sign2);
 				return true;
@@ -887,10 +910,12 @@ function CryptoPro() {
 			return new Promise(resolve => {
 				try {
 					const oSignedData = cadesplugin.CreateObject("CAdESCOM.CadesSignedData");
-					// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
-					oSignedData.ContentEncoding = cadesplugin.CADESCOM_BASE64_TO_BINARY;
-					oSignedData.Content = dataBase64;
-					oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, true);
+					if (!attached) {
+						// Значение свойства ContentEncoding должно быть задано до заполнения свойства Content
+						oSignedData.ContentEncoding = cadesplugin.CADESCOM_BASE64_TO_BINARY;
+						oSignedData.Content = dataBase64;
+					}
+					oSignedData.VerifyCades(signBase64, cadesplugin.CADESCOM_CADES_BES, !attached);
 					resolve(true);
 				}
 				catch (e) {

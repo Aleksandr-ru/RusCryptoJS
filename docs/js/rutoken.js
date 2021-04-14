@@ -97,15 +97,16 @@ function signData() {
     inputSign.value = '';
     var rutoken = new window.RusCryptoJS.RuToken;
     var data = btoa(inputData.value);
+    var attached = inputAttached.checked;
     var contId = inputCertId.value;
     return rutoken.init().then(info => {
         console.log('Initialized', info);
         return rutoken.bind();
     }).then(_ => { 
-        return rutoken.signData(data, contId);
+        return rutoken.signData(data, contId, { attached });
     }).then(sign => {
         inputSign.value = sign;
-        return rutoken.verifySign(data, sign);
+        return rutoken.verifySign(data, sign, { attached });
     }).then(_ => {
         console.log('Signed and verified')
         alert('Success!');
@@ -119,7 +120,7 @@ function signData() {
 function encryptData() {
     inputEncrypted.value = inputDecrypted.value = '';
     var rutoken = new window.RusCryptoJS.RuToken;
-    var data = btoa(inputData2.value)
+    var data = btoa(inputData2.value);
     var contId = inputCertId2.value;
     return rutoken.init().then(info => {
         console.log('Initialized', info);

@@ -24,6 +24,7 @@ var inputCertInfo = document.getElementById('certInfo');
 var inputCertId = document.getElementById('certId');
 var inputCertId2 = document.getElementById('certId2');
 var inputData = document.getElementById('data');
+var inputAttached = document.getElementById('attached');
 var inputData2 = document.getElementById('data2');
 var inputSign = document.getElementById('sign');
 var inputEncrypted = document.getElementById('encrypted');
