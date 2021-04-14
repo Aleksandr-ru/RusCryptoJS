@@ -550,7 +550,6 @@ cryptopro.init().then(function(info) {
                         <span class="optional">[, options : <span class="type">Object</span>]</span>
                     ) : <span class="type">Promise&lt;Boolean&gt;</span>
                 </h5>
-                <p><b>Начиная с версии 2.4</b></p>
                 <p>Проверка подписи.</p>
                 <table class="u-full-width">
                     <thead>
@@ -570,42 +569,12 @@ cryptopro.init().then(function(info) {
                         </tr>
                         <tr>
                             <td>options</td>
-                            <td>Объект с параметрами:</td>
+                            <td>Доступен начиная с версии 2.4</td>
                         </tr>
                         <tr>
                             <td>options.attached</td>
                             <td>Признак присоединенной подписи (по-умолчанию <code>false</code>).</td>
                         </tr>
-                    </tbody>
-                </table>
-                <p>
-                    <b class="returns">Возвращает</b> истину <code>true</code> или выбрасывает ошибку в случае неуспешной проверки.
-                </p>
-                <h5>
-                    <span class="function">verifySign</span>
-                    (
-                    dataBase64 : <span class="type">String</span>,
-                    signBase64 : <span class="type">String</span>
-                    ) : <span class="type">Promise&lt;Boolean&gt;</span>
-                </h5>
-                <p><b>До версии 2.4</b></p>
-                <p>Проверка подписи.</p>
-                <table class="u-full-width">
-                    <thead>
-                    <tr>
-                        <th>Параметр</th>
-                        <th>Описание</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>dataBase64</td>
-                        <td>Данные для подписи.</td>
-                    </tr>
-                    <tr>
-                        <td>signBase64</td>
-                        <td>Существующая подпись.</td>
-                    </tr>
                     </tbody>
                 </table>
                 <p>
