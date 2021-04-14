@@ -397,14 +397,17 @@ function RuToken() {
 
 	/**
 	 * Подписать данные. Выдает подпись в формате PKCS#7, опционально закодированную в Base64
-	 * @param {string} data данные (и подпись) закодированы в base64
+	 * @param {string} dataBase64 данные для подписи закодированные в base64
 	 * @param {string} certId идентификатор сертификата
+	 * @param {object} [options]
+	 * @param {boolean} [options.attached] присоединенная подпись
 	 * @returns {Promise<string>} строка-подпись в формате PKCS#7, закодированная в Base64.
 	 */
-	this.signData = function(dataBase64, certId){
-		const detached = true;
+	this.signData = function(dataBase64, certId, options){
+		if (!options) options = {};
+		const { attached } = options;
 		return plugin.sign(deviceId, certId, dataBase64, plugin.DATA_FORMAT_BASE64, {
-			detached
+			detached: !attached
 		}).then(null, e => {
 			const err = getError(e);
 			throw new Error(err);
@@ -413,17 +416,23 @@ function RuToken() {
 
 	/**
 	 * Добавить подпись к существующей.
-	 * @param {string} dataBase64
+	 * @param {string} dataBase64 игнорируется если прикрепленная подпись
 	 * @param {string} signBase64 существующая подпись
 	 * @param {string} certId идентификатор сертификата
+	 * @param {object} [options]
+	 * @param {boolean} [options.attached] присоединенная подпись
 	 * @returns {Promise<string>} base64
 	 */
-	this.addSign = function(dataBase64, signBase64, certId){
-		const detached = true;
-		const CMS = signBase64;
+	this.addSign = function(dataBase64, signBase64, certId, options){
+		if (!options) options = {};
+		const { attached } = options;
+		if (attached) {
+			// если в CMS подпись неотсоединённая, то параметр data должен быть пустым
+			dataBase64 = '';
+		}
 		return plugin.sign(deviceId, certId, dataBase64, plugin.DATA_FORMAT_BASE64, {
-			detached,
-			CMS
+			detached: !attached,
+			CMS: signBase64
 		}).then(null, e => {
 			const err = getError(e);
 			throw new Error(err);
@@ -432,19 +441,23 @@ function RuToken() {
 
 	/**
 	 * Проверить подпись.
-	 * @param {string} dataBase64
+	 * @param {string} dataBase64 игнорируется если прикрепленная подпись
 	 * @param {string} signBase64 существующая подпись
+	 * @param {object} [options]
+	 * @param {boolean} [options.attached] присоединенная подпись
 	 * @returns {Promise<boolean>} true или reject
 	 */
-	this.verifySign = function(dataBase64, signBase64){
-		const data = dataBase64;
-		const base64 = true;
-		const verifyCertificate = false;
-		return plugin.verify(deviceId, signBase64, {
-			data,
-			base64,
-			verifyCertificate
-		}).then(result => {
+	this.verifySign = function(dataBase64, signBase64, options){
+		if (!options) options = {};
+		const { attached } = options;
+		const args = {
+			base64: true,
+			verifyCertificate: false
+		};
+		if (!attached) {
+			args.data = dataBase64;
+		}
+		return plugin.verify(deviceId, signBase64, args).then(result => {
 			if (!result) {
 				// потмоу что в крипто-про тоже так
 				throw new Error('подпись не верна');
