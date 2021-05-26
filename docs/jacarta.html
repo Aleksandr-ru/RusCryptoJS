@@ -244,6 +244,9 @@ jacarta.init().then(function(info) {
 'Не действителен после: ' + this.ValidToDate +
 'Приватный ключ:        ' + (this.HasPrivateKey ? 'Есть' : 'Нет') +
 'Валидный:              ' + (this.IsValid ? 'Да' : 'Нет')</code></pre>
+
+                    Дополнительно содержит поля <code>Subject</code> и <code>Issuer</code> с представлением соответствующих полей в виде объектов DN,
+                    где каждый RDN представлен как свойство и его значение.
                 </p>
 
                 <h5 id="listCertificates">
