@@ -503,21 +503,21 @@ function JaCarta2() {
 	function sync()
 	{
 		return new Promise(resolve => {
-			let delay = 100;
-			const check = function () {
-				if (delay > 10000) {
+			const timeout = 100;
+			let delay = 0;
+			const checkFn = function () {
+				if (delay > 60000) {
 					throw new Error('Не удалось дождаться завершения асинхронной операции');
 				}
 				else if (client.isAsyncOperationInProgress()) {
-					console.log('sync: delay %d ms.', delay);
-					setTimeout(fn, 100);
-					delay = delay * 2;
+					setTimeout(checkFn, timeout);
+					delay += + timeout;
 				}
 				else {
 					resolve();
 				}
 			};
-			check();
+			checkFn();
 		});
 	}
 
