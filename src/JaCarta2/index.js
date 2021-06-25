@@ -3,6 +3,7 @@
  * @author Aleksandr.ru
  * @link http://aleksandr.ru
  */
+import sha1 from 'js-sha1';
 import DN from '../DN';
 import errors from './errors';
 import { convertDN, stripDnQuotes } from '../helpers';
@@ -282,7 +283,7 @@ function JaCarta2() {
 				SubjectName: stripDnQuotes(dn.toString()),
 				Version: o.Data.Version,
 				SerialNumber: o.Data['Serial Number'].map(byte2hex).join(''),
-				Thumbprint: o.Signature.map(byte2hex).join(''),
+				Thumbprint: undefined, // sha1(body)
 				ValidFromDate: o.Data.Validity['Not Before'],
 				ValidToDate: o.Data.Validity['Not After'],
 				HasPrivateKey: true,
@@ -305,6 +306,20 @@ function JaCarta2() {
 				}
 			};
 			return info;
+		}).then(info => {
+			return new Promise((resolve, reject) => {
+				client.getCertificateBody({
+					args: {
+						id: containerId,
+						tokenID: tokenId
+					},
+					onSuccess: resolve,
+					onError: errorHandler(reject)
+				});
+			}).then(a => {
+				info.Thumbprint = sha1(a); // supports byte `Array`
+				return info;
+			});
 		});
 	};
 
