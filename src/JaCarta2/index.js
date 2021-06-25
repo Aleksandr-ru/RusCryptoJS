@@ -511,7 +511,7 @@ function JaCarta2() {
 				}
 				else if (client.isAsyncOperationInProgress()) {
 					setTimeout(checkFn, timeout);
-					delay += + timeout;
+					delay += timeout;
 				}
 				else {
 					resolve();
