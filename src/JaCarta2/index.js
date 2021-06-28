@@ -27,32 +27,22 @@ function JaCarta2() {
 				getScript('https://localhost:24738/JCWebClient.js', resolve, reject);
 			}
 		}).then(() => {
-			return new Promise((resolve, reject) => {
-				if (typeof JCWebClient2 != 'undefined') {
-					client = JCWebClient2;
-					client.initialize();
-					client.defaults({
-						async: true
-					});
-					sync().then(() => client.getJCWebClientVersion({
-						onSuccess: resolve,
-						onError: errorHandler(reject)
-					}));
-				}
-				else {
-					//Не установлен клиент JCWebClient2
-					throw new Error('Не установлен клиент JCWebClient2');
-				}
-			});
+			if (typeof JCWebClient2 != 'undefined') {
+				client = JCWebClient2;
+				client.initialize();
+				client.defaults({
+					async: true
+				});
+				return sync(client.getJCWebClientVersion);
+			}
+			else {
+				//Не установлен клиент JCWebClient2
+				throw new Error('Не установлен клиент JCWebClient2');
+			}
 		}).then(version => {
 			console.log('JCWebClient2 v.%s', version);
 			final['version'] = version;
-			return new Promise((resolve, reject) => {
-				sync().then(() => client.getAllSlots({
-					onSuccess: resolve,
-					onError: errorHandler(reject)
-				}));
-			});
+			return sync(client.getAllSlots);
 		}).then(slots => {
 			return new Promise(resolve => {
 				// console.log('Got %d slots', slots.length, slots);
@@ -73,12 +63,8 @@ function JaCarta2() {
 			});
 		}).then(tokenID => {
 			tokenId = tokenID;
-			return new Promise((resolve, reject) => {
-				sync().then(() => client.getTokenInfo({
-					args: {tokenID: tokenId},
-					onSuccess: resolve,
-					onError: errorHandler(reject)
-				}));
+			return sync(client.getTokenInfo, {
+				tokenID
 			});
 		}).then(info => {
 			return Object.assign(final, info);
@@ -91,30 +77,21 @@ function JaCarta2() {
 	 * @returns {Promise}
 	 */
 	this.bind = function (userPin) {
-		return new Promise((resolve, reject) => {
-			sync().then(() => client.getLoggedInState({
-				onSuccess: resolve,
-				onError: errorHandler(reject)
-			}));
-		}).then(result => {
+		return sync(client.getLoggedInState).then(result => {
 			if (result.state === JCWebClient2.Vars.AuthState.binded && result.tokenID === tokenId) {
 				return true;
 			}
 			else {
-				return new Promise((resolve, reject) => {
-					var args = {tokenID: tokenId};
-					if (!userPin) {
-						args.useUI = true;
-					}
-					else {
-						args.pin = userPin;
-					}
-					sync().then(() => client.bindToken({
-						args: args,
-						onSuccess: resolve,
-						onError: errorHandler(reject)
-					}));
-				});
+				const args = {
+					tokenID: tokenId
+				};
+				if (!userPin) {
+					args.useUI = true;
+				}
+				else {
+					args.pin = userPin;
+				}
+				return sync(client.bindToken, args);
 			}
 		});
 	};
@@ -124,19 +101,9 @@ function JaCarta2() {
 	 * @returns {Promise}
 	 */
 	this.unbind = function () {
-		return new Promise((resolve, reject) => {
-			sync().then(() => client.getLoggedInState({
-				onSuccess: resolve,
-				onError: errorHandler(reject)
-			}));
-		}).then(result => {
+		return sync(client.getLoggedInState).then(result => {
 			if (result.state !== JCWebClient2.Vars.AuthState.notBinded) {
-				return new Promise((resolve, reject) => {
-					sync().then(() => client.unbindToken({
-						onSuccess: resolve,
-						onError: errorHandler(reject)
-					}));
-				});
+				return sync(client.unbindToken);
 			}
 			else {
 				return true;
@@ -149,28 +116,14 @@ function JaCarta2() {
 	 * @returns {Promise}
 	 */
 	this.clean = function () {
-		return new Promise((resolve, reject) => {
-			sync().then(() => client.getContainerList({
-				args: {
-					tokenID: tokenId
-				},
-				onSuccess: resolve,
-				onError: errorHandler(reject)
-			}));
+		return sync(client.getContainerList, {
+			tokenID: tokenId
 		}).then(containers => {
 			let p = Promise.resolve();
 			for (let i in containers) {
-				p = p.then(function () {
-					return new Promise((resolve, reject) => {
-						sync().then(() => client.deletePKIObject({
-							args: {
-								id: containers[i].id
-							},
-							onSuccess: resolve,
-							onError: errorHandler(reject)
-						}));
-					});
-				});
+				p = p.then(() => sync(client.deletePKIObject, {
+					id: containers[i].id
+				}));
 			}
 			return p;
 		});
@@ -204,32 +157,21 @@ function JaCarta2() {
 		};
 		const paramSet = 'XA';
 		let id;
-		return new Promise((resolve, reject) => {
-			sync().then(() => client.createKeyPair({
-				args: {
-					paramSet: paramSet,
-					description: description,
-					algorithm: algorithm
-				},
-				onSuccess: resolve,
-				onError: errorHandler(reject)
-			}));
+
+		return sync(client.createKeyPair, {
+			paramSet: paramSet,
+			description: description,
+			algorithm: algorithm
 		}).then(keyPairId => {
 			id = keyPairId;
-			return new Promise((resolve, reject) => {
-				sync().then(() => client.genCSR({
-					args: {
-						id: id,
-						dn: dn,
-						exts: exts
-					},
-					onSuccess: resolve,
-					onError: errorHandler(reject)
-				}));
+			return sync(client.genCSR, {
+				id,
+				dn,
+				exts
 			});
 		}).then(a => {
 			// base64(запрос на сертификат в формате PKCS#10)
-			var csr = btoa(String.fromCharCode.apply(null, new Uint8Array(a)));
+			const csr = btoa(String.fromCharCode.apply(null, new Uint8Array(a)));
 			return {
 				csr: pemSplit(csr),
 				keyPairId: id
@@ -244,15 +186,9 @@ function JaCarta2() {
 	 * @returns {Promise<number>} идентификатор образованного контейнера.
 	 */
 	this.writeCertificate = function (certificate, keyPairId) {
-		return new Promise((resolve, reject) => {
-			sync().then(() => client.writeUserCertificate({
-				args: {
-					keyPairID: keyPairId,
-					cert: certificate
-				},
-				onSuccess: resolve,
-				onError: errorHandler(reject)
-			}));
+		return sync(client.writeUserCertificate, {
+			keyPairID: keyPairId,
+			cert: certificate
 		});
 	};
 
@@ -262,15 +198,9 @@ function JaCarta2() {
 	 * @returns {Promise<Object>}
 	 */
 	this.certificateInfo = function (containerId) {
-		return new Promise((resolve, reject) => {
-			sync().then(() => client.parseX509Certificate({
-				args: {
-					tokenID: tokenId,
-					id: containerId
-				},
-				onSuccess: resolve,
-				onError: errorHandler(reject)
-			}));
+		return sync(client.parseX509Certificate, {
+			tokenID: tokenId,
+			id: containerId
 		}).then(o => {
 			var dn = makeDN(o.Data.Subject);
 			var dnI = makeDN(o.Data.Issuer);
@@ -306,21 +236,13 @@ function JaCarta2() {
 				}
 			};
 			return info;
-		}).then(info => {
-			return new Promise((resolve, reject) => {
-				sync().then(() => client.getCertificateBody({
-					args: {
-						id: containerId,
-						tokenID: tokenId
-					},
-					onSuccess: resolve,
-					onError: errorHandler(reject)
-				}));
-			}).then(a => {
-				info.Thumbprint = sha1(a); // supports byte `Array`
-				return info;
-			});
-		});
+		}).then(info => sync(client.getCertificateBody, {
+			id: containerId,
+			tokenID: tokenId
+		}).then(a => {
+			info.Thumbprint = sha1(a); // supports byte `Array`
+			return info;
+		}));
 	};
 
 	/**
@@ -328,14 +250,8 @@ function JaCarta2() {
 	 * @returns {Promise<Array>} [{ id, name }, ...]
 	 */
 	this.listCertificates = function () {
-		return new Promise((resolve, reject) => {
-			sync().then(() => client.getContainerList({
-				args: {
-					tokenID: tokenId
-				},
-				onSuccess: resolve,
-				onError: errorHandler(reject)
-			}));
+		return sync(client.getContainerList, {
+			tokenID: tokenId
 		}).then(a => {
 			const certs = [];
 			let p = Promise.resolve();
@@ -344,24 +260,16 @@ function JaCarta2() {
 				const contName = a[i].description;
 
 				(function (contId, contName) {
-					p = p.then(function () {
-						return new Promise((resolve, reject) => {
-							sync().then(() => client.parseX509Certificate({
-								args: {
-									tokenID: tokenId,
-									id: contId
-								},
-								onSuccess: resolve,
-								onError: errorHandler(reject)
-							}));
-						}).then(o => {
-							certs.push({
-								id: contId,
-								name: formatCertificateName(o, contName)
-							});
-							return certs.length;
+					p = p.then(() => sync(client.parseX509Certificate, {
+						tokenID: tokenId,
+						id: contId
+					}).then(o => {
+						certs.push({
+							id: contId,
+							name: formatCertificateName(o, contName)
 						});
-					});
+						return certs.length;
+					}));
 				})(contId, contName);
 			}
 			return p.then(function () {
@@ -376,15 +284,9 @@ function JaCarta2() {
 	 * @returns {Promise<string>} base64(массив байт со значением сертификата в формате DER)
 	 */
 	this.readCertificate = function (containerId) {
-		return new Promise((resolve, reject) => {
-			sync().then(() => client.getCertificateBody({
-				args: {
-					id: containerId,
-					tokenID: tokenId
-				},
-				onSuccess: resolve,
-				onError: errorHandler(reject)
-			}));
+		return sync(client.getCertificateBody, {
+			id: containerId,
+			tokenID: tokenId
 		}).then(a => {
 			if (a && a.length) {
 				// base64(массив байт со значением сертификата в формате DER)
@@ -408,19 +310,11 @@ function JaCarta2() {
 	this.signData = function (dataBase64, containerId, options) {
 		if (!options) options = {};
 		const {attached} = options;
-		return new Promise((resolve, reject) => {
-			sync().then(() => client.signBase64EncodedData({
-				args: {
-					contID: containerId,
-					data: dataBase64,
-					attachedSignature: !!attached
-				},
-				onSuccess: resolve,
-				onError: errorHandler(reject)
-			}));
-		}).then(sign => {
-			return pemSplit(sign);
-		});
+		return sync(client.signBase64EncodedData, {
+			contID: containerId,
+			data: dataBase64,
+			attachedSignature: !!attached
+		}).then(sign => pemSplit(sign));
 	};
 
 	/**
@@ -444,13 +338,7 @@ function JaCarta2() {
 		if (!attached) {
 			args.data = Array.from(atob(dataBase64), c => c.charCodeAt(0));
 		}
-		return new Promise((resolve, reject) => {
-			sync().then(() => client.verifyData({
-				args,
-				onSuccess: resolve,
-				onError: errorHandler(reject)
-			}));
-		});
+		return sync(client.verifyData, args);
 	};
 
 	/**
@@ -462,16 +350,10 @@ function JaCarta2() {
 	this.encryptData = function (dataBase64, containerId) {
 		// https://stackoverflow.com/questions/21797299/convert-base64-string-to-arraybuffer/21797381
 		const dataByte = Array.from(atob(dataBase64), c => c.charCodeAt(0));
-		return this.readCertificate(containerId).then(cert => new Promise((resolve, reject) => {
-			sync().then(() => client.encryptData({
-				args: {
-					contID: containerId,
-					receiverCertificate: cert,
-					data: dataByte // Данные для шифрования в виде массива байт.
-				},
-				onSuccess: resolve,
-				onError: errorHandler(reject)
-			}));
+		return this.readCertificate(containerId).then(cert => sync(client.encryptData, {
+			contID: containerId,
+			receiverCertificate: cert,
+			data: dataByte // Данные для шифрования в виде массива байт.
 		})).then(data => {
 			const base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(data)));
 			return pemSplit(base64);
@@ -486,21 +368,17 @@ function JaCarta2() {
 	 */
 	this.decryptData = function (dataBase64, containerId) {
 		const dataByte = Array.from(atob(dataBase64), c => c.charCodeAt(0));
-		return this.readCertificate(containerId).then(cert => new Promise((resolve, reject) => {
+		return this.readCertificate(containerId).then(cert => {
 			const certByte = Array.from(atob(cert), c => c.charCodeAt(0));
-			sync().then(() => client.decryptData({
-				args: {
-					contID: containerId,
-					senderCertificate: certByte, // Сертификат отправителя в виде массива байт.
-					data: dataByte // Массив байт с зашифрованными данными в формате CMS.
-				},
-				onSuccess: resolve,
-				onError: errorHandler(reject)
-			}));
-		})).then(data => btoa(String.fromCharCode.apply(null, new Uint8Array(data))));
+			return sync(client.decryptData, {
+				contID: containerId,
+				senderCertificate: certByte, // Сертификат отправителя в виде массива байт.
+				data: dataByte // Массив байт с зашифрованными данными в формате CMS.
+			})
+		}).then(data => btoa(String.fromCharCode.apply(null, new Uint8Array(data))));
 	};
 
-	function sync()
+	function sync(clientFn, args)
 	{
 		return new Promise(resolve => {
 			const timeout = 100;
@@ -517,8 +395,14 @@ function JaCarta2() {
 					resolve();
 				}
 			};
-			checkFn();
-		});
+			setTimeout(checkFn, 0); // первый же запуск в следующем тике
+		}).then(() => new Promise((resolve, reject) => {
+			clientFn.call(null, {
+				args,
+				onSuccess: resolve,
+				onError: errorHandler(reject)
+			});
+		}));
 	}
 
 	function errorHandler(reject)
