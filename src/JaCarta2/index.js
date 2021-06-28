@@ -22,7 +22,7 @@ function JaCarta2() {
 
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
-	 * @returns {Promise<Object>} версия, информация о токене
+	 * @returns {Promise<{version: string, serialNumber: string, label: string, type: string, flags: Object}>} версия, информация о токене
 	 */
 	this.init = function () {
 		const final = {};
@@ -50,7 +50,7 @@ function JaCarta2() {
 				const aTokens = slots.filter(a => {
 					return a.tokenExists;
 				});
-				if (aTokens && aTokens.length == 1) {
+				if (aTokens && aTokens.length === 1) {
 					// OK 1 токен
 					const token = aTokens.shift();
 					resolve(token.id);
@@ -74,7 +74,7 @@ function JaCarta2() {
 
 	/**
 	 * Авторизация на токене с пин-кодом юзера
-	 * @param {string} userPin если нет, то предлгает ввести пин через UI плагина
+	 * @param {string} userPin если нет, то предлагает ввести пин через UI плагина
 	 * @returns {Promise}
 	 */
 	this.bind = function (userPin) {
@@ -114,7 +114,7 @@ function JaCarta2() {
 
 	/**
 	 * Очистка токена (удаление всех контейнеров)
-	 * @returns {Promise}
+	 * @returns {Promise<void>}
 	 */
 	this.clean = function () {
 		return sync(client.Cmds.getContainerList, {
@@ -134,7 +134,7 @@ function JaCarta2() {
 	 * Создать запрос на сертификат
 	 * @param {DN} dn
 	 * @param {string} description описание контейнера
-	 * @param {array} ekuOids массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
+	 * @param {Array<string>} ekuOids массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
 	 * @param {string} algorithm Алгоритм "GOST-2012-256" (по-умолчанию) или "GOST-2001".
 	 * @returns {Promise<Object>} объект с полями { csr: 'base64 запрос на сертификат', keyPairId }
 	 * @see DN
@@ -203,10 +203,10 @@ function JaCarta2() {
 			tokenID: tokenId,
 			id: containerId
 		}).then(o => {
-			var dn = makeDN(o.Data.Subject);
-			var dnI = makeDN(o.Data.Issuer);
-			var dt = new Date();
-			var info = {
+			const dn = makeDN(o.Data.Subject);
+			const dnI = makeDN(o.Data.Issuer);
+			const dt = new Date();
+			return {
 				Name: dn.CN,
 				Issuer: dnI,
 				IssuerName: stripDnQuotes(dnI.toString()),
@@ -236,7 +236,6 @@ function JaCarta2() {
 						'\nВалидный:              ' + (this.IsValid ? 'Да' : 'Нет');
 				}
 			};
-			return info;
 		}).then(info => sync(client.Cmds.getCertificateBody, {
 			id: containerId,
 			tokenID: tokenId
@@ -379,6 +378,12 @@ function JaCarta2() {
 		}).then(data => btoa(String.fromCharCode.apply(null, new Uint8Array(data))));
 	};
 
+	/**
+	 * Выполнить асинхронную команду не перебивая другие
+	 * @param {string} cmd Тип выполняемый команды из JCWebClient2.Cmds...
+	 * @param {Object} args Аргументы команды
+	 * @returns {Promise<any>}
+	 */
 	function sync(cmd, args)
 	{
 		return new Promise(resolve => {
@@ -409,6 +414,11 @@ function JaCarta2() {
 		}));
 	}
 
+	/**
+	 * Обработчик успешного выполнения
+	 * @param {function(any)} resolve
+	 * @returns {function(any): void}
+	 */
 	function successHandler(resolve)
 	{
 		return result => {
@@ -417,6 +427,11 @@ function JaCarta2() {
 		}
 	}
 
+	/**
+	 * Обработчик ошибок
+	 * @param {function(any)} reject
+	 * @returns {function(error: any): void}
+	 */
 	function errorHandler(reject)
 	{
 		return error => {
@@ -431,7 +446,7 @@ function JaCarta2() {
 
 	/**
 	 * Создать DN из массива [{rdn: ..., value: ...}, ...]
-	 * @param {[index: number]: { rdn: string, value: string }} obj
+	 * @param {Array<{ rdn: string, value: string }>} obj
 	 * @returns {DN}
 	 */
 	function makeDN(obj)
@@ -449,27 +464,32 @@ function JaCarta2() {
 
 	/**
 	 * Получить название сертификата
-	 * @param {type} o объект, включающий в себя значения всех полей сертификата.
-	 * @param {type} containerName
+	 * @param {{Data: {Subject: Array<{rdn: string, value: string}>}}} o объект, включающий в себя значения всех полей сертификата.
+	 * @param {string} containerName
 	 * @returns {string} 
 	 */
 	function formatCertificateName(o, containerName)
 	{
-		var dn = new DN;
-		for(var i in o.Data.Subject) {
-			var rdn = o.Data.Subject[i].rdn;
-			var val = o.Data.Subject[i].value;
+		const dn = new DN;
+		for(let i in o.Data.Subject) {
+			const rdn = o.Data.Subject[i].rdn;
+			const val = o.Data.Subject[i].value;
 			dn[rdn] = val;
 		}
 		dn.toString = function(){
-			var cn = this['CN'] || this['2.5.4.3'];
-			var snils = this['СНИЛС'] || this['SNILS'] || this['1.2.643.100.3'];
-			var inn = this['ИНН'] || this['INN'] || this['1.2.643.3.131.1.1'];
+			const cn = this['CN'] || this['2.5.4.3'];
+			const snils = this['СНИЛС'] || this['SNILS'] || this['1.2.643.100.3'];
+			const inn = this['ИНН'] || this['INN'] || this['1.2.643.3.131.1.1'];
 			return '' + cn + (inn ?  '; ИНН ' + inn : '') + (snils ?  '; СНИЛС ' + snils : '') + (containerName ? ' (' + containerName + ')' : '');
 		};
 		return dn.toString();
 	}
 
+	/**
+	 * Переводит байт из десятичного в шестнадцатеричное представление
+	 * @param {number} byte
+	 * @returns {string}
+	 */
 	function byte2hex(byte) {
 		//console.log('byte %d -> %s', byte, byte.toString(16));
 		return ('0' + byte.toString(16)).slice(-2);
