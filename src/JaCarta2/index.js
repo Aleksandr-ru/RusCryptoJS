@@ -11,7 +11,14 @@ import { convertDN, stripDnQuotes } from '../helpers';
 function JaCarta2() {
 
 	let client, tokenId;
-	// const debug = process.env.NODE_ENV === 'development';	
+	// const debug = process.env.NODE_ENV === 'development';
+
+	// костылёк из-за отсутствия isAsyncOperationInProgress в версии 4.3
+	let asyncOperationInProgress = false;
+
+	function isAsyncOperationInProgress () {
+		return asyncOperationInProgress;
+	}
 
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
@@ -29,6 +36,9 @@ function JaCarta2() {
 		}).then(() => {
 			client = JCWebClient2;
 			client.initialize();
+			if (!client.isAsyncOperationInProgress) {
+				client.isAsyncOperationInProgress = isAsyncOperationInProgress;
+			}
 			return sync(client.Cmds.getJCWebClientVersion);
 		}).then(version => {
 			// console.log('JCWebClient2 v.%s', version);
@@ -378,7 +388,7 @@ function JaCarta2() {
 				if (delay > 60000) {
 					throw new Error('Не удалось дождаться завершения асинхронной операции');
 				}
-				else if (client.isAsyncOperationInProgress && client.isAsyncOperationInProgress()) {
+				else if (client.isAsyncOperationInProgress()) {
 					setTimeout(checkFn, timeout);
 					delay += timeout;
 				}
@@ -388,24 +398,34 @@ function JaCarta2() {
 			};
 			setTimeout(checkFn, 0); // первый же запуск в следующем тике
 		}).then(() => new Promise((resolve, reject) => {
+			asyncOperationInProgress = true;
 			client.exec({
 				async: true,
 				cmd,
 				args,
-				onSuccess: resolve,
+				onSuccess: successHandler(resolve),
 				onError: errorHandler(reject)
 			});
 		}));
 	}
 
+	function successHandler(resolve)
+	{
+		return result => {
+			asyncOperationInProgress = false;
+			resolve(result);
+		}
+	}
+
 	function errorHandler(reject)
 	{
-		return function(e) {
-			if(client && e.name === 'JCWebClientError' && errors[e.message]) {
+		return error => {
+			asyncOperationInProgress = false;
+			if(client && error.name === 'JCWebClientError' && errors[error.message]) {
 				// подменяем сообщение на более понятное
-				e.message = errors[e.message];
+				error.message = errors[error.message];
 			}
-			reject(e);
+			reject(error);
 		}
 	}
 
