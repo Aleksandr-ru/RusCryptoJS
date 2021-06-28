@@ -27,22 +27,13 @@ function JaCarta2() {
 				getScript('https://localhost:24738/JCWebClient.js', resolve, reject);
 			}
 		}).then(() => {
-			if (typeof JCWebClient2 != 'undefined') {
-				client = JCWebClient2;
-				client.initialize();
-				client.defaults({
-					async: true
-				});
-				return sync(client.getJCWebClientVersion);
-			}
-			else {
-				//Не установлен клиент JCWebClient2
-				throw new Error('Не установлен клиент JCWebClient2');
-			}
+			client = JCWebClient2;
+			client.initialize();
+			return sync(client.Cmds.getJCWebClientVersion);
 		}).then(version => {
-			console.log('JCWebClient2 v.%s', version);
+			// console.log('JCWebClient2 v.%s', version);
 			final['version'] = version;
-			return sync(client.getAllSlots);
+			return sync(client.Cmds.getAllSlots);
 		}).then(slots => {
 			return new Promise(resolve => {
 				// console.log('Got %d slots', slots.length, slots);
@@ -63,7 +54,7 @@ function JaCarta2() {
 			});
 		}).then(tokenID => {
 			tokenId = tokenID;
-			return sync(client.getTokenInfo, {
+			return sync(client.Cmds.getTokenInfo, {
 				tokenID
 			});
 		}).then(info => {
@@ -77,8 +68,8 @@ function JaCarta2() {
 	 * @returns {Promise}
 	 */
 	this.bind = function (userPin) {
-		return sync(client.getLoggedInState).then(result => {
-			if (result.state === JCWebClient2.Vars.AuthState.binded && result.tokenID === tokenId) {
+		return sync(client.Cmds.getLoggedInState).then(result => {
+			if (result.state === client.Vars.AuthState.binded && result.tokenID === tokenId) {
 				return true;
 			}
 			else {
@@ -91,7 +82,7 @@ function JaCarta2() {
 				else {
 					args.pin = userPin;
 				}
-				return sync(client.bindToken, args);
+				return sync(client.Cmds.bindToken, args);
 			}
 		});
 	};
@@ -101,9 +92,9 @@ function JaCarta2() {
 	 * @returns {Promise}
 	 */
 	this.unbind = function () {
-		return sync(client.getLoggedInState).then(result => {
-			if (result.state !== JCWebClient2.Vars.AuthState.notBinded) {
-				return sync(client.unbindToken);
+		return sync(client.Cmds.getLoggedInState).then(result => {
+			if (result.state !== client.Vars.AuthState.notBinded) {
+				return sync(client.Cmds.unbindToken);
 			}
 			else {
 				return true;
@@ -116,12 +107,12 @@ function JaCarta2() {
 	 * @returns {Promise}
 	 */
 	this.clean = function () {
-		return sync(client.getContainerList, {
+		return sync(client.Cmds.getContainerList, {
 			tokenID: tokenId
 		}).then(containers => {
 			let p = Promise.resolve();
 			for (let i in containers) {
-				p = p.then(() => sync(client.deletePKIObject, {
+				p = p.then(() => sync(client.Cmds.deletePKIObject, {
 					id: containers[i].id
 				}));
 			}
@@ -147,7 +138,7 @@ function JaCarta2() {
 		}
 		if (!algorithm) {
 			// algorithm = JCWebClient2.Vars.KeyAlgorithm.GOST_2001; //default "GOST-2001"
-			algorithm = JCWebClient2.Vars.KeyAlgorithm.GOST_2012_256; // "GOST-2012-256"
+			algorithm = client.Vars.KeyAlgorithm.GOST_2012_256; // "GOST-2012-256"
 		}
 		const exts = {
 			'certificatePolicies': '1.2.643.100.113.1',
@@ -158,13 +149,13 @@ function JaCarta2() {
 		const paramSet = 'XA';
 		let id;
 
-		return sync(client.createKeyPair, {
+		return sync(client.Cmds.createKeyPair, {
 			paramSet: paramSet,
 			description: description,
 			algorithm: algorithm
 		}).then(keyPairId => {
 			id = keyPairId;
-			return sync(client.genCSR, {
+			return sync(client.Cmds.genCSR, {
 				id,
 				dn,
 				exts
@@ -186,7 +177,7 @@ function JaCarta2() {
 	 * @returns {Promise<number>} идентификатор образованного контейнера.
 	 */
 	this.writeCertificate = function (certificate, keyPairId) {
-		return sync(client.writeUserCertificate, {
+		return sync(client.Cmds.writeUserCertificate, {
 			keyPairID: keyPairId,
 			cert: certificate
 		});
@@ -198,7 +189,7 @@ function JaCarta2() {
 	 * @returns {Promise<Object>}
 	 */
 	this.certificateInfo = function (containerId) {
-		return sync(client.parseX509Certificate, {
+		return sync(client.Cmds.parseX509Certificate, {
 			tokenID: tokenId,
 			id: containerId
 		}).then(o => {
@@ -236,7 +227,7 @@ function JaCarta2() {
 				}
 			};
 			return info;
-		}).then(info => sync(client.getCertificateBody, {
+		}).then(info => sync(client.Cmds.getCertificateBody, {
 			id: containerId,
 			tokenID: tokenId
 		}).then(a => {
@@ -250,7 +241,7 @@ function JaCarta2() {
 	 * @returns {Promise<Array>} [{ id, name }, ...]
 	 */
 	this.listCertificates = function () {
-		return sync(client.getContainerList, {
+		return sync(client.Cmds.getContainerList, {
 			tokenID: tokenId
 		}).then(a => {
 			const certs = [];
@@ -260,7 +251,7 @@ function JaCarta2() {
 				const contName = a[i].description;
 
 				(function (contId, contName) {
-					p = p.then(() => sync(client.parseX509Certificate, {
+					p = p.then(() => sync(client.Cmds.parseX509Certificate, {
 						tokenID: tokenId,
 						id: contId
 					}).then(o => {
@@ -284,7 +275,7 @@ function JaCarta2() {
 	 * @returns {Promise<string>} base64(массив байт со значением сертификата в формате DER)
 	 */
 	this.readCertificate = function (containerId) {
-		return sync(client.getCertificateBody, {
+		return sync(client.Cmds.getCertificateBody, {
 			id: containerId,
 			tokenID: tokenId
 		}).then(a => {
@@ -310,7 +301,7 @@ function JaCarta2() {
 	this.signData = function (dataBase64, containerId, options) {
 		if (!options) options = {};
 		const {attached} = options;
-		return sync(client.signBase64EncodedData, {
+		return sync(client.Cmds.signBase64EncodedData, {
 			contID: containerId,
 			data: dataBase64,
 			attachedSignature: !!attached
@@ -338,7 +329,7 @@ function JaCarta2() {
 		if (!attached) {
 			args.data = Array.from(atob(dataBase64), c => c.charCodeAt(0));
 		}
-		return sync(client.verifyData, args);
+		return sync(client.Cmds.verifyData, args);
 	};
 
 	/**
@@ -350,7 +341,7 @@ function JaCarta2() {
 	this.encryptData = function (dataBase64, containerId) {
 		// https://stackoverflow.com/questions/21797299/convert-base64-string-to-arraybuffer/21797381
 		const dataByte = Array.from(atob(dataBase64), c => c.charCodeAt(0));
-		return this.readCertificate(containerId).then(cert => sync(client.encryptData, {
+		return this.readCertificate(containerId).then(cert => sync(client.Cmds.encryptData, {
 			contID: containerId,
 			receiverCertificate: cert,
 			data: dataByte // Данные для шифрования в виде массива байт.
@@ -370,7 +361,7 @@ function JaCarta2() {
 		const dataByte = Array.from(atob(dataBase64), c => c.charCodeAt(0));
 		return this.readCertificate(containerId).then(cert => {
 			const certByte = Array.from(atob(cert), c => c.charCodeAt(0));
-			return sync(client.decryptData, {
+			return sync(client.Cmds.decryptData, {
 				contID: containerId,
 				senderCertificate: certByte, // Сертификат отправителя в виде массива байт.
 				data: dataByte // Массив байт с зашифрованными данными в формате CMS.
@@ -378,7 +369,7 @@ function JaCarta2() {
 		}).then(data => btoa(String.fromCharCode.apply(null, new Uint8Array(data))));
 	};
 
-	function sync(clientFn, args)
+	function sync(cmd, args)
 	{
 		return new Promise(resolve => {
 			const timeout = 100;
@@ -387,7 +378,7 @@ function JaCarta2() {
 				if (delay > 60000) {
 					throw new Error('Не удалось дождаться завершения асинхронной операции');
 				}
-				else if (client.isAsyncOperationInProgress()) {
+				else if (client.isAsyncOperationInProgress && client.isAsyncOperationInProgress()) {
 					setTimeout(checkFn, timeout);
 					delay += timeout;
 				}
@@ -397,7 +388,9 @@ function JaCarta2() {
 			};
 			setTimeout(checkFn, 0); // первый же запуск в следующем тике
 		}).then(() => new Promise((resolve, reject) => {
-			clientFn.call(null, {
+			client.exec({
+				async: true,
+				cmd,
 				args,
 				onSuccess: resolve,
 				onError: errorHandler(reject)
@@ -418,15 +411,15 @@ function JaCarta2() {
 
 	/**
 	 * Создать DN из массива [{rdn: ..., value: ...}, ...]
-	 * @param {[index: number]: { rdn: string, value: string }} obj 
+	 * @param {[index: number]: { rdn: string, value: string }} obj
 	 * @returns {DN}
 	 */
 	function makeDN(obj)
 	{
-		var dn = new DN;
-		for(var i in obj) {
-			var rdn = obj[i].rdn;
-			var val = obj[i].value;
+		const dn = new DN;
+		for(let i in obj) {
+			const rdn = obj[i].rdn;
+			const val = obj[i].value;
 			if (rdn && val) {
 				dn[rdn] = val;
 			}
@@ -464,7 +457,7 @@ function JaCarta2() {
 
 	// https://gist.github.com/hendriklammers/5231994
 	function pemSplit(str) {
-		var re = new RegExp('.{1,64}', 'g');
+		const re = new RegExp('.{1,64}', 'g');
 		return str.match(re).join('\n');
 	}
 
