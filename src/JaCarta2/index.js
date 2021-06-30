@@ -352,7 +352,8 @@ function JaCarta2() {
 		const dataByte = Array.from(atob(dataBase64), c => c.charCodeAt(0));
 		return this.readCertificate(containerId).then(cert => sync(client.Cmds.encryptData, {
 			contID: containerId,
-			receiverCertificate: cert,
+			receiverCertificate: cert, // для 4.2 и ниже
+			receiverCertificates: [cert], // для 4.3 и выше
 			data: dataByte // Данные для шифрования в виде массива байт.
 		})).then(data => {
 			const base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(data)));
