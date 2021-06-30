@@ -20,7 +20,17 @@ function loadCerts() {
         return jacarta2.listCertificates();
     }).then(certs => {
         console.log('Certs', certs);
-        return setCertOptions(certs);
+        setCertOptions(certs);
+        return certs;
+    }).then(certs => {
+        if (inputAllInfo.checked) {
+            inputCertInfo.value = '';
+            var infos = certs.map((cert, i) => jacarta2.certificateInfo(cert.id).then(info => {
+                console.log('info %d %o', i, info);
+                inputCertInfo.value += (i+1) + ' ' + '-'.repeat(100) + '\n' + info + '\n';
+            }));
+            return Promise.all(infos).then(() => alert('Done!'));
+        }
     }).catch(e => {
         alert('Failed! ' + e);
     });

@@ -34,6 +34,7 @@ var formCert = document.getElementById('formCert');
 var formSign = document.getElementById('formSign');
 var formEncrypt = document.getElementById('formEncrypt');
 var buttonRefresh = document.getElementById('refresh');
+var inputAllInfo =  document.getElementById('allinfo');
 
 inputDN.value = JSON.stringify(oDn, null, '\t');
 
