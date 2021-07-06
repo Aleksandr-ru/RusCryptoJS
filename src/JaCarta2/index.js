@@ -16,10 +16,6 @@ function JaCarta2() {
 	// костылёк из-за отсутствия isAsyncOperationInProgress в версии 4.3
 	let asyncOperationInProgress = false;
 
-	function isAsyncOperationInProgress () {
-		return asyncOperationInProgress;
-	}
-
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
 	 * @returns {Promise<{version: string, serialNumber: string, label: string, type: string, flags: Object}>} версия, информация о токене
@@ -37,7 +33,7 @@ function JaCarta2() {
 			client = JCWebClient2;
 			client.initialize();
 			if (!client.isAsyncOperationInProgress) {
-				client.isAsyncOperationInProgress = isAsyncOperationInProgress;
+				client.isAsyncOperationInProgress = () => asyncOperationInProgress;
 			}
 			return sync(client.Cmds.getJCWebClientVersion);
 		}).then(version => {
