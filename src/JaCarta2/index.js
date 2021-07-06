@@ -64,6 +64,10 @@ function JaCarta2() {
 				tokenID
 			});
 		}).then(info => {
+			const allowedTypes = [ client.Vars.TokenType.gost, client.Vars.TokenType.gost2 ];
+			if (allowedTypes.indexOf(info.type) === -1) {
+				throw new Error('Подключен токен недопустимого типа: ' + info.type);
+			}
 			return Object.assign(final, info);
 		});
 	};
