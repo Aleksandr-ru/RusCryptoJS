@@ -480,7 +480,8 @@ function JaCarta2() {
 		dn.toString = function(){
 			const cn = this['CN'] || this['2.5.4.3'];
 			const snils = this['СНИЛС'] || this['SNILS'] || this['1.2.643.100.3'];
-			const inn = this['ИНН'] || this['INN'] || this['1.2.643.3.131.1.1'];
+			const inn = this['ИНН'] || this['INN'] || this['1.2.643.3.131.1.1']
+				|| this['ИНН ЮЛ'] || this['INNLE'] || this['1.2.643.100.4'];;
 			return '' + cn + (inn ?  '; ИНН ' + inn : '') + (snils ?  '; СНИЛС ' + snils : '') + (containerName ? ' (' + containerName + ')' : '');
 		};
 		return dn.toString();
