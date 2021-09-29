@@ -1206,7 +1206,7 @@ function CryptoPro() {
 	 */
 	function string2dn(subjectName){
 		var dn = new DN;
-		var pairs = subjectName.match(/([а-яёА-ЯЁa-zA-Z0-9\.]+)=(?:("[^"]+?")|(.+?))(?:,|$)/g).map(el => el.replace(/,$/, ''));
+		var pairs = subjectName.match(/([а-яёА-ЯЁa-zA-Z0-9\.\s]+)=(?:("[^"]+?")|(.+?))(?:,|$)/g).map(el => el.replace(/,$/, ''));
 		pairs.forEach(pair => {
 			var d = pair.match(/([^=]+)=(.*)/);
 			if (d.length === 3) {
@@ -1226,7 +1226,7 @@ function CryptoPro() {
 	 */
 	function formatCertificateName(o) {
 		var snils = o['SNILS'];
-		var inn = o['INN'];
+		var inn = o['INN'] || o['INNLE'];
 		return '' + o['CN'] + (inn ?  '; ИНН ' + inn : '') + (snils ?  '; СНИЛС ' + snils : '');
 	}
 

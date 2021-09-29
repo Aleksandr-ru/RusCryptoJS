@@ -2,6 +2,7 @@ import DN from './DN';
 
 const oids = [
   { oid: '1.2.643.3.131.1.1',    short: 'INN',    full: 'ИНН' },
+  { oid: '1.2.643.100.4',        short: 'INNLE',  full: 'ИНН ЮЛ' },
   { oid: '1.2.643.100.1',        short: 'OGRN',   full: 'ОГРН' },
   { oid: '1.2.643.100.5',        short: 'OGRNIP', full: 'ОГРНИП' },
   { oid: '1.2.643.100.3',        short: 'SNILS',  full: 'СНИЛС' },
