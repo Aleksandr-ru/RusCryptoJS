@@ -555,7 +555,8 @@ function RuToken() {
 		dn.toString = function(){
 			var cn = this['commonName'] || this['CN'] || this['2.5.4.3'];
 			var snils = this['СНИЛС'] || this['SNILS'] || this['1.2.643.100.3'];
-			var inn = this['ИНН'] || this['INN'] || this['1.2.643.3.131.1.1'];
+			var inn = this['ИНН'] || this['INN'] || this['1.2.643.3.131.1.1']
+				|| this['ИНН ЮЛ'] || this['INNLE'] || this['1.2.643.100.4'];
 			return '' + cn + (inn ?  '; ИНН ' + inn : '') + (snils ?  '; СНИЛС ' + snils : '') + (containerName ? ' (' + containerName + ')' : '');
 		};
 		return dn.toString();
