@@ -1204,14 +1204,16 @@ function CryptoPro() {
 	 * @param {string} subjectName
 	 * @returns {DN}
 	 */
-	function string2dn(subjectName){
-		var dn = new DN;
-		var pairs = subjectName.match(/([а-яёА-ЯЁa-zA-Z0-9\.\s]+)=(?:("[^"]+?")|(.+?))(?:,|$)/g).map(el => el.replace(/,$/, ''));
+	function string2dn(subjectName) {
+		const dn = new DN;
+		let pairs = subjectName.match(/([а-яёА-ЯЁa-zA-Z0-9\.\s]+)=(?:("[^"]+?")|(.+?))(?:,|$)/g);
+		if (pairs) pairs = pairs.map(el => el.replace(/,$/, ''));
+		else pairs = []; //todo: return null?
 		pairs.forEach(pair => {
-			var d = pair.match(/([^=]+)=(.*)/);
-			if (d.length === 3) {
-				var rdn = d[1].trim().replace(/^OID\./, '');
-				var val = d[2].trim().replace(/^"(.*)"$/, '$1');
+			const d = pair.match(/([^=]+)=(.*)/);
+			if (d && d.length === 3) {
+				const rdn = d[1].trim().replace(/^OID\./, '');
+				const val = d[2].trim().replace(/^"(.*)"$/, '$1');
 				dn[rdn] = val;
 			}
 		});
