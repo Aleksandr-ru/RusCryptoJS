@@ -1222,14 +1222,15 @@ function CryptoPro() {
 
 	/**
 	 * Получить название сертификата
-	 * @param {DN} o объект, включающий в себя значения всех полей сертификата с латинскими ключами
+	 * @param {DN} o объект, включающий в себя значения субъекта сертификата
 	 * @see convertDN
 	 * @returns {String}
 	 */
 	function formatCertificateName(o) {
-		var snils = o['SNILS'];
-		var inn = o['INN'] || o['INNLE'];
-		return '' + o['CN'] + (inn ?  '; ИНН ' + inn : '') + (snils ?  '; СНИЛС ' + snils : '');
+		return '' + o['CN']
+			+ (o['INNLE'] ? '; ИНН ЮЛ ' + o['INNLE'] : '')
+			+ (o['INN'] ? '; ИНН ' + o['INN'] : '')
+			+ (o['SNILS'] ? '; СНИЛС ' + o['SNILS'] : '');
 	}
 
 	/**

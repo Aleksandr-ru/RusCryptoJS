@@ -369,9 +369,10 @@ function RuToken() {
 			return Promise.all(promises);
 		}).then(results => {
 			for (let i in certIds) {
+				const dn = makeDN(results[i] && results[i].subject);
 				certs.push({
 					id: certIds[i],
-					name: formatCertificateName(results[i])
+					name: formatCertificateName(dn)
 				});
 			}
 			return certs;
@@ -540,26 +541,15 @@ function RuToken() {
 
 	/**
 	 * Получить название сертификата
-	 * @param {type} o объект, включающий в себя значения всех полей сертификата.
-	 * @param {type} containerName не обязательно
+	 * @param {DN} o объект, включающий в себя значения субъекта сертификата.
 	 * @returns {string} 
 	 */
-	function formatCertificateName(o, containerName)
+	function formatCertificateName(o)
 	{
-		var dn = new DN;
-		for(var i in o.subject) {
-			var rdn = o.subject[i].rdn;
-			var val = o.subject[i].value;
-			dn[rdn] = val;
-		}
-		dn.toString = function(){
-			var cn = this['commonName'] || this['CN'] || this['2.5.4.3'];
-			var snils = this['СНИЛС'] || this['SNILS'] || this['1.2.643.100.3'];
-			var inn = this['ИНН'] || this['INN'] || this['1.2.643.3.131.1.1']
-				|| this['ИНН ЮЛ'] || this['INNLE'] || this['1.2.643.100.4'];
-			return '' + cn + (inn ?  '; ИНН ' + inn : '') + (snils ?  '; СНИЛС ' + snils : '') + (containerName ? ' (' + containerName + ')' : '');
-		};
-		return dn.toString();
+		return '' + o['CN']
+			+ (o['INNLE'] ? '; ИНН ЮЛ ' + o['INNLE'] : '')
+			+ (o['INN'] ? '; ИНН ' + o['INN'] : '')
+			+ (o['SNILS'] ? '; СНИЛС ' + o['SNILS'] : '');
 	}
 
 	/**

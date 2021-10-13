@@ -264,9 +264,10 @@ function JaCarta2() {
 						tokenID: tokenId,
 						id: contId
 					}).then(o => {
+						const dn = makeDN(o.Data && o.Data.Subject);
 						certs.push({
 							id: contId,
-							name: formatCertificateName(o, contName)
+							name: formatCertificateName(dn, contName)
 						});
 						return certs.length;
 					}));
@@ -465,26 +466,17 @@ function JaCarta2() {
 
 	/**
 	 * Получить название сертификата
-	 * @param {{Data: {Subject: Array<{rdn: string, value: string}>}}} o объект, включающий в себя значения всех полей сертификата.
+	 * @param {DN} o объект, включающий в себя значения субъекта сертификата.
 	 * @param {string} containerName
 	 * @returns {string} 
 	 */
 	function formatCertificateName(o, containerName)
 	{
-		const dn = new DN;
-		for(let i in o.Data.Subject) {
-			const rdn = o.Data.Subject[i].rdn;
-			const val = o.Data.Subject[i].value;
-			dn[rdn] = val;
-		}
-		dn.toString = function(){
-			const cn = this['CN'] || this['2.5.4.3'];
-			const snils = this['СНИЛС'] || this['SNILS'] || this['1.2.643.100.3'];
-			const inn = this['ИНН'] || this['INN'] || this['1.2.643.3.131.1.1']
-				|| this['ИНН ЮЛ'] || this['INNLE'] || this['1.2.643.100.4'];;
-			return '' + cn + (inn ?  '; ИНН ' + inn : '') + (snils ?  '; СНИЛС ' + snils : '') + (containerName ? ' (' + containerName + ')' : '');
-		};
-		return dn.toString();
+		return '' + o['CN']
+			+ (o['INNLE'] ? '; ИНН ЮЛ ' + o['INNLE'] : '')
+			+ (o['INN'] ? '; ИНН ' + o['INN'] : '')
+			+ (o['SNILS'] ? '; СНИЛС ' + o['SNILS'] : '')
+			+ (containerName ? ' (' + containerName + ')' : '');
 	}
 
 	/**
