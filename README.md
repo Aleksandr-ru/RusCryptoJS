@@ -1,6 +1,7 @@
 # [RusCryptoJS](https://aleksandr-ru.github.io/RusCryptoJS/)
 JS для Российской криптографии (ГОСТ).
 
+[![npm](https://img.shields.io/npm/dm/ruscryptojs)](https://www.npmjs.com/package/ruscryptojs)
 [![npm](https://img.shields.io/npm/v/ruscryptojs?logo=npm)](https://www.npmjs.com/package/ruscryptojs)
 
 ### Общие требования
