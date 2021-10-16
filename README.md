@@ -1,6 +1,8 @@
 # [RusCryptoJS](https://aleksandr-ru.github.io/RusCryptoJS/)
 JS для Российской криптографии (ГОСТ).
 
+[![npm](https://img.shields.io/npm/v/ruscryptojs?logo=npm)](https://www.npmjs.com/package/ruscryptojs)
+
 ### Общие требования
 - Окружение с поддержкой ES2015
 
