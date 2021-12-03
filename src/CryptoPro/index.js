@@ -248,8 +248,8 @@ function CryptoPro() {
 					oExtensions.Add(oSubjectSignTool)
 				]);
 			}).then(function(){
-				var strName = dn.toString();
-				return oDn.Encode(strName, X500NameFlags.XCN_CERT_X500_NAME_STR);
+				const strName = dnToX500DistinguishedName(dn);
+				return oDn.Encode(strName, X500NameFlags.XCN_CERT_NAME_STR_ENABLE_PUNYCODE_FLAG);
 			}).then(function(){
 				return oRequest.propset_Subject(oDn);
 			}).then(function(){
@@ -329,8 +329,8 @@ function CryptoPro() {
 					oSubjectSignTool.Initialize(ssOID, EncodingType.XCN_CRYPT_STRING_BASE64, base64String);
 					oRequest.X509Extensions.Add(oSubjectSignTool);
 
-					const strName = dn.toString();
-					oDn.Encode(strName, X500NameFlags.XCN_CERT_X500_NAME_STR);
+					const strName = dnToX500DistinguishedName(dn);
+					oDn.Encode(strName, X500NameFlags.XCN_CERT_NAME_STR_ENABLE_PUNYCODE_FLAG);
 
 					oRequest.Subject = oDn;
 
@@ -478,7 +478,6 @@ function CryptoPro() {
 					ProviderName: a[10][0],
 					ProviderType: a[10][1]
 				};
-		
 				oInfo.Subject = string2dn(oInfo.SubjectName);
 				oInfo.Issuer  = string2dn(oInfo.IssuerName);
 				oInfo.Name = oInfo.Subject['CN'];
@@ -1213,11 +1212,30 @@ function CryptoPro() {
 			const d = pair.match(/([^=]+)=(.*)/);
 			if (d && d.length === 3) {
 				const rdn = d[1].trim().replace(/^OID\./, '');
-				const val = d[2].trim().replace(/^"(.*)"$/, '$1');
-				dn[rdn] = val;
+				dn[rdn] = d[2].trim()
+					.replace(/^"(.*)"$/, '$1')
+					.replace(/""/g, '"');
 			}
 		});
 		return convertDN(dn);
+	}
+
+	/**
+	 * Собрать DN в строку пригодную для CX500DistinguishedName.Encode
+	 * @see https://docs.microsoft.com/en-us/windows/win32/api/certenroll/nf-certenroll-ix500distinguishedname-encode
+	 * @see https://www.cryptopro.ru/sites/default/files/products/cades/demopage/async_code.js
+	 * @see https://testgost2012.cryptopro.ru/certsrv/async_code.js
+	 * @param {DN} dn
+	 * @returns {string}
+	 */
+	function dnToX500DistinguishedName(dn) {
+		let ret = '';
+		for (let i in dn) {
+			if (dn.hasOwnProperty(i)) {
+				ret += i + '="' + dn[i].replace(/"/g, '""') + '", ';
+			}
+		}
+		return ret;
 	}
 
 	/**

@@ -1,9 +1,9 @@
 function DN(){};
 
-DN.prototype.toString = function(){
-	var ret = '';
-	for(var i in this) {
-        if(this.hasOwnProperty(i)) {
+DN.prototype.toString = function () {
+	let ret = '';
+	for (let i in this) {
+        if (this.hasOwnProperty(i)) {
             ret += i + '="' + this[i].replace(/"/g, '\'') + '", ';
         }
     }
