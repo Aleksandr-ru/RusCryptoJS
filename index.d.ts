@@ -41,8 +41,8 @@ export interface CertificateInfoInterface {
     HasPrivateKey: boolean;
     IsValid: boolean;
     Algorithm: string;
-    ProviderName?: string;
-    ProviderType?: string;
+    ProviderName?: string; // CryptoPro
+    ProviderType?: string; // CryptoPro
 }
 
 export interface CertListItemInterface {
