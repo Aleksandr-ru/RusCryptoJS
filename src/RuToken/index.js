@@ -276,7 +276,7 @@ function RuToken() {
 	/**
 	 * Записать сертификат на токен
 	 * @param {string} certificate base64(массив байт со значением сертификата в формате DER)
-	 * @returns {Promise}
+	 * @returns {Promise<string>} Идентификатор сертификата (hex)
 	 */
 	this.writeCertificate = function(certificate){
 		const category = plugin.CERT_CATEGORY_USER;
@@ -288,7 +288,7 @@ function RuToken() {
 
 	/**
 	 * Получение информации о сертификате.
-	 * @param {int} certId идентификатор сертификата
+	 * @param {string} certId идентификатор сертификата
 	 * @returns {Promise<Object>}
 	 */
 	this.certificateInfo = function(certId){
@@ -355,7 +355,7 @@ function RuToken() {
 
 	/**
 	 * Получение массива доступных сертификатов
-	 * @returns {Promise<Array>} [{id, subject}, ...]
+	 * @returns {Promise<Array>} [{id, name}, ...]
 	 */
 	this.listCertificates = function(){
 		let certIds = [];
