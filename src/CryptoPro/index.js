@@ -110,22 +110,22 @@ function CryptoPro() {
 	/**
 	 * Создание CSR.
 	 * @param {DN} dn
-	 * @param {string} pin
 	 * @param {string[]} ekuOids массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
-	 * @param {int} providerType по умолчанию 80 (ГОСТ Р 34.10-2012) или 75 (ГОСТ Р 34.10-2001)
-	 * @returns {Promise<Object>} объект с полями { csr: 'base64 запрос на сертификат' }
+	 * @param {object} [options]
+	 * @param {string} [options.pin]
+	 * @param {int} [options.providerType] по умолчанию 80 (ГОСТ Р 34.10-2012) или 75 (ГОСТ Р 34.10-2001)
+	 * @returns {Promise<{ csr: string }>} объект с полями {csr: 'base64 запрос на сертификат'}
 	 * @see DN
 	 */
-	this.generateCSR = function(dn, pin, ekuOids, providerType){
-		if(!ekuOids || !ekuOids.length) {
-			ekuOids = [
-				'1.3.6.1.5.5.7.3.2', // Аутентификация клиента
-				'1.3.6.1.5.5.7.3.4' // Защищенная электронная почта
-			];
-		}
-		if(!providerType) {
-			providerType = ProviderTypes.GOST_R_34_10_2012;
-		}
+	this.generateCSR = function(dn, ekuOids, options){
+		if(!ekuOids || !ekuOids.length) ekuOids = [
+			'1.3.6.1.5.5.7.3.2', // Аутентификация клиента
+			'1.3.6.1.5.5.7.3.4' // Защищенная электронная почта
+		];
+		if (!options) options = {};
+		const pin = options.pin;
+		const providerType = options.providerType || ProviderTypes.GOST_R_34_10_2012;
+
 		if(canAsync) {
 			let oEnroll, oRequest, oPrivateKey, oExtensions, oKeyUsage, oEnhancedKeyUsage, oEnhancedKeyUsageOIDs, aOIDs, oSstOID, oDn, oCspInformations, sCSPName, oSubjectSignTool;
 			return cadesplugin.then(function(){
@@ -526,7 +526,7 @@ function CryptoPro() {
 
 	/**
 	 * Получение массива доступных сертификатов
-	 * @returns {Promise<Array>} [ {id: thumbprint, name: subject}, ...]
+	 * @returns {Promise<{id: string; name: string;}[]>} [ {id: thumbprint, name: subject}, ...]
 	 */
 	this.listCertificates = function(){
 		const tryContainerStore = hasContainerStore();

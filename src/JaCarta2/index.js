@@ -75,7 +75,7 @@ function JaCarta2() {
 	/**
 	 * Авторизация на токене с пин-кодом юзера
 	 * @param {string} userPin если нет, то предлагает ввести пин через UI плагина
-	 * @returns {Promise}
+	 * @returns {Promise<void>}
 	 */
 	this.bind = function (userPin) {
 		return sync(client.Cmds.getLoggedInState).then(result => {
@@ -99,7 +99,7 @@ function JaCarta2() {
 
 	/**
 	 * Отменить предъявление PIN-кода. Необходимо вызывать при завершении сеанса работы
-	 * @returns {Promise}
+	 * @returns {Promise<void>}
 	 */
 	this.unbind = function () {
 		return sync(client.Cmds.getLoggedInState).then(result => {
@@ -133,23 +133,21 @@ function JaCarta2() {
 	/**
 	 * Создать запрос на сертификат
 	 * @param {DN} dn
-	 * @param {string} description описание контейнера
 	 * @param {Array<string>} ekuOids массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
-	 * @param {string} algorithm Алгоритм "GOST-2012-256" (по-умолчанию) или "GOST-2001".
-	 * @returns {Promise<Object>} объект с полями { csr: 'base64 запрос на сертификат', keyPairId }
+	 * @param {object} [options]
+	 * @param {string} [options.description] описание контейнера
+	 * @param {string} [options.algorithm] Алгоритм "GOST-2012-256" (по-умолчанию) или "GOST-2001".
+	 * @returns {Promise<{ csr: string; keyPairId: number; }>} объект с полями {csr: 'base64 запрос на сертификат', keyPairId}
 	 * @see DN
 	 */
-	this.generateCSR = function (dn, description, ekuOids, algorithm) {
-		if (!ekuOids || !ekuOids.length) {
-			ekuOids = [
-				'1.3.6.1.5.5.7.3.2', // Аутентификация клиента
-				'1.3.6.1.5.5.7.3.4' // Защищенная электронная почта
-			];
-		}
-		if (!algorithm) {
-			// algorithm = JCWebClient2.Vars.KeyAlgorithm.GOST_2001; //default "GOST-2001"
-			algorithm = client.Vars.KeyAlgorithm.GOST_2012_256; // "GOST-2012-256"
-		}
+	this.generateCSR = function (dn, ekuOids, options) {
+		if (!ekuOids || !ekuOids.length) ekuOids = [
+			'1.3.6.1.5.5.7.3.2', // Аутентификация клиента
+			'1.3.6.1.5.5.7.3.4' // Защищенная электронная почта
+		];
+		if (!options) options = {};
+		const description = options.description || dn.CN; //TODO: subj to change
+		const algorithm = options.algorithm || client.Vars.KeyAlgorithm.GOST_2012_256; // "GOST-2012-256"
 		const exts = {
 			'certificatePolicies': '1.2.643.100.113.1',
 			'keyUsage': 'digitalSignature,keyEncipherment,nonRepudiation,dataEncipherment',
@@ -247,7 +245,7 @@ function JaCarta2() {
 
 	/**
 	 * Получение массива доступных сертификатов
-	 * @returns {Promise<Array>} [{ id, name }, ...]
+	 * @returns {Promise<{id: string; name: string;}[]>} [{id, name}, ...]
 	 */
 	this.listCertificates = function () {
 		return sync(client.Cmds.getContainerList, {

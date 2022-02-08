@@ -3,7 +3,7 @@ export class DN {
     [key: string]: string;
 }
 
-export interface IInitInfo {
+export interface InitResultInterface {
     version: string;
     serialNumber?: string; // JaCarta2
     label?: string; // JaCarta2, RuToken
@@ -14,13 +14,20 @@ export interface IInitInfo {
     model?: string; // RuToken
 }
 
-export interface ICSR {
-    csr: string;
-    keyPairId?: number; // JaCarta2
-    containerId?: string; // RuToken
+export interface CSROptionsInterface {
+    pin?: string; // CryptoPro
+    providerType?: number; // CryptoPro
+    algorithm?: string; // JaCarta2, RuToken
+    description?: string; // JaCarta2
+    marker?: string;  // RuToken
 }
 
-export interface ICertificateInfo {
+export interface CSRInterface {
+    csr: string;
+    keyPairId?: number | string; // JaCarta | RuToken
+}
+
+export interface CertificateInfoInterface {
     Name: string;
     Issuer: DN;
     IssuerName: string;
@@ -34,65 +41,67 @@ export interface ICertificateInfo {
     HasPrivateKey: boolean;
     IsValid: boolean;
     Algorithm: string;
+    ProviderName?: string;
+    ProviderType?: string;
 }
 
-export interface ICertlistItem {
+export interface CertListItemInterface {
     id: string;
     name: string;
 }
 
-export interface ISignOptions {
+export interface SignOptionsInterface {
     attached: boolean;
     pin?: string; // CryptoPro
     pin2?: string; // CryptoPro
 }
 
 export class CryptoPro {
-    init(): Promise<IInitInfo>;
+    init(): Promise<InitResultInterface>;
     bind(userPin?: string): Promise<boolean>;
     unbind(): Promise<boolean>;
-    generateCSR(dn: DN, pin: string, ekuOids?: string[], providerType?: number): Promise<ICSR>;
+    generateCSR(dn: DN, ekuOids?: string[], options?: CSROptionsInterface): Promise<CSRInterface>;
     writeCertificate(certBase64: string): Promise<string>;
-    certificateInfo(certThumbprint: string): Promise<ICertificateInfo>;
-    listCertificates(): Promise<ICertlistItem[]>;
+    certificateInfo(certThumbprint: string): Promise<CertificateInfoInterface>;
+    listCertificates(): Promise<CertListItemInterface[]>;
     readCertificate(certThumbprint: string): Promise<string>;
-    signData(dataBase64: string, certThumbprint: string, options?: ISignOptions): Promise<string>;
-    signData2(dataBase64: string, certThumbprint: string, certThumbprint2: string, options?: ISignOptions): Promise<string>;
-    addSign(dataBase64: string, signBase64: string, certThumbprint: string, options: ISignOptions): Promise<string>;
-    verifySign(dataBase64: string, signBase64: string, options?: ISignOptions): Promise<boolean>;
+    signData(dataBase64: string, certThumbprint: string, options?: SignOptionsInterface): Promise<string>;
+    signData2(dataBase64: string, certThumbprint: string, certThumbprint2: string, options?: SignOptionsInterface): Promise<string>;
+    addSign(dataBase64: string, signBase64: string, certThumbprint: string, options: SignOptionsInterface): Promise<string>;
+    verifySign(dataBase64: string, signBase64: string, options?: SignOptionsInterface): Promise<boolean>;
     encryptData(dataBase64: string, certThumbprint: string): Promise<string>;
     decryptData(dataBase64: string, certThumbprint: string, pin?: string): Promise<string>;
 }
 
 export class JaCarta2 {
-    init(): Promise<IInitInfo>;
+    init(): Promise<InitResultInterface>;
     bind(userPin?: string): Promise<void>;
     unbind(): Promise<void>;
     clean(): Promise<void>;
-    generateCSR(dn: DN, description: string, ekuOids?: string[], algorithm?: string): Promise<ICSR>;
+    generateCSR(dn: DN, ekuOids?: string[], options?: CSROptionsInterface): Promise<CSRInterface>;
     writeCertificate(certificate: string, keyPairId: number): Promise<number>;
-    certificateInfo(containerId: number): Promise<ICertificateInfo>;
-    listCertificates(): Promise<ICertlistItem[]>;
+    certificateInfo(containerId: number): Promise<CertificateInfoInterface>;
+    listCertificates(): Promise<CertListItemInterface[]>;
     readCertificate(containerId: number): Promise<string>;
-    signData(dataBase64: string, containerId: number, options?: ISignOptions): Promise<string>;
-    verifySign(dataBase64: string, signBase64: string, options?: ISignOptions): Promise<boolean>;
+    signData(dataBase64: string, containerId: number, options?: SignOptionsInterface): Promise<string>;
+    verifySign(dataBase64: string, signBase64: string, options?: SignOptionsInterface): Promise<boolean>;
     encryptData(dataBase64: string, containerId: number): Promise<string>;
     decryptData(dataBase64: string, containerId: number): Promise<string>;
 }
 
 export class RuToken {
-    init(): Promise<IInitInfo>;
+    init(): Promise<InitResultInterface>;
     bind(userPin?: string): Promise<boolean>;
     unbind(): Promise<boolean>;
     clean(): Promise<number>;
-    generateCSR(dn: DN, marker: string, extKeyUsage?: string[], algorithm?: string): Promise<ICSR>;
+    generateCSR(dn: DN, extKeyUsage?: string[], options?: CSROptionsInterface): Promise<CSRInterface>;
     writeCertificate(certificate: string): Promise<string>;
-    certificateInfo(certId: string): Promise<ICertificateInfo>;
-    listCertificates(): Promise<ICertlistItem[]>;
+    certificateInfo(certId: string): Promise<CertificateInfoInterface>;
+    listCertificates(): Promise<CertListItemInterface[]>;
     readCertificate(certId: string): Promise<string>;
-    signData(dataBase64: string, certId: string, options?: ISignOptions): Promise<string>;
-    addSign(dataBase64: string, signBase64: string, certId: string, options?: ISignOptions): Promise<string>;
-    verifySign(dataBase64: string, signBase64: string, options?: ISignOptions): Promise<boolean>;
+    signData(dataBase64: string, certId: string, options?: SignOptionsInterface): Promise<string>;
+    addSign(dataBase64: string, signBase64: string, certId: string, options?: SignOptionsInterface): Promise<string>;
+    verifySign(dataBase64: string, signBase64: string, options?: SignOptionsInterface): Promise<boolean>;
     encryptData(dataBase64: string, certId: string): Promise<string>;
     decryptData(dataBase64: string, certId: string): Promise<string>;
 }

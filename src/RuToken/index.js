@@ -38,7 +38,7 @@ function RuToken() {
 
 	/**
 	 * Инициализация и проверка наличия требуемых возможностей
-	 * @returns {Promise<Object>} версия, информация о токене
+	 * @returns {Promise<{version: string; serial: string; reader: string; label: string; type: string; model: string;}>} версия, информация о токене
 	 */
 	this.init = function(){
 		return rutoken.ready.then( _ => {
@@ -104,7 +104,7 @@ function RuToken() {
 	/**
 	 * Авторизация на токене с пин-кодом юзера
 	 * @param {string} userPin если нет, то предлгает ввести пин через prompt
-	 * @returns {Promise}
+	 * @returns {Promise<boolean>}
 	 */
 	this.bind = function(userPin) {
 		return new Promise((resolve, reject) => {
@@ -138,7 +138,7 @@ function RuToken() {
 
 	/**
 	 * Отменить предъявление PIN-кода. Необходимо вызывать при завершении сеанса работы
-	 * @returns {Promise}
+	 * @returns {Promise<boolean>}
 	 */
 	this.unbind = function() {
 		return new Promise((resolve, reject) => {
@@ -202,24 +202,21 @@ function RuToken() {
 	/**
 	 * Создать запрос на сертификат
 	 * @param {DN} dn
-	 * @param {string} marker Идентификатор группы ключей
-	 * @param {array} extKeyUsage массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
-	 * @param {string} algorithm Алгоритм "PUBLIC_KEY_ALGORITHM_GOST3410_2012_256" (по-умолчанию) или "PUBLIC_KEY_ALGORITHM_GOST3410_2001".
-	 * @returns {Promise<Object>} объект с полями { csr: 'base64 запрос на сертификат', containerId }
+	 * @param {string[]} extKeyUsage массив OID Extended Key Usage, по-умолчанию Аутентификация клиента '1.3.6.1.5.5.7.3.2' + Защищенная электронная почта '1.3.6.1.5.5.7.3.4'
+	 * @param {object} [options]
+	 * @param {string} [options.marker] Идентификатор группы ключей
+	 * @param {string} [options.algorithm] Алгоритм "PUBLIC_KEY_ALGORITHM_GOST3410_2012_256" (по-умолчанию) или "PUBLIC_KEY_ALGORITHM_GOST3410_2001".
+	 * @returns {Promise<{ csr: string; keyPairId: string; }>} объект с полями { csr: 'base64 запрос на сертификат', keyPairId }
 	 * @see DN
 	 */
-	this.generateCSR = function(dn, marker, extKeyUsage, algorithm){
-		let keyId = '';
-		if (!marker) {
-			marker = '';
-		}
-		if (!extKeyUsage || !extKeyUsage.length) {
-			extKeyUsage = [
-				'clientAuth', // 1.3.6.1.5.5.7.3.2', // Аутентификация клиента
-				'emailProtection', // '1.3.6.1.5.5.7.3.4' // Защищенная электронная почта
-			];
-		}
-		const publicKeyAlgorithm = algorithm && plugin[algorithm] || plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_256;
+	this.generateCSR = function(dn, extKeyUsage, options) {
+		if (!extKeyUsage || !extKeyUsage.length) extKeyUsage = [
+			'clientAuth', // 1.3.6.1.5.5.7.3.2', // Аутентификация клиента
+			'emailProtection', // '1.3.6.1.5.5.7.3.4' // Защищенная электронная почта
+		];
+		if (!options) options = {};
+		const marker = options.marker || '';
+		const publicKeyAlgorithm = options.algorithm && plugin[options.algorithm] || plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_256;
 		let paramset = 'XA';
 		let hashAlgorithm = plugin.HASH_TYPE_GOST3411_94;
 		if (publicKeyAlgorithm === plugin.PUBLIC_KEY_ALGORITHM_GOST3410_2012_512) {
@@ -230,11 +227,13 @@ function RuToken() {
 			hashAlgorithm = plugin.HASH_TYPE_GOST3411_12_256;
 		}
 		const reserved = undefined;
-		const options = {
+		const keyPairOptions = {
 			publicKeyAlgorithm,
 			paramset
 		};
-		return plugin.generateKeyPair(deviceId, reserved, marker, options).then(result => {
+		let keyId = '';
+
+		return plugin.generateKeyPair(deviceId, reserved, marker, keyPairOptions).then(result => {
 			keyId = result;
 			let subject = [];
 			for (let i in dn) if(dn.hasOwnProperty(i)) {
@@ -355,7 +354,7 @@ function RuToken() {
 
 	/**
 	 * Получение массива доступных сертификатов
-	 * @returns {Promise<Array>} [{id, name}, ...]
+	 * @returns {Promise<{id: string; name: string;}[]>} [{id, name}, ...]
 	 */
 	this.listCertificates = function(){
 		let certIds = [];
