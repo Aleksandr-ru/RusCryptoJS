@@ -1,4 +1,4 @@
-function DN(){};
+function DN(){}
 
 DN.prototype.toString = function () {
 	let ret = '';
