@@ -55,7 +55,7 @@ function requestCSR() {
         console.log('Initialized', info);
         return GlobalJaCarta2.bind(inputPin.value);
     }).then(_ => { 
-        return GlobalJaCarta2.generateCSR(dn, inputDescr.value);
+        return GlobalJaCarta2.generateCSR(dn, [], { description: inputDescr.value });
     }).then(result => {
         console.log('generateCSR', result);
 

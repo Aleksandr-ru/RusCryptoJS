@@ -50,7 +50,7 @@ function requestCSR() {
         console.log('Initialized', info);
         return GlobalRuToken.bind(inputPin.value);
     }).then(_ => { 
-        return GlobalRuToken.generateCSR(dn, inputDescr.value);
+        return GlobalRuToken.generateCSR(dn, [], { marker: inputDescr.value });
     }).then(result => {
         console.log('generateCSR', result);
 
