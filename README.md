@@ -78,6 +78,6 @@ JS для Российской криптографии (ГОСТ).
 - В Linux старые версии рутокен плагин работает только в Firefox 52 (тк использует устаревший NPAPI), информацию о том, как установить и совместно использовать старый FF вместе с новым см. [здесь](http://aleksandr.ru/blog/neskolko_versiy_firefox_v_linux_odnovremenno/);
 - В Linux свежие версии рутокен плагин не работают в Сhrome (но работают в Opera).
 
-## Благодарности
+## Поддержка
 
-[![JetBrains](docs/images/jetbrains.png?raw=true)](https://www.jetbrains.com/?from=RusCryptoJS "Проект разрабатывается при поддержке JetBrains")
+Проекту требуется поддержка для дальнейшего развития, если вы можете чем-то помочь, [свяжитесь со мной](https://aleksandr.ru/contacts).
