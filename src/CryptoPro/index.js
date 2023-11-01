@@ -506,7 +506,7 @@ function CryptoPro() {
 					const oParesedSubj = string2dn(oCertificate.SubjectName);
 					const oInfo = {
 						HasPrivateKey: hasKey,
-						IsValid: oCertificate.IsValid().Result,						
+						IsValid: options.checkValid ? oCertificate.IsValid().Result : undefined,
 						IssuerName: oCertificate.IssuerName,
 						Issuer: string2dn(oCertificate.IssuerName),
 						SerialNumber: oCertificate.SerialNumber,
@@ -520,8 +520,11 @@ function CryptoPro() {
 						Algorithm: oCertificate.PublicKey().Algorithm.FriendlyName,
 						ProviderName: hasKey && oCertificate.PrivateKey.ProviderName || '',
 						ProviderType: hasKey && oCertificate.PrivateKey.ProviderType || undefined,
-
 					};
+					if (!options.checkValid) {
+						const dt = new Date();
+						oInfo.IsValid = dt >= oInfo.ValidFromDate && dt <= oInfo.ValidToDate;
+					}
 					oInfo.toString = infoToString;
 					resolve(oInfo);
 				}
