@@ -1,14 +1,14 @@
 {
   "name": "ruscryptojs",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "description": "Simplified library for Russian GOST crypto providers.",
   "main": "dist/ruscrypto.min.js",
   "types": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --mode=production && npm run-script versionup",
-    "dev": "webpack-dev-server --hot --mode=development --open",
-    "start": "webpack-dev-server --hot --mode=development --host 0.0.0.0",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode=production && npm run-script versionup",
+    "dev": "NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --hot --mode=development --open",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --hot --mode=development --host 0.0.0.0",
     "versionup": "npm --no-git-tag-version version patch"
   },
   "repository": {
