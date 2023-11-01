@@ -45,6 +45,10 @@ export interface CertificateInfoInterface {
     ProviderType?: string; // CryptoPro
 }
 
+export interface CertificateInfoOptionsInterface {
+    checkValid?: boolean; // CryptoPro
+}
+
 export interface CertListItemInterface {
     id: string;
     name: string;
@@ -62,7 +66,7 @@ export class CryptoPro {
     unbind(): Promise<boolean>;
     generateCSR(dn: DN, ekuOids?: string[], options?: CSROptionsInterface): Promise<CSRInterface>;
     writeCertificate(certBase64: string): Promise<string>;
-    certificateInfo(certThumbprint: string): Promise<CertificateInfoInterface>;
+    certificateInfo(certThumbprint: string, options?: CertificateInfoOptionsInterface): Promise<CertificateInfoInterface>;
     listCertificates(): Promise<CertListItemInterface[]>;
     readCertificate(certThumbprint: string): Promise<string>;
     signData(dataBase64: string, certThumbprint: string, options?: SignOptionsInterface): Promise<string>;
@@ -80,7 +84,7 @@ export class JaCarta2 {
     clean(): Promise<void>;
     generateCSR(dn: DN, ekuOids?: string[], options?: CSROptionsInterface): Promise<CSRInterface>;
     writeCertificate(certificate: string, keyPairId: number): Promise<number>;
-    certificateInfo(containerId: number): Promise<CertificateInfoInterface>;
+    certificateInfo(containerId: number, options?: CertificateInfoOptionsInterface): Promise<CertificateInfoInterface>;
     listCertificates(): Promise<CertListItemInterface[]>;
     readCertificate(containerId: number): Promise<string>;
     signData(dataBase64: string, containerId: number, options?: SignOptionsInterface): Promise<string>;
@@ -96,7 +100,7 @@ export class RuToken {
     clean(): Promise<number>;
     generateCSR(dn: DN, extKeyUsage?: string[], options?: CSROptionsInterface): Promise<CSRInterface>;
     writeCertificate(certificate: string): Promise<string>;
-    certificateInfo(certId: string): Promise<CertificateInfoInterface>;
+    certificateInfo(certId: string, options?: CertificateInfoOptionsInterface): Promise<CertificateInfoInterface>;
     listCertificates(): Promise<CertListItemInterface[]>;
     readCertificate(certId: string): Promise<string>;
     signData(dataBase64: string, certId: string, options?: SignOptionsInterface): Promise<string>;

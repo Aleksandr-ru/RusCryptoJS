@@ -194,9 +194,11 @@ function JaCarta2() {
 	/**
 	 * Получение информации о сертификате.
 	 * @param {int} containerId идентификатор контейнера (сертификата)
+	 * @param {object} [options] не используется
 	 * @returns {Promise<Object>}
 	 */
-	this.certificateInfo = function (containerId) {
+	this.certificateInfo = function (containerId, options) {
+		if (!options) options = {};
 		return sync(client.Cmds.parseX509Certificate, {
 			tokenID: tokenId,
 			id: containerId

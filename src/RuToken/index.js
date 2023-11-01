@@ -288,9 +288,11 @@ function RuToken() {
 	/**
 	 * Получение информации о сертификате.
 	 * @param {string} certId идентификатор сертификата
+	 * @param {object} [options] не используется
 	 * @returns {Promise<Object>}
 	 */
-	this.certificateInfo = function(certId){
+	this.certificateInfo = function(certId, options){
+		if (!options) options = {};
 		let hasPrivateKey = false;
 		let serialNumber = '';
 		return new Promise(resolve => {

@@ -424,9 +424,14 @@ function CryptoPro() {
 	/**
 	 * Получение информации о сертификате.
 	 * @param {string} certThumbprint
+	 * @param {object} [options]
+	 * @param {boolean} [options.checkValid] проверять валидность сертификата через СКЗИ, а не сроку действия
 	 * @returns {Promise<Object>}
 	 */
-	this.certificateInfo = function(certThumbprint){
+	this.certificateInfo = function(certThumbprint, options){
+		if (!options) options = {
+			checkValid: false
+		};
 		const infoToString = function () {
 			return    'Название:              ' + this.Name +
 					'\nИздатель:              ' + this.IssuerName +
@@ -447,7 +452,7 @@ function CryptoPro() {
 			return getCertificateObject(certThumbprint)
 			.then(oCertificate => Promise.all([
 				oCertificate.HasPrivateKey(),
-				oCertificate.IsValid().then(v => v.Result),
+				options.checkValid ? oCertificate.IsValid().then(v => v.Result) : undefined,
 				oCertificate.IssuerName,
 				oCertificate.SerialNumber,
 				oCertificate.SubjectName,
@@ -481,6 +486,10 @@ function CryptoPro() {
 				oInfo.Subject = string2dn(oInfo.SubjectName);
 				oInfo.Issuer  = string2dn(oInfo.IssuerName);
 				oInfo.Name = oInfo.Subject['CN'];
+				if (!options.checkValid) {
+					const dt = new Date();
+					oInfo.IsValid = dt >= oInfo.ValidFromDate && dt <= oInfo.ValidToDate;
+				}
 				oInfo.toString = infoToString;
 				return oInfo;
 			})
