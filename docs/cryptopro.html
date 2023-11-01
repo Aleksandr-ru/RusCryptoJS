@@ -264,6 +264,9 @@ cryptopro.init().then(function(info) {
                     <span class="function">certificateInfo</span>
                     ( 
                         certThumbprint : <span class="type">String</span>
+                        <span class="optional">
+                            [, options : <span class="type">Object</span> ]
+                        </span>
                     ) : <span class="type">Promise&lt;Object&gt;</span>
                 </h5>
                 <p>Получение информации об установленном сертификате.</p>
@@ -278,6 +281,16 @@ cryptopro.init().then(function(info) {
                         <tr>
                             <td>certThumbprint</td>
                             <td>Отпечаток сертификата.</td>
+                        </tr>
+                        <tr>
+                            <td>options</td>
+                            <td>Необязательные параметры, доступны начиная с <b>версии 2.7</b></td>
+                        </tr>
+                        <tr>
+                            <td>options.checkValid</td>
+                            <td>
+                                Флаг проверки валидности сертификата через СКЗИ, а не сроку действия
+                            </td>
                         </tr>
                     </tbody>
                 </table>

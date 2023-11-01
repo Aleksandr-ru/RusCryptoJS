@@ -271,6 +271,9 @@ jacarta2.init().then(function(info) {
                     <span class="function">certificateInfo</span>
                     ( 
                         containerId : <span class="type">Number</span>
+                        <span class="optional">
+                            [, options : <span class="type">Object</span> ]
+                        </span>
                     ) : <span class="type">Promise&lt;Object&gt;</span>
                 </h5>
                 <p>Получение информации о сертификате в контейнере.</p>
@@ -285,6 +288,10 @@ jacarta2.init().then(function(info) {
                         <tr>
                             <td>containerId</td>
                             <td>Идентификатор контейнера (сертификата).</td>
+                        </tr>
+                        <tr>
+                            <td>options</td>
+                            <td>Необязательные параметры, не используется</td>
                         </tr>
                     </tbody>
                 </table>

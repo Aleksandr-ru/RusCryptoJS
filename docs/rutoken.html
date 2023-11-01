@@ -265,6 +265,9 @@ rutoken.init().then(function(info) {
                     <span class="function">certificateInfo</span>
                     ( 
                         certId : <span class="type">String</span>
+                        <span class="optional">
+                            [, options : <span class="type">Object</span> ]
+                        </span>
                     ) : <span class="type">Promise&lt;Object&gt;</span>
                 </h5>
                 <p>Получение информации о сертификате в контейнере.</p>
@@ -279,6 +282,10 @@ rutoken.init().then(function(info) {
                         <tr>
                             <td>certId</td>
                             <td>Идентификатор сертификата.</td>
+                        </tr>
+                        <tr>
+                            <td>options</td>
+                            <td>Необязательные параметры, не используется</td>
                         </tr>
                     </tbody>
                 </table>
