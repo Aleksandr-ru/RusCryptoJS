@@ -538,7 +538,7 @@ function CryptoPro() {
 
 	/**
 	 * Получение массива доступных сертификатов
-	 * @returns {Promise<{id: string; name: string;}[]>} [ {id: thumbprint, name: subject}, ...]
+	 * @returns {Promise<{id: string; name: string; subject: DN; validFrom: Date; validTo: Date;}[]>} [{id, name, subject, validFrom, validTo}, ...]
 	 */
 	this.listCertificates = function(){
 		const tryContainerStore = hasContainerStore();
@@ -1065,17 +1065,25 @@ function CryptoPro() {
 				return Promise.all(certs);
 			}).then(certificates => {
 				const certs = [];
-				for (let i in certificates) certs.push(certificates[i].SubjectName, certificates[i].Thumbprint);
+				for (let i in certificates) certs.push(
+					certificates[i].SubjectName,
+					certificates[i].Thumbprint,
+					certificates[i].ValidFromDate,
+					certificates[i].ValidToDate
+				);
 				return Promise.all(certs);
-			}).then(subjects => {
+			}).then(data => {
 				const certs = [];
-				for (let i = 0; i < subjects.length; i += 2) {
-					const id = subjects[i + 1];
+				for (let i = 0; i < data.length; i += 4) {
+					const id = data[i + 1];
 					if (skipIds.indexOf(id) + 1) break;
-					const oDN = string2dn(subjects[i]);
+					const oDN = string2dn(data[i]);
 					certs.push({
 						id,
-						name: formatCertificateName(oDN)
+						name: formatCertificateName(oDN),
+						subject: oDN,
+						validFrom: new Date(data[i + 2]),
+						validTo: new Date(data[i + 3])
 					});
 				}
 				return certs;
@@ -1091,7 +1099,10 @@ function CryptoPro() {
 				const oDN = string2dn(oCertificate.SubjectName);
 				certs.push({
 					id,
-					name: formatCertificateName(oDN)
+					name: formatCertificateName(oDN),
+					subject: oDN,
+					validFrom: new Date(oCertificate.ValidFromDate),
+					validTo: new Date(oCertificate.ValidToDate)
 				});
 			}
 			return certs;

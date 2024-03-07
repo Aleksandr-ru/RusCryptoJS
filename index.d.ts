@@ -52,6 +52,9 @@ export interface CertificateInfoOptionsInterface {
 export interface CertListItemInterface {
     id: string;
     name: string;
+    subject: DN;
+    validFrom: Date;
+    validTo: Date;
 }
 
 export interface SignOptionsInterface {
