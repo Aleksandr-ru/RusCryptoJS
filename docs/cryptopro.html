@@ -316,6 +316,18 @@ cryptopro.init().then(function(info) {
                     <span class="type">Promise&lt;Array&gt;</span>
                 </h5>
                 <p>Получение списка доступных сертификатов.</p>
+                <p><b>Начиная с версии 2.8</b></p>
+                <p>
+                    <b class="returns">Возвращает</b> массив объектов с полями:
+                <pre><code>[{
+    id: 'thumbprint',
+    name: 'subject',
+    subject: Объект DN,
+    validFrom: Дата,
+    validTo: Дата
+}, ...]</code></pre>
+                </p>
+                <p><b>До версии 2.8</b></p>
                 <p>
                     <b class="returns">Возвращает</b> массив объектов с полями:
                     <pre><code>[{
@@ -723,6 +735,18 @@ cryptopro.init().then(function(info) {
             <section id="Выпуск_сертификата">
                 <h2>Выпуск сертификата</h2>
                 <form id="formCsr">
+                    <div class="row">
+                        <div class="two columns">
+                            <label>Инструкция</label>
+                        </div>
+                        <div class="ten columns">
+                            <p>
+                                <a href="https://aleksandr.ru/blog/vipusk_testovih_sertifikatov_ep_kriptopro_s_lyubimi_dannimi" target="_blank">
+                                    Выпуск тестовых сертификатов с любыми данными
+                                </a>
+                            </p>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="two columns">
                             <label>Pin код</label>
