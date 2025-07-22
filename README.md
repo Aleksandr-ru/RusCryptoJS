@@ -31,8 +31,8 @@ JS для Российской криптографии (ГОСТ).
 - Поддержка ИНН ЮЛ (INNLE, OID 1.2.643.100.4) доступна начиная с СSP 5.0 и выше;
 - Проверка валидности сертификата может занимать продолжительное время для сертификатов, выданных УЦ с большим количеством данных в CRL (по-умолчанию отключено начиная с версии 2.7);
 - КриптоПро ЭЦП Browser plug-in не работает в свежих версиях браузеров на основе Chromium (за исключением ГОСТ и Яндекс), а так же само расширение удалено из магазина. Лечится по [официальной инструкции](https://support.cryptopro.ru/index.php?/Knowledgebase/Article/View/467/12/ustnovk-rsshirenija-dlja-plgin-iz-fjjl#chrome);
-- Начиная с версии 2.8.1 и КриптоПро ЭЦП Browser plug-in 2.0.15400 поддерживается manifest V3 и новое расширение [Extension for CAdES Browser Plug-in](https://chromewebstore.google.com/detail/extension-for-cades-brows/pfhgbfnnjiafkhfdkmpiflachepdcjod), подробнее [тут](https://support.cryptopro.ru/index.php?/News/NewsItem/View/24/o-perekhode-rsshirenijj-dlja-bruzerov-n-bze-google-chrome-n-manifest-v3);
-- Установка СКЗИ в Arch Linux (Manjaro и т.д.) пакет [cryptopro-csp-k1](https://aur.archlinux.org/packages/cryptopro-csp-k1). 
+- Manifest V3 (новое расширение [Extension for CAdES Browser Plug-in](https://chromewebstore.google.com/detail/extension-for-cades-brows/pfhgbfnnjiafkhfdkmpiflachepdcjod)) поддерживается начиная с версии 2.8.1 и КриптоПро ЭЦП Browser plug-in 2.0.15400, подробнее [тут](https://support.cryptopro.ru/index.php?/News/NewsItem/View/24/o-perekhode-rsshirenijj-dlja-bruzerov-n-bze-google-chrome-n-manifest-v3);
+- Установка СКЗИ в Arch Linux (Manjaro и т.д.) - используйте пакет [cryptopro-csp-k1](https://aur.archlinux.org/packages/cryptopro-csp-k1). 
 
 ## JaCarta ГОСТ
 Для работы с [JaCarta Web Client 3.x](https://www.aladdin-rd.ru/catalog/jcwebclient)
