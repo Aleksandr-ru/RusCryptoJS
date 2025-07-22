@@ -1,8 +1,7 @@
 'use strict';
 
 var webpack = require('webpack');
-var CleanWebpackPlugin = require('clean-webpack-plugin');
-var WebpackCopyAfterBuildPlugin = require('webpack-copy-after-build-plugin');
+var { CleanWebpackPlugin } = require('clean-webpack-plugin');
 var path = require('path');
 var libraryName = 'RusCryptoJS';
 var filename = 'ruscrypto.min.js';
@@ -10,11 +9,9 @@ var filename = 'ruscrypto.min.js';
 module.exports = (env, argv) => {
     if (argv.mode === 'production') {
         var plugins = [
-            new CleanWebpackPlugin([
-                './dist'
-            ]),
-            new WebpackCopyAfterBuildPlugin({
-                main: '../docs/js/' + filename
+            new CleanWebpackPlugin({
+                protectWebpackAssets: false,
+                cleanAfterEveryBuildPatterns: ['*.LICENSE.txt']
             })
         ];
         var devServer = undefined;
@@ -25,8 +22,10 @@ module.exports = (env, argv) => {
         ];
         var devServer = {
             hot: true,
-            publicPath: "/js/",
-            contentBase: "./docs",
+            static: "./docs",
+            devMiddleware: {
+                publicPath: "/js/"
+            }
         };
     }
     return {
