@@ -57,7 +57,10 @@ function CryptoPro() {
 					return oAbout.Version;
 				}).then(function(version) {
 					pluginVersion = version;
-					return { version };
+					return {
+						version,
+						manifestV3: isManifestV3()
+					};
 				}).catch(function(e) {
 					// 'Плагин не загружен'
 					const err = getError(e);
@@ -73,7 +76,8 @@ function CryptoPro() {
 						}
 						pluginVersion = oAbout.Version;
 						resolve({
-							version: pluginVersion
+							version: pluginVersion,
+							manifestV3: false
 						});
 					}
 					catch(e) {
@@ -1044,13 +1048,20 @@ function CryptoPro() {
 	};
 
 	function hasContainerStore() {
-		//В версии плагина 2.0.13292+ есть возможность получить сертификаты из
-		//закрытых ключей и не установленных в хранилище
+		// В версии плагина 2.0.13292+ есть возможность получить сертификаты из
+		// закрытых ключей и не установленных в хранилище
 		// но не смотря на это, все равно приходится собирать список сертификатов
 		// старым и новым способом тк в новом будет отсутствовать часть старого
 		// предположительно ГОСТ-2001 с какими-то определенными Extended Key Usage OID
 
 		return versionCompare(pluginVersion, '2.0.13292') >= 0;
+	}
+
+	function isManifestV3() {
+		// Начиная с КриптоПро ЭЦП Browser plug-in версии 2.0.15400 (от 03.04.2025),
+		// реализована поддержка нового manifest V3 расширения Extension for CAdES Browser Plug-in
+
+		return versionCompare(pluginVersion, '2.0.15400') >= 0;
 	}
 
 	function fetchCertsFromStore(oStore, skipIds = []) {

@@ -5,6 +5,7 @@ export class DN {
 
 export interface InitResultInterface {
     version: string;
+    manifestV3?: boolean; // CryptoPro
     serialNumber?: string; // JaCarta2
     label?: string; // JaCarta2, RuToken
     type?: string; // JaCarta2, RuToken
